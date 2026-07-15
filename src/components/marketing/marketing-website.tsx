@@ -742,6 +742,81 @@ export function MarketingWebsite() {
           </section>
         </FadeIn>
 
+        {/* ─────────── 7.5 TESTIMONIALS SECTION ─────────── */}
+        <FadeIn>
+          <section className="py-20 sm:py-24 bg-background">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <SectionHeading
+                badge="Testimonials"
+                title="Trusted by leading logistics companies across Southern Africa"
+                description="Hear from operations leaders who transformed their delivery management with SwiftFreight."
+              />
+              <div className="mt-14 grid gap-8 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  {
+                    quote: 'SwiftFreight transformed how we manage cross-border deliveries. Our delivery times dropped by 40% and customer satisfaction is at an all-time high.',
+                    name: 'Thabo Maseko',
+                    role: 'Operations Director',
+                    company: 'Mountain Express',
+                    stars: 5,
+                  },
+                  {
+                    quote: 'The real-time tracking and automated quoting saved us hours of manual work every day. Our team can focus on what matters.',
+                    name: 'Lineo Tšoeu',
+                    role: 'Logistics Manager',
+                    company: 'Lesotho Swift Logistics',
+                    stars: 5,
+                  },
+                  {
+                    quote: 'As a growing company, SwiftFreight scaled with us effortlessly. The multi-tenant setup means each branch operates independently.',
+                    name: 'Kabelo Mothibi',
+                    role: 'CEO',
+                    company: 'Highland Haulage',
+                    stars: 4,
+                  },
+                ].map((testimonial) => (
+                  <div
+                    key={testimonial.name}
+                    className="group relative rounded-xl border bg-card p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                  >
+                    {/* Decorative quote mark */}
+                    <span className="absolute -top-3 left-6 text-5xl font-serif leading-none text-primary/15 select-none">&ldquo;</span>
+
+                    <div className="flex gap-1 mb-4">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < testimonial.stars
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'fill-muted text-muted'
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-muted-foreground mb-6">
+                      {testimonial.quote}
+                    </p>
+
+                    <div className="flex items-center gap-3 pt-4 border-t">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                        {testimonial.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{testimonial.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {testimonial.role}, {testimonial.company}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </FadeIn>
+
         {/* ─────────── 8. PRICING SECTION ─────────── */}
         <FadeIn delay={0.1}>
           <section id="pricing" className="py-20 sm:py-24">

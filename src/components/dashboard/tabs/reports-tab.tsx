@@ -30,6 +30,8 @@ import {
   Wrench,
   ChevronUp,
   ChevronDown,
+  Clock,
+  MapPin,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -82,9 +84,12 @@ const successRateConfig: ChartConfig = {
   onTimeRate: { label: 'On-Time Rate %', color: '#22c55e' },
 };
 
-const revenueByRouteConfig: ChartConfig = {
-  revenue: { label: 'Revenue (M)', color: '#16a34a' },
-  count: { label: 'Deliveries', color: '#14b8a6' },
+const deliveryTimeConfig: ChartConfig = {
+  count: { label: 'Deliveries', color: '#22c55e' },
+};
+
+const routeRevenueConfig: ChartConfig = {
+  revenue: { label: 'Revenue (M)', color: '#10b981' },
 };
 
 const satisfactionConfig: ChartConfig = {
@@ -197,14 +202,41 @@ export function ReportsTab() {
     return arr;
   }, [sortKey, sortDir]);
 
-  // Revenue by route horizontal chart data
-  const routeChartData = useMemo(
-    () =>
-      [...analyticsData.topRoutes]
-        .sort((a, b) => b.revenue - a.revenue)
-        .map((r) => ({ route: r.route, revenue: r.revenue, count: r.count })),
-    []
-  );
+  // Revenue by route — computed from actual deliveries
+  const deliveryRouteRevenue = useMemo(() => {
+    const routeMap = new Map<string, number>();
+    deliveries
+      .filter((d) => d.status === 'delivered' && d.quotedAmount)
+      .forEach((d) => {
+        const route = `${d.pickup.city} → ${d.destination.city}`;
+        routeMap.set(route, (routeMap.get(route) ?? 0) + d.quotedAmount!);
+      });
+    return [...routeMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([route, revenue]) => ({ route, revenue }));
+  }, []);
+
+  // Delivery time distribution — computed from delivered deliveries
+  const deliveryTimeData = useMemo(() => {
+    const buckets = [
+      { label: '1 Day', min: 0, max: 1, color: '#22c55e' },
+      { label: '2 Days', min: 1, max: 2, color: '#16a34a' },
+      { label: '3–5 Days', min: 2, max: 5, color: '#14b8a6' },
+      { label: '6–10 Days', min: 5, max: 10, color: '#f59e0b' },
+      { label: '10+ Days', min: 10, max: Infinity, color: '#f97316' },
+    ];
+    return buckets.map((b) => {
+      const count = deliveries.filter((d) => {
+        if (d.status !== 'delivered' || !d.actualDelivery) return false;
+        const created = new Date(d.createdAt).getTime();
+        const delivered = new Date(d.actualDelivery).getTime();
+        const days = Math.ceil((delivered - created) / (1000 * 60 * 60 * 24));
+        return days > b.min && days <= b.max;
+      }).length;
+      return { label: b.label, count, color: b.color };
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -411,39 +443,6 @@ export function ReportsTab() {
           </CardContent>
         </Card>
 
-        {/* Revenue by Route */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-emerald-600" />
-              <CardTitle className="text-base">Revenue by Route</CardTitle>
-            </div>
-            <CardDescription>Top performing delivery routes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={revenueByRouteConfig} className="h-[260px] w-full">
-              <BarChart
-                data={routeChartData}
-                layout="vertical"
-                margin={{ top: 5, right: 30, left: 10, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
-                <XAxis type="number" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v: number) => `M${(v / 1000).toFixed(0)}k`} className="text-xs" />
-                <YAxis
-                  type="category"
-                  dataKey="route"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  width={130}
-                  className="text-xs"
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="revenue" fill="#16a34a" radius={[0, 4, 4, 0]} barSize={16} />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
       </div>
 
       {/* ── Driver Performance Table ── */}
@@ -645,6 +644,75 @@ export function ReportsTab() {
                 ))}
               </div>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Revenue by Route + Delivery Time Distribution ── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Revenue by Route */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-base">Revenue by Route</CardTitle>
+            </div>
+            <CardDescription>Top 8 routes by delivered revenue</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={routeRevenueConfig} className="h-[300px] w-full">
+              <BarChart
+                data={deliveryRouteRevenue}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 10, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="routeBarGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#16a34a" />
+                    <stop offset="100%" stopColor="#14b8a6" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                <XAxis type="number" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v: number) => `M${(v / 1000).toFixed(0)}k`} className="text-xs" />
+                <YAxis
+                  type="category"
+                  dataKey="route"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  width={140}
+                  className="text-xs"
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="revenue" fill="url(#routeBarGradient)" radius={[0, 4, 4, 0]} barSize={18} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Delivery Time Distribution */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-amber-600" />
+              <CardTitle className="text-base">Delivery Time Distribution</CardTitle>
+            </div>
+            <CardDescription>How quickly deliveries reach their destination</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={deliveryTimeConfig} className="h-[300px] w-full">
+              <BarChart data={deliveryTimeData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={36}>
+                  {deliveryTimeData.map((entry, idx) => (
+                    <Cell key={`time-${idx}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>

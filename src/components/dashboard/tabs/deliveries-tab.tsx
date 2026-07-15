@@ -89,8 +89,10 @@ function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: 
 
 // New Delivery Form
 function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
+  const { currentUser } = useAuthStore();
+  const isCustomer = currentUser?.role === 'customer';
   const [open, setOpen] = useState(false);
-  const [customerName, setCustomerName] = useState('');
+  const [customerName, setCustomerName] = useState(isCustomer ? (currentUser?.name ?? '') : '');
   const [pickupName, setPickupName] = useState('');
   const [pickupPhone, setPickupPhone] = useState('');
   const [pickupAddress, setPickupAddress] = useState('');
@@ -136,14 +138,18 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
     };
     onSuccess(newDelivery);
     setOpen(false);
-    toast.success('Delivery created successfully!', { description: `Tracking #${newDelivery.trackingNumber}` });
+    if (isCustomer) {
+      toast.success('Delivery request submitted!', { description: `Tracking #${newDelivery.trackingNumber}` });
+    } else {
+      toast.success('Delivery created successfully!', { description: `Tracking #${newDelivery.trackingNumber}` });
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="mr-2 h-4 w-4" /> New Delivery
+          <Plus className="mr-2 h-4 w-4" /> {isCustomer ? 'Request Delivery' : 'New Delivery'}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -152,10 +158,12 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {/* Customer */}
-          <div className="grid gap-2">
-            <Label>Customer *</Label>
-            <Input placeholder="Customer name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
-          </div>
+          {!isCustomer && (
+            <div className="grid gap-2">
+              <Label>Customer *</Label>
+              <Input placeholder="Customer name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+            </div>
+          )}
           <Separator />
           {/* Pickup */}
           <div>
@@ -652,6 +660,9 @@ export function DeliveriesTab() {
         <NewDeliveryForm onSuccess={addDelivery} />
       </div>
 
+      {/* Gradient divider below header */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-sm">
@@ -740,10 +751,12 @@ export function DeliveriesTab() {
               <TableBody>
                 {paged.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
-                      <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="font-medium">No deliveries found</p>
-                      <p className="text-sm">Try adjusting your search or filters</p>
+                    <TableCell colSpan={10} className="text-center py-12">
+                      <div className="flex flex-col items-center py-4 mx-auto max-w-xs border-2 border-dashed border-muted-foreground/20 rounded-xl">
+                        <Package className="h-12 w-12 mb-3 opacity-30 text-primary/40" />
+                        <p className="text-lg font-medium text-muted-foreground">No deliveries found</p>
+                        <p className="text-sm text-muted-foreground/70 mt-1">Try adjusting your search or filters</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -864,9 +877,11 @@ export function DeliveriesTab() {
         <>
           {paged.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p className="font-medium text-lg">No deliveries found</p>
-              <p className="text-sm">Try adjusting your search or filters</p>
+              <div className="flex flex-col items-center py-4 mx-auto max-w-xs border-2 border-dashed border-muted-foreground/20 rounded-xl">
+                <Package className="h-12 w-12 mb-3 opacity-30 text-primary/40" />
+                <p className="text-lg font-medium text-muted-foreground">No deliveries found</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Try adjusting your search or filters</p>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

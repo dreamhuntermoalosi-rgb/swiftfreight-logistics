@@ -19,6 +19,7 @@ import { MessagesTab as MessagesTabReal } from './messages-tab';
 import { SettingsTab as SettingsTabReal } from './settings-tab';
 import { InvoicesTab as InvoicesTabReal } from './invoices-tab';
 import { QuotationsTab as QuotationsTabReal } from './quotations-tab';
+import { NotificationsTab as NotificationsTabReal } from './notifications-tab';
 
 /**
  * Tab component barrel file.
@@ -40,6 +41,7 @@ export const MessagesTab = MessagesTabReal;
 export const ReportsTab = ReportsTabReal;
 export const InvoicesTab = InvoicesTabReal;
 export const QuotationsTab = QuotationsTabReal;
+export const NotificationsTab = NotificationsTabReal;
 export const SettingsTab = SettingsTabReal;
 
 // Map for dynamic lookup
@@ -56,5 +58,6 @@ export const tabComponentMap: Record<DashboardTab, React.ComponentType> = {
   reports: ReportsTab,
   invoices: InvoicesTab,
   quotations: QuotationsTab,
+  notifications: NotificationsTab,
   settings: SettingsTab,
 };

@@ -154,7 +154,7 @@ function KpiCard({
 }) {
   const isPositive = growth !== undefined && growth >= 0;
   return (
-    <Card className="relative overflow-hidden border-l-4 border-l-primary/30 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+    <Card className="relative overflow-hidden border-l-4 border-l-primary/30 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-300 dark:hover:border-emerald-700">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -286,7 +286,8 @@ function CustomerOverview() {
   return (
     <div className="space-y-6">
       {/* Greeting */}
-      <div>
+      <div className="relative">
+        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 blur-3xl pointer-events-none" />
         <h1 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}!</h1>
         <p className="text-muted-foreground">{today}</p>
       </div>
@@ -484,25 +485,52 @@ function DriverOverview() {
 
   const firstName = currentUser?.name?.split(' ')[0] || 'Driver';
 
-  // Mock driver stats
-  const todayJobs = 4;
-  const completedThisWeek = 18;
-  const monthlyEarnings = 'M12,450';
-  const rating = 4.6;
-
-  // Mock today's deliveries
-  const todayDeliveries = useMemo(
-    () =>
-      deliveries
-        .filter((d) => d.driverName === currentUser?.name && d.status !== 'delivered' && d.status !== 'cancelled')
-        .slice(0, 5),
+  // Compute driver stats from actual delivery data
+  const myDeliveries = useMemo(
+    () => deliveries.filter((d) => d.driverId === currentUser?.id),
     [currentUser]
+  );
+
+  const todayStr = new Date().toDateString();
+  const todayJobs = useMemo(
+    () => myDeliveries.filter((d) => {
+      const createdToday = new Date(d.createdAt).toDateString() === todayStr;
+      const isActive = !['delivered', 'cancelled', 'returned'].includes(d.status);
+      return createdToday || (isActive && d.status !== 'delivered');
+    }).length,
+    [myDeliveries, todayStr]
+  );
+
+  const completedThisWeek = useMemo(() => {
+    const weekAgo = Date.now() - 7 * 86400000;
+    return myDeliveries.filter((d) => d.status === 'delivered' && new Date(d.actualDelivery || d.updatedAt).getTime() > weekAgo).length;
+  }, [myDeliveries]);
+
+  const monthlyEarnings = useMemo(() => {
+    const monthAgo = Date.now() - 30 * 86400000;
+    const total = myDeliveries
+      .filter((d) => d.status === 'delivered' && new Date(d.actualDelivery || d.updatedAt).getTime() > monthAgo)
+      .reduce((sum, d) => sum + (d.quotedAmount || 0), 0);
+    return `M${total.toLocaleString()}`;
+  }, [myDeliveries]);
+
+  const avgRating = useMemo(() => {
+    const rated = myDeliveries.filter((d) => d.rating);
+    if (rated.length === 0) return 0;
+    return (rated.reduce((sum, d) => sum + Number(d.rating || 0), 0) / rated.length).toFixed(1);
+  }, [myDeliveries]);
+
+  // Active deliveries (not delivered/cancelled/returned)
+  const activeDeliveries = useMemo(
+    () => myDeliveries.filter((d) => !['delivered', 'cancelled', 'returned'].includes(d.status)).slice(0, 5),
+    [myDeliveries]
   );
 
   return (
     <div className="space-y-6">
       {/* Greeting */}
-      <div>
+      <div className="relative">
+        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 blur-3xl pointer-events-none" />
         <h1 className="text-2xl font-bold tracking-tight">Welcome, {firstName}!</h1>
         <p className="text-muted-foreground">{today}</p>
       </div>
@@ -532,7 +560,7 @@ function DriverOverview() {
         />
         <KpiCard
           title="Rating"
-          value={rating.toString()}
+          value={avgRating.toString()}
           icon={Star}
           iconBg="bg-yellow-50 dark:bg-yellow-950/50"
           iconColor="text-yellow-500"
@@ -588,14 +616,14 @@ function DriverOverview() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {todayDeliveries.length === 0 ? (
+                {activeDeliveries.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
                       No deliveries assigned for today
                     </TableCell>
                   </TableRow>
                 ) : (
-                  todayDeliveries.map((d) => (
+                  activeDeliveries.map((d) => (
                     <TableRow key={d.id}>
                       <TableCell className="max-w-[130px] truncate font-mono text-xs">
                         {d.trackingNumber}

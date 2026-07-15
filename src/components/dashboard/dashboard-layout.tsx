@@ -141,12 +141,15 @@ const staffNavItems: NavItem[] = [
   { tab: 'fleet', label: 'Fleet', icon: Truck },
   { tab: 'dispatch', label: 'Dispatch', icon: Radio },
   { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
+  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+  { tab: 'notifications', label: 'Notifications', icon: Bell },
   { tab: 'invoices', label: 'Invoices', icon: Receipt },
   { tab: 'quotations', label: 'Quotations', icon: FileText },
   { tab: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
 const driverNavItems: NavItem[] = [
+  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
   { tab: 'deliveries', label: 'My Jobs', icon: ClipboardList },
   { tab: 'fleet', label: 'My Vehicle', icon: Truck },
   { tab: 'messages', label: 'Messages', icon: MessageSquare },
@@ -193,6 +196,7 @@ const tabTitles: Record<DashboardTab, string> = {
   reports: 'Reports',
   invoices: 'Invoices',
   quotations: 'Quotations',
+  notifications: 'Notifications',
   settings: 'Settings',
 };
 
@@ -251,8 +255,10 @@ function SidebarNavContent({
 
   return (
     <div className="flex h-full flex-col">
+      {/* Gradient top line */}
+      <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
       {/* Logo area */}
-      <div className="relative flex h-16 items-center gap-3 border-b px-4">
+      <div className="relative flex h-16 items-center gap-3 border-b px-4 bg-white/60 dark:bg-black/20 backdrop-blur-sm">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Truck className="h-5 w-5" />
         </div>
@@ -467,7 +473,7 @@ function NotificationDropdown() {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-center text-xs text-primary hover:text-primary"
-                onClick={() => setDashboardTab('messages')}
+                onClick={() => setDashboardTab('notifications')}
               >
                 View All Notifications
                 <ChevronRight className="ml-1 h-3 w-3" />

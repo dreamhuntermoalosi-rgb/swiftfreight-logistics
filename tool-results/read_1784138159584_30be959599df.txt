@@ -1,0 +1,653 @@
+     1→'use client';
+     2→
+     3→import { useState, useMemo } from 'react';
+     4→import {
+     5→  AreaChart,
+     6→  Area,
+     7→  BarChart,
+     8→  Bar,
+     9→  LineChart,
+    10→  Line,
+    11→  PieChart,
+    12→  Pie,
+    13→  Cell,
+    14→  XAxis,
+    15→  YAxis,
+    16→  CartesianGrid,
+    17→} from 'recharts';
+    18→import {
+    19→  DollarSign,
+    20→  Package,
+    21→  Star,
+    22→  Users,
+    23→  TrendingUp,
+    24→  Truck,
+    25→  ArrowUpDown,
+    26→  Calendar,
+    27→  BarChart3,
+    28→  Target,
+    29→  Heart,
+    30→  Wrench,
+    31→  ChevronUp,
+    32→  ChevronDown,
+    33→} from 'lucide-react';
+    34→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+    35→import { Badge } from '@/components/ui/badge';
+    36→import { Progress } from '@/components/ui/progress';
+    37→import { Skeleton } from '@/components/ui/skeleton';
+    38→import { Button } from '@/components/ui/button';
+    39→import {
+    40→  Select,
+    41→  SelectContent,
+    42→  SelectItem,
+    43→  SelectTrigger,
+    44→  SelectValue,
+    45→} from '@/components/ui/select';
+    46→import {
+    47→  Table,
+    48→  TableBody,
+    49→  TableCell,
+    50→  TableHead,
+    51→  TableHeader,
+    52→  TableRow,
+    53→} from '@/components/ui/table';
+    54→import {
+    55→  ChartContainer,
+    56→  ChartTooltip,
+    57→  ChartTooltipContent,
+    58→  ChartLegend,
+    59→  ChartLegendContent,
+    60→  type ChartConfig,
+    61→} from '@/components/ui/chart';
+    62→import {
+    63→  analyticsData,
+    64→  deliveries,
+    65→  drivers,
+    66→  customers,
+    67→  statusLabels,
+    68→  statusColors,
+    69→} from '@/lib/mock-data';
+    70→
+    71→
+    72→// ============ Chart Configs ============
+    73→const revenueAreaConfig: ChartConfig = {
+    74→  revenue: { label: 'Revenue (M)', color: '#16a34a' },
+    75→};
+    76→
+    77→const deliveryVolumeConfig: ChartConfig = {
+    78→  deliveries: { label: 'Deliveries', color: '#14b8a6' },
+    79→};
+    80→
+    81→const successRateConfig: ChartConfig = {
+    82→  onTimeRate: { label: 'On-Time Rate %', color: '#22c55e' },
+    83→};
+    84→
+    85→const revenueByRouteConfig: ChartConfig = {
+    86→  revenue: { label: 'Revenue (M)', color: '#16a34a' },
+    87→  count: { label: 'Deliveries', color: '#14b8a6' },
+    88→};
+    89→
+    90→const satisfactionConfig: ChartConfig = {
+    91→  satisfied: { label: 'Satisfied (4-5★)', color: '#22c55e' },
+    92→  neutral: { label: 'Neutral (3★)', color: '#f59e0b' },
+    93→  dissatisfied: { label: 'Dissatisfied (1-2★)', color: '#ef4444' },
+    94→};
+    95→
+    96→// ============ Helpers ============
+    97→function formatCurrency(value: number) {
+    98→  return `M${value.toLocaleString()}`;
+    99→}
+   100→
+   101→// Simulated on-time rate trend data
+   102→const onTimeTrend = [
+   103→  { month: 'Jan', rate: 89.2 },
+   104→  { month: 'Feb', rate: 90.1 },
+   105→  { month: 'Mar', rate: 88.5 },
+   106→  { month: 'Apr', rate: 91.3 },
+   107→  { month: 'May', rate: 92.0 },
+   108→  { month: 'Jun', rate: 91.8 },
+   109→  { month: 'Jul', rate: 93.2 },
+   110→  { month: 'Aug', rate: 93.8 },
+   111→  { month: 'Sep', rate: 92.5 },
+   112→  { month: 'Oct', rate: 93.1 },
+   113→  { month: 'Nov', rate: 94.0 },
+   114→  { month: 'Dec', rate: 94.6 },
+   115→];
+   116→
+   117→// Customer satisfaction distribution
+   118→const satisfactionData = [
+   119→  { name: 'satisfied', value: 72 },
+   120→  { name: 'neutral', value: 20 },
+   121→  { name: 'dissatisfied', value: 8 },
+   122→];
+   123→const SAT_COLORS = ['#22c55e', '#f59e0b', '#ef4444'];
+   124→
+   125→// Customer growth trend
+   126→const customerGrowth = [
+   127→  { month: 'Jan', customers: 198 },
+   128→  { month: 'Feb', customers: 210 },
+   129→  { month: 'Mar', customers: 225 },
+   130→  { month: 'Apr', customers: 238 },
+   131→  { month: 'May', customers: 252 },
+   132→  { month: 'Jun', customers: 261 },
+   133→  { month: 'Jul', customers: 274 },
+   134→  { month: 'Aug', customers: 285 },
+   135→  { month: 'Sep', customers: 290 },
+   136→  { month: 'Oct', revenue: 298, customers: 298 },
+   137→  { month: 'Nov', customers: 305 },
+   138→  { month: 'Dec', customers: 312 },
+   139→];
+   140→
+   141→// Maintenance schedule summary
+   142→const maintenanceSummary = [
+   143→  { vehicle: 'LP 234 AB 567 (Truck)', type: 'Truck', dueDate: '3 days', status: 'upcoming' },
+   144→  { vehicle: 'LP 456 AB 789 (Van)', type: 'Van', dueDate: '5 days', status: 'upcoming' },
+   145→  { vehicle: 'LP 789 CD 123 (Truck)', type: 'Truck', dueDate: '8 days', status: 'scheduled' },
+   146→  { vehicle: 'LP 321 DE 456 (Pickup)', type: 'Pickup', dueDate: '12 days', status: 'scheduled' },
+   147→  { vehicle: 'LP 654 FG 890 (Van)', type: 'Van', dueDate: 'Overdue', status: 'overdue' },
+   148→];
+   149→
+   150→type DateRange = '7d' | '30d' | '90d' | '1y';
+   151→
+   152→// ============ Sort helpers ============
+   153→type SortKey = 'name' | 'deliveries' | 'rating' | 'onTime';
+   154→type SortDir = 'asc' | 'desc';
+   155→
+   156→function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
+   157→  if (sortKey !== col) return <ArrowUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />;
+   158→  return sortDir === 'asc' ? (
+   159→    <ChevronUp className="ml-1 inline h-3 w-3 text-emerald-600" />
+   160→  ) : (
+   161→    <ChevronDown className="ml-1 inline h-3 w-3 text-emerald-600" />
+   162→  );
+   163→}
+   164→
+   165→// ============ Reports Tab ============
+   166→export function ReportsTab() {
+   167→  const [dateRange, setDateRange] = useState<DateRange>('1y');
+   168→  const [sortKey, setSortKey] = useState<SortKey>('deliveries');
+   169→  const [sortDir, setSortDir] = useState<SortDir>('desc');
+   170→
+   171→  const toggleSort = (key: SortKey) => {
+   172→    if (sortKey === key) {
+   173→      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+   174→    } else {
+   175→      setSortKey(key);
+   176→      setSortDir('desc');
+   177→    }
+   178→  };
+   179→
+   180→  // Top customers by spend
+   181→  const topCustomers = useMemo(
+   182→    () =>
+   183→      [...customers]
+   184→        .sort((a, b) => b.totalSpent - a.totalSpent)
+   185→        .slice(0, 8),
+   186→    []
+   187→  );
+   188→
+   189→  // Sorted driver performance
+   190→  const sortedDrivers = useMemo(() => {
+   191→    const arr = [...analyticsData.driverPerformance];
+   192→    arr.sort((a, b) => {
+   193→      const aVal = a[sortKey];
+   194→      const bVal = b[sortKey];
+   195→      return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+   196→    });
+   197→    return arr;
+   198→  }, [sortKey, sortDir]);
+   199→
+   200→  // Revenue by route horizontal chart data
+   201→  const routeChartData = useMemo(
+   202→    () =>
+   203→      [...analyticsData.topRoutes]
+   204→        .sort((a, b) => b.revenue - a.revenue)
+   205→        .map((r) => ({ route: r.route, revenue: r.revenue, count: r.count })),
+   206→    []
+   207→  );
+   208→
+   209→  return (
+   210→    <div className="space-y-6">
+   211→      {/* ── Header with Date Range ── */}
+   212→      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   213→        <div>
+   214→          <h2 className="text-xl font-semibold tracking-tight">Reports & Analytics</h2>
+   215→          <p className="text-sm text-muted-foreground">
+   216→            Comprehensive performance insights and metrics
+   217→          </p>
+   218→        </div>
+   219→        <div className="flex items-center gap-2">
+   220→          <Calendar className="h-4 w-4 text-muted-foreground" />
+   221→          <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+   222→            <SelectTrigger className="w-[160px]">
+   223→              <SelectValue />
+   224→            </SelectTrigger>
+   225→            <SelectContent>
+   226→              <SelectItem value="7d">Last 7 days</SelectItem>
+   227→              <SelectItem value="30d">Last 30 days</SelectItem>
+   228→              <SelectItem value="90d">Last 90 days</SelectItem>
+   229→              <SelectItem value="1y">This Year</SelectItem>
+   230→            </SelectContent>
+   231→          </Select>
+   232→        </div>
+   233→      </div>
+   234→
+   235→      {/* ── Executive Summary Cards ── */}
+   236→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   237→        <Card>
+   238→          <CardContent className="p-4">
+   239→            <div className="flex items-center justify-between">
+   240→              <div className="space-y-1">
+   241→                <p className="text-sm text-muted-foreground">Revenue</p>
+   242→                <p className="text-2xl font-bold tracking-tight">{formatCurrency(analyticsData.totalRevenue)}</p>
+   243→              </div>
+   244→              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+   245→                <DollarSign className="h-5 w-5 text-emerald-600" />
+   246→              </div>
+   247→            </div>
+   248→            <div className="mt-2 flex items-center gap-1">
+   249→              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+   250→              <span className="text-sm font-medium text-emerald-600">+{analyticsData.revenueGrowth}%</span>
+   251→              <span className="text-xs text-muted-foreground">growth</span>
+   252→            </div>
+   253→          </CardContent>
+   254→        </Card>
+   255→
+   256→        <Card>
+   257→          <CardContent className="p-4">
+   258→            <div className="flex items-center justify-between">
+   259→              <div className="space-y-1">
+   260→                <p className="text-sm text-muted-foreground">Deliveries</p>
+   261→                <p className="text-2xl font-bold tracking-tight">{analyticsData.totalDeliveries.toLocaleString()}</p>
+   262→              </div>
+   263→              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+   264→                <Package className="h-5 w-5 text-emerald-600" />
+   265→              </div>
+   266→            </div>
+   267→            <div className="mt-2 flex items-center gap-1">
+   268→              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+   269→              <span className="text-sm font-medium text-emerald-600">+{analyticsData.deliveriesGrowth}%</span>
+   270→              <span className="text-xs text-muted-foreground">growth</span>
+   271→            </div>
+   272→          </CardContent>
+   273→        </Card>
+   274→
+   275→        <Card>
+   276→          <CardContent className="p-4">
+   277→            <div className="flex items-center justify-between">
+   278→              <div className="space-y-1">
+   279→                <p className="text-sm text-muted-foreground">Average Rating</p>
+   280→                <p className="text-2xl font-bold tracking-tight">{analyticsData.avgRating}/5.0</p>
+   281→              </div>
+   282→              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+   283→                <Star className="h-5 w-5 text-emerald-600" />
+   284→              </div>
+   285→            </div>
+   286→            <div className="mt-2 flex items-center gap-1">
+   287→              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+   288→              <span className="text-sm font-medium text-emerald-600">+{analyticsData.avgRatingGrowth}</span>
+   289→              <span className="text-xs text-muted-foreground">improvement</span>
+   290→            </div>
+   291→          </CardContent>
+   292→        </Card>
+   293→
+   294→        <Card>
+   295→          <CardContent className="p-4">
+   296→            <div className="flex items-center justify-between">
+   297→              <div className="space-y-1">
+   298→                <p className="text-sm text-muted-foreground">Customer Satisfaction</p>
+   299→                <p className="text-2xl font-bold tracking-tight">72%</p>
+   300→              </div>
+   301→              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+   302→                <Heart className="h-5 w-5 text-emerald-600" />
+   303→              </div>
+   304→            </div>
+   305→            <div className="mt-2 flex items-center gap-1">
+   306→              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+   307→              <span className="text-sm font-medium text-emerald-600">+4.2%</span>
+   308→              <span className="text-xs text-muted-foreground">vs last quarter</span>
+   309→            </div>
+   310→          </CardContent>
+   311→        </Card>
+   312→      </div>
+   313→
+   314→      {/* ── Charts Section ── */}
+   315→      <div className="grid gap-6 lg:grid-cols-2">
+   316→        {/* Revenue Trend */}
+   317→        <Card>
+   318→          <CardHeader className="pb-2">
+   319→            <div className="flex items-center gap-2">
+   320→              <BarChart3 className="h-4 w-4 text-emerald-600" />
+   321→              <CardTitle className="text-base">Revenue Trend</CardTitle>
+   322→            </div>
+   323→            <CardDescription>Monthly revenue over the past 12 months</CardDescription>
+   324→          </CardHeader>
+   325→          <CardContent>
+   326→            <ChartContainer config={revenueAreaConfig} className="h-[260px] w-full">
+   327→              <AreaChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+   328→                <defs>
+   329→                  <linearGradient id="fillRevenueArea" x1="0" y1="0" x2="0" y2="1">
+   330→                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
+   331→                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0.02} />
+   332→                  </linearGradient>
+   333→                </defs>
+   334→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+   335→                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+   336→                <YAxis
+   337→                  tickLine={false}
+   338→                  axisLine={false}
+   339→                  tickMargin={8}
+   340→                  tickFormatter={(v: number) => `M${(v / 1000).toFixed(0)}k`}
+   341→                  className="text-xs"
+   342→                />
+   343→                <ChartTooltip content={<ChartTooltipContent />} />
+   344→                <Area
+   345→                  type="monotone"
+   346→                  dataKey="revenue"
+   347→                  stroke="#16a34a"
+   348→                  strokeWidth={2}
+   349→                  fill="url(#fillRevenueArea)"
+   350→                />
+   351→              </AreaChart>
+   352→            </ChartContainer>
+   353→          </CardContent>
+   354→        </Card>
+   355→
+   356→        {/* Delivery Volume */}
+   357→        <Card>
+   358→          <CardHeader className="pb-2">
+   359→            <div className="flex items-center gap-2">
+   360→              <Package className="h-4 w-4 text-teal-500" />
+   361→              <CardTitle className="text-base">Delivery Volume</CardTitle>
+   362→            </div>
+   363→            <CardDescription>Number of deliveries per month</CardDescription>
+   364→          </CardHeader>
+   365→          <CardContent>
+   366→            <ChartContainer config={deliveryVolumeConfig} className="h-[260px] w-full">
+   367→              <BarChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+   368→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+   369→                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+   370→                <YAxis tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+   371→                <ChartTooltip content={<ChartTooltipContent />} />
+   372→                <Bar dataKey="deliveries" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={24} />
+   373→              </BarChart>
+   374→            </ChartContainer>
+   375→          </CardContent>
+   376→        </Card>
+   377→
+   378→        {/* Delivery Success Rate */}
+   379→        <Card>
+   380→          <CardHeader className="pb-2">
+   381→            <div className="flex items-center gap-2">
+   382→              <Target className="h-4 w-4 text-emerald-600" />
+   383→              <CardTitle className="text-base">Delivery Success Rate</CardTitle>
+   384→            </div>
+   385→            <CardDescription>On-time delivery percentage trend</CardDescription>
+   386→          </CardHeader>
+   387→          <CardContent>
+   388→            <ChartContainer config={successRateConfig} className="h-[260px] w-full">
+   389→              <LineChart data={onTimeTrend} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+   390→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+   391→                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+   392→                <YAxis
+   393→                  domain={[85, 100]}
+   394→                  tickLine={false}
+   395→                  axisLine={false}
+   396→                  tickMargin={8}
+   397→                  tickFormatter={(v: number) => `${v}%`}
+   398→                  className="text-xs"
+   399→                />
+   400→                <ChartTooltip content={<ChartTooltipContent />} />
+   401→                <Line
+   402→                  type="monotone"
+   403→                  dataKey="rate"
+   404→                  stroke="#22c55e"
+   405→                  strokeWidth={2.5}
+   406→                  dot={{ fill: '#22c55e', r: 4 }}
+   407→                  activeDot={{ r: 6 }}
+   408→                />
+   409→              </LineChart>
+   410→            </ChartContainer>
+   411→          </CardContent>
+   412→        </Card>
+   413→
+   414→        {/* Revenue by Route */}
+   415→        <Card>
+   416→          <CardHeader className="pb-2">
+   417→            <div className="flex items-center gap-2">
+   418→              <DollarSign className="h-4 w-4 text-emerald-600" />
+   419→              <CardTitle className="text-base">Revenue by Route</CardTitle>
+   420→            </div>
+   421→            <CardDescription>Top performing delivery routes</CardDescription>
+   422→          </CardHeader>
+   423→          <CardContent>
+   424→            <ChartContainer config={revenueByRouteConfig} className="h-[260px] w-full">
+   425→              <BarChart
+   426→                data={routeChartData}
+   427→                layout="vertical"
+   428→                margin={{ top: 5, right: 30, left: 10, bottom: 0 }}
+   429→              >
+   430→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+   431→                <XAxis type="number" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v: number) => `M${(v / 1000).toFixed(0)}k`} className="text-xs" />
+   432→                <YAxis
+   433→                  type="category"
+   434→                  dataKey="route"
+   435→                  tickLine={false}
+   436→                  axisLine={false}
+   437→                  tickMargin={8}
+   438→                  width={130}
+   439→                  className="text-xs"
+   440→                />
+   441→                <ChartTooltip content={<ChartTooltipContent />} />
+   442→                <Bar dataKey="revenue" fill="#16a34a" radius={[0, 4, 4, 0]} barSize={16} />
+   443→              </BarChart>
+   444→            </ChartContainer>
+   445→          </CardContent>
+   446→        </Card>
+   447→      </div>
+   448→
+   449→      {/* ── Driver Performance Table ── */}
+   450→      <Card>
+   451→        <CardHeader className="pb-2">
+   452→          <div className="flex items-center gap-2">
+   453→            <Users className="h-4 w-4 text-emerald-600" />
+   454→            <CardTitle className="text-base">Driver Performance</CardTitle>
+   455→          </div>
+   456→          <CardDescription>Top 10 drivers by performance metrics</CardDescription>
+   457→        </CardHeader>
+   458→        <CardContent>
+   459→          <div className="max-h-96 overflow-y-auto">
+   460→            <Table>
+   461→              <TableHeader>
+   462→                <TableRow>
+   463→                  <TableHead className="text-xs cursor-pointer select-none" onClick={() => toggleSort('name')}>
+   464→                    Name <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
+   465→                  </TableHead>
+   466→                  <TableHead className="text-xs cursor-pointer select-none text-right" onClick={() => toggleSort('deliveries')}>
+   467→                    Deliveries <SortIcon col="deliveries" sortKey={sortKey} sortDir={sortDir} />
+   468→                  </TableHead>
+   469→                  <TableHead className="text-xs cursor-pointer select-none text-center" onClick={() => toggleSort('rating')}>
+   470→                    Rating <SortIcon col="rating" sortKey={sortKey} sortDir={sortDir} />
+   471→                  </TableHead>
+   472→                  <TableHead className="text-xs cursor-pointer select-none text-right" onClick={() => toggleSort('onTime')}>
+   473→                    On-Time % <SortIcon col="onTime" sortKey={sortKey} sortDir={sortDir} />
+   474→                  </TableHead>
+   475→                </TableRow>
+   476→              </TableHeader>
+   477→              <TableBody>
+   478→                {sortedDrivers.map((driver, idx) => {
+   479→                  const isTop = idx < 3 && sortKey === 'deliveries' && sortDir === 'desc';
+   480→                  return (
+   481→                    <TableRow key={driver.name} className={isTop ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''}>
+   482→                      <TableCell className="text-sm font-medium">
+   483→                        <div className="flex items-center gap-2">
+   484→                          {isTop && (
+   485→                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
+   486→                              {idx + 1}
+   487→                            </span>
+   488→                          )}
+   489→                          {driver.name}
+   490→                        </div>
+   491→                      </TableCell>
+   492→                      <TableCell className="text-sm text-right font-mono">{driver.deliveries}</TableCell>
+   493→                      <TableCell className="text-center">
+   494→                        <div className="inline-flex items-center gap-1">
+   495→                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+   496→                          <span className="text-sm font-medium">{driver.rating}</span>
+   497→                        </div>
+   498→                      </TableCell>
+   499→                      <TableCell className="text-sm text-right">
+   500→                        <span
+   501→                          className={`font-mono font-medium ${
+   502→                            driver.onTime >= 95
+   503→                              ? 'text-emerald-600'
+   504→                              : driver.onTime >= 90
+   505→                              ? 'text-amber-600'
+   506→                              : 'text-red-500'
+   507→                          }`}
+   508→                        >
+   509→                          {driver.onTime}%
+   510→                        </span>
+   511→                      </TableCell>
+   512→                    </TableRow>
+   513→                  );
+   514→                })}
+   515→              </TableBody>
+   516→            </Table>
+   517→          </div>
+   518→        </CardContent>
+   519→      </Card>
+   520→
+   521→      {/* ── Fleet Performance + Customer Insights ── */}
+   522→      <div className="grid gap-6 lg:grid-cols-2">
+   523→        {/* Fleet Performance */}
+   524→        <Card>
+   525→          <CardHeader className="pb-2">
+   526→            <div className="flex items-center gap-2">
+   527→              <Truck className="h-4 w-4 text-emerald-600" />
+   528→              <CardTitle className="text-base">Fleet Performance</CardTitle>
+   529→            </div>
+   530→            <CardDescription>Vehicle utilization and maintenance</CardDescription>
+   531→          </CardHeader>
+   532→          <CardContent className="space-y-6">
+   533→            {/* Utilization bars */}
+   534→            <div className="space-y-4">
+   535→              <h4 className="text-sm font-medium text-muted-foreground">Vehicle Utilization by Type</h4>
+   536→              {analyticsData.fleetUtilization.map((fleet) => {
+   537→                const pct = Math.round((fleet.inUse / fleet.total) * 100);
+   538→                return (
+   539→                  <div key={fleet.type} className="space-y-1.5">
+   540→                    <div className="flex items-center justify-between text-sm">
+   541→                      <span className="font-medium">{fleet.type}</span>
+   542→                      <span className="text-muted-foreground">
+   543→                        {fleet.inUse}/{fleet.total} ({pct}%)
+   544→                      </span>
+   545→                    </div>
+   546→                    <Progress value={pct} className="h-2.5" />
+   547→                    <div className="flex gap-4 text-[11px] text-muted-foreground">
+   548→                      <span>Available: {fleet.available}</span>
+   549→                      <span>Maintenance: {fleet.maintenance}</span>
+   550→                    </div>
+   551→                  </div>
+   552→                );
+   553→              })}
+   554→            </div>
+   555→
+   556→            {/* Maintenance Schedule */}
+   557→            <div className="space-y-3">
+   558→              <h4 className="text-sm font-medium text-muted-foreground">Maintenance Schedule</h4>
+   559→              <div className="max-h-48 overflow-y-auto space-y-2">
+   560→                {maintenanceSummary.map((item, idx) => (
+   561→                  <div
+   562→                    key={idx}
+   563→                    className="flex items-center justify-between rounded-lg border p-2.5 text-sm"
+   564→                  >
+   565→                    <div className="flex items-center gap-2 min-w-0">
+   566→                      <Wrench className="h-4 w-4 shrink-0 text-muted-foreground" />
+   567→                      <span className="truncate">{item.vehicle}</span>
+   568→                    </div>
+   569→                    <Badge
+   570→                      variant="secondary"
+   571→                      className={`shrink-0 ml-2 text-[10px] ${
+   572→                        item.status === 'overdue'
+   573→                          ? 'bg-red-50 text-red-700'
+   574→                          : item.status === 'upcoming'
+   575→                          ? 'bg-amber-50 text-amber-700'
+   576→                          : 'bg-slate-100 text-slate-600'
+   577→                      }`}
+   578→                    >
+   579→                      {item.dueDate}
+   580→                    </Badge>
+   581→                  </div>
+   582→                ))}
+   583→              </div>
+   584→            </div>
+   585→          </CardContent>
+   586→        </Card>
+   587→
+   588→        {/* Customer Insights */}
+   589→        <Card>
+   590→          <CardHeader className="pb-2">
+   591→            <div className="flex items-center gap-2">
+   592→              <Heart className="h-4 w-4 text-emerald-600" />
+   593→              <CardTitle className="text-base">Customer Insights</CardTitle>
+   594→            </div>
+   595→            <CardDescription>Top customers and satisfaction trends</CardDescription>
+   596→          </CardHeader>
+   597→          <CardContent className="space-y-6">
+   598→            {/* Satisfaction Pie */}
+   599→            <div>
+   600→              <h4 className="mb-3 text-sm font-medium text-muted-foreground">Customer Satisfaction</h4>
+   601→              <ChartContainer config={satisfactionConfig} className="mx-auto h-[160px] w-full max-w-[260px]">
+   602→                <PieChart>
+   603→                  <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+   604→                  <Pie
+   605→                    data={satisfactionData}
+   606→                    cx="50%"
+   607→                    cy="50%"
+   608→                    innerRadius={40}
+   609→                    outerRadius={65}
+   610→                    dataKey="value"
+   611→                    nameKey="name"
+   612→                    strokeWidth={2}
+   613→                    stroke="hsl(var(--background))"
+   614→                  >
+   615→                    {satisfactionData.map((_, idx) => (
+   616→                      <Cell key={`sat-${idx}`} fill={SAT_COLORS[idx]} />
+   617→                    ))}
+   618→                  </Pie>
+   619→                  <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+   620→                </PieChart>
+   621→              </ChartContainer>
+   622→            </div>
+   623→
+   624→            {/* Top Customers */}
+   625→            <div>
+   626→              <h4 className="mb-3 text-sm font-medium text-muted-foreground">Top Customers by Spend</h4>
+   627→              <div className="max-h-48 overflow-y-auto space-y-2.5">
+   628→                {topCustomers.map((customer, idx) => (
+   629→                  <div key={customer.id} className="flex items-center justify-between text-sm">
+   630→                    <div className="flex items-center gap-2 min-w-0">
+   631→                      {idx < 3 && (
+   632→                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
+   633→                          {idx + 1}
+   634→                        </span>
+   635→                      )}
+   636→                      <div className="min-w-0">
+   637→                        <p className="font-medium truncate">{customer.name}</p>
+   638→                        <p className="text-[11px] text-muted-foreground">{customer.totalShipments} shipments</p>
+   639→                      </div>
+   640→                    </div>
+   641→                    <span className="shrink-0 font-mono font-medium text-emerald-600">
+   642→                      {formatCurrency(customer.totalSpent)}
+   643→                    </span>
+   644→                  </div>
+   645→                ))}
+   646→              </div>
+   647→            </div>
+   648→          </CardContent>
+   649→        </Card>
+   650→      </div>
+   651→    </div>
+   652→  );
+   653→}
