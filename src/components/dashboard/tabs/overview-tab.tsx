@@ -830,6 +830,18 @@ function DriverOverview() {
 }
 
 // ============ Company (Staff) Overview ============
+
+const pipelineData = [
+  { status: 'Pending', count: 45, color: 'bg-slate-400', icon: Clock },
+  { status: 'Quoted', count: 28, color: 'bg-blue-400', icon: FileText },
+  { status: 'Collected', count: 32, color: 'bg-amber-400', icon: Package },
+  { status: 'In Transit', count: 67, color: 'bg-primary', icon: Truck },
+  { status: 'At Border', count: 18, color: 'bg-violet-400', icon: Shield },
+  { status: 'Delivered', count: 310, color: 'bg-emerald-500', icon: CheckCircle2 },
+];
+
+const pipelineTotal = pipelineData.reduce((sum, item) => sum + item.count, 0);
+
 function CompanyOverview() {
   const { selectDelivery, setDashboardTab } = useNavStore();
 
@@ -1145,6 +1157,41 @@ function CompanyOverview() {
                 {!notif.isRead && (
                   <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
                 )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delivery Pipeline */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-base">Delivery Pipeline</CardTitle>
+          </div>
+          <CardDescription>Shipment status distribution across all stages</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {pipelineData.map((item) => (
+              <div
+                key={item.status}
+                className="flex-shrink-0 w-[140px] rounded-lg border p-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${item.color} text-white`}>
+                    <item.icon className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground leading-tight">{item.status}</span>
+                </div>
+                <p className="text-2xl font-bold">{item.count}</p>
+                <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${item.color} transition-all`}
+                    style={{ width: `${item.count / pipelineTotal * 100}%` }}
+                  />
+                </div>
               </div>
             ))}
           </div>

@@ -265,6 +265,16 @@
   50% { box-shadow: 0 0 0 6px oklch(0.55 0.15 155 / 0); }
 }
 
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes logo-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-float-delayed { animation: float-delayed 7s ease-in-out infinite 1s; }
 .animate-float-slow { animation: float-slow 8s ease-in-out infinite 2s; }

@@ -1,0 +1,1287 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, type FormEvent } from 'react';
+     4→import { useNavStore } from '@/lib/store';
+     5→import { Button } from '@/components/ui/button';
+     6→import {
+     7→  Card,
+     8→  CardContent,
+     9→  CardDescription,
+    10→  CardHeader,
+    11→  CardTitle,
+    12→} from '@/components/ui/card';
+    13→import { Badge } from '@/components/ui/badge';
+    14→import {
+    15→  Accordion,
+    16→  AccordionContent,
+    17→  AccordionItem,
+    18→  AccordionTrigger,
+    19→} from '@/components/ui/accordion';
+    20→import { Input } from '@/components/ui/input';
+    21→import { Textarea } from '@/components/ui/textarea';
+    22→import {
+    23→  Sheet,
+    24→  SheetContent,
+    25→  SheetTrigger,
+    26→  SheetTitle,
+    27→} from '@/components/ui/sheet';
+    28→import { motion } from 'framer-motion';
+    29→import {
+    30→  Truck,
+    31→  Menu,
+    32→  ArrowRight,
+    33→  Play,
+    34→  Workflow,
+    35→  Building2,
+    36→  MapPin,
+    37→  Brain,
+    38→  Activity,
+    39→  Car,
+    40→  ShoppingBag,
+    41→  BarChart3,
+    42→  MessageSquare,
+    43→  FileText,
+    44→  Zap,
+    45→  Eye,
+    46→  TrendingUp,
+    47→  Package,
+    48→  Users,
+    49→  Warehouse,
+    50→  Search,
+    51→  ClipboardList,
+    52→  Quote,
+    53→  Route,
+    54→  CheckCircle2,
+    55→  Phone,
+    56→  Mail,
+    57→  MapPinned,
+    58→  Send,
+    59→  Check,
+    60→  Star,
+    61→  ChevronRight,
+    62→  X,
+    63→  ArrowUp,
+    64→} from 'lucide-react';
+    65→
+    66→// ─────────────────────────────────────────────────────────────────────────────
+    67→// NAV LINKS
+    68→// ─────────────────────────────────────────────────────────────────────────────
+    69→const NAV_LINKS = [
+    70→  { label: 'Features', href: '#features' },
+    71→  { label: 'How It Works', href: '#how-it-works' },
+    72→  { label: 'Pricing', href: '#pricing' },
+    73→  { label: 'FAQ', href: '#faq' },
+    74→] as const;
+    75→
+    76→// ─────────────────────────────────────────────────────────────────────────────
+    77→// SMOOTH SCROLL HELPER
+    78→// ─────────────────────────────────────────────────────────────────────────────
+    79→function scrollTo(href: string) {
+    80→  const el = document.querySelector(href);
+    81→  if (el) {
+    82→    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    83→  }
+    84→}
+    85→
+    86→// ─────────────────────────────────────────────────────────────────────────────
+    87→// SECTION HEADING COMPONENT
+    88→// ─────────────────────────────────────────────────────────────────────────────
+    89→function SectionHeading({
+    90→  badge,
+    91→  title,
+    92→  description,
+    93→}: {
+    94→  badge?: string;
+    95→  title: string;
+    96→  description: string;
+    97→}) {
+    98→  return (
+    99→    <div className="mx-auto max-w-2xl text-center">
+   100→      {badge && (
+   101→        <Badge
+   102→          variant="secondary"
+   103→          className="mb-4 rounded-full border border-primary/10 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-primary"
+   104→        >
+   105→          {badge}
+   106→        </Badge>
+   107→      )}
+   108→      <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+   109→        {title}
+   110→      </h2>
+   111→      <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+   112→        {description}
+   113→      </p>
+   114→    </div>
+   115→  );
+   116→}
+   117→
+   118→// ─────────────────────────────────────────────────────────────────────────────
+   119→// FADE-IN ON SCROLL WRAPPER
+   120→// ─────────────────────────────────────────────────────────────────────────────
+   121→function FadeIn({
+   122→  children,
+   123→  className,
+   124→  delay = 0,
+   125→}: {
+   126→  children: React.ReactNode;
+   127→  className?: string;
+   128→  delay?: number;
+   129→}) {
+   130→  return (
+   131→    <motion.div
+   132→      initial={{ opacity: 0, y: 24 }}
+   133→      whileInView={{ opacity: 1, y: 0 }}
+   134→      viewport={{ once: true, margin: '-60px' }}
+   135→      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
+   136→      className={className}
+   137→    >
+   138→      {children}
+   139→    </motion.div>
+   140→  );
+   141→}
+   142→
+   143→// ─────────────────────────────────────────────────────────────────────────────
+   144→// GRADIENT SECTION DIVIDER
+   145→// ─────────────────────────────────────────────────────────────────────────────
+   146→function GradientDivider() {
+   147→  return (
+   148→    <div className="flex items-center justify-center py-0" aria-hidden="true">
+   149→      <div className="h-px w-full max-w-xs bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+   150→    </div>
+   151→  );
+   152→}
+   153→
+   154→// ═══════════════════════════════════════════════════════════════════════════════
+   155→// MARKETING WEBSITE
+   156→// ═══════════════════════════════════════════════════════════════════════════════
+   157→export function MarketingWebsite() {
+   158→  const { setView } = useNavStore();
+   159→  const [mobileOpen, setMobileOpen] = useState(false);
+   160→  const [contactName, setContactName] = useState('');
+   161→  const [contactEmail, setContactEmail] = useState('');
+   162→  const [contactMessage, setContactMessage] = useState('');
+   163→  const [contactSubmitted, setContactSubmitted] = useState(false);
+   164→  const [showBackToTop, setShowBackToTop] = useState(false);
+   165→  const [faqOpenIndex, setFaqOpenIndex] = useState<string | undefined>(undefined);
+   166→
+   167→  useEffect(() => {
+   168→    const onScroll = () => {
+   169→      setShowBackToTop(window.scrollY > 600);
+   170→    };
+   171→    window.addEventListener('scroll', onScroll, { passive: true });
+   172→    return () => window.removeEventListener('scroll', onScroll);
+   173→  }, []);
+   174→
+   175→  const handleContactSubmit = (e: FormEvent) => {
+   176→    e.preventDefault();
+   177→    setContactSubmitted(true);
+   178→    setContactName('');
+   179→    setContactEmail('');
+   180→    setContactMessage('');
+   181→    setTimeout(() => setContactSubmitted(false), 4000);
+   182→  };
+   183→
+   184→  const handleNavClick = (href: string) => {
+   185→    setMobileOpen(false);
+   186→    scrollTo(href);
+   187→  };
+   188→
+   189→  return (
+   190→    <div className="flex min-h-screen flex-col">
+   191→      {/* ─────────── 1. NAVIGATION BAR ─────────── */}
+   192→      <header className="glass sticky top-0 z-50 w-full border-b border-border/50">
+   193→        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+   194→          {/* Logo */}
+   195→          <button
+   196→            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+   197→            className="flex items-center gap-2 focus:outline-none"
+   198→          >
+   199→            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+   200→              <Truck className="h-4.5 w-4.5 text-primary-foreground" />
+   201→            </div>
+   202→            <span className="text-lg font-bold tracking-tight text-foreground">
+   203→              Swift<span className="gradient-text">Freight</span>
+   204→            </span>
+   205→          </button>
+   206→
+   207→          {/* Desktop Nav */}
+   208→          <nav className="hidden items-center gap-1 md:flex">
+   209→            {NAV_LINKS.map((link) => (
+   210→              <button
+   211→                key={link.href}
+   212→                onClick={() => scrollTo(link.href)}
+   213→                className="rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+   214→              >
+   215→                {link.label}
+   216→              </button>
+   217→            ))}
+   218→          </nav>
+   219→
+   220→          {/* Desktop Actions */}
+   221→          <div className="hidden items-center gap-3 md:flex">
+   222→            <Button
+   223→              variant="ghost"
+   224→              className="h-9 text-sm font-medium"
+   225→              onClick={() => setView('login')}
+   226→            >
+   227→              Sign In
+   228→            </Button>
+   229→            <Button
+   230→              className="h-9 bg-primary text-sm font-medium text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 transition-shadow duration-300"
+   231→              onClick={() => setView('register')}
+   232→            >
+   233→              Get Started
+   234→              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+   235→            </Button>
+   236→          </div>
+   237→
+   238→          {/* Mobile Menu */}
+   239→          <div className="md:hidden">
+   240→            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+   241→              <SheetTrigger asChild>
+   242→                <Button variant="ghost" size="icon" className="h-9 w-9">
+   243→                  <Menu className="h-5 w-5" />
+   244→                  <span className="sr-only">Open menu</span>
+   245→                </Button>
+   246→              </SheetTrigger>
+   247→              <SheetContent side="right" className="w-72 pt-12">
+   248→                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+   249→                <nav className="flex flex-col gap-1 px-4">
+   250→                  {NAV_LINKS.map((link) => (
+   251→                    <button
+   252→                      key={link.href}
+   253→                      onClick={() => handleNavClick(link.href)}
+   254→                      className="rounded-md px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+   255→                    >
+   256→                      {link.label}
+   257→                    </button>
+   258→                  ))}
+   259→                  <div className="my-4 h-px bg-border" />
+   260→                  <Button
+   261→                    variant="ghost"
+   262→                    className="justify-start px-3 text-sm font-medium"
+   263→                    onClick={() => {
+   264→                      setMobileOpen(false);
+   265→                      setView('login');
+   266→                    }}
+   267→                  >
+   268→                    Sign In
+   269→                  </Button>
+   270→                  <Button
+   271→                    className="mt-1 bg-primary text-primary-foreground hover:bg-primary/90"
+   272→                    onClick={() => {
+   273→                      setMobileOpen(false);
+   274→                      setView('register');
+   275→                    }}
+   276→                  >
+   277→                    Get Started
+   278→                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+   279→                  </Button>
+   280→                </nav>
+   281→              </SheetContent>
+   282→            </Sheet>
+   283→          </div>
+   284→        </div>
+   285→      </header>
+   286→
+   287→      <main className="flex-1">
+   288→        {/* ─────────── 2. HERO SECTION ─────────── */}
+   289→        <section className="hero-fade relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-32 lg:pb-36">
+   290→          {/* Animated gradient mesh / blob background */}
+   291→          <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+   292→            <div className="animate-blob absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary/8 to-emerald/5 blur-3xl" />
+   293→            <div className="animate-blob-delayed absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-emerald/6 to-teal/4 blur-3xl" />
+   294→            <div className="animate-blob-slow absolute top-1/2 left-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-teal/5 to-primary/5 blur-3xl" />
+   295→            {/* Grid pattern */}
+   296→            <svg
+   297→              className="absolute inset-0 h-full w-full opacity-[0.03]"
+   298→              xmlns="http://www.w3.org/2000/svg"
+   299→            >
+   300→              <defs>
+   301→                <pattern id="hero-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+   302→                  <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1" />
+   303→                </pattern>
+   304→              </defs>
+   305→              <rect width="100%" height="100%" fill="url(#hero-grid)" />
+   306→            </svg>
+   307→            {/* Diagonal lines */}
+   308→            <div className="absolute top-0 right-0 h-full w-1/2">
+   309→              <div className="absolute top-20 right-20 h-px w-60 rotate-45 bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+   310→              <div className="absolute top-40 right-10 h-px w-48 rotate-45 bg-gradient-to-r from-transparent via-emerald/10 to-transparent" />
+   311→              <div className="absolute top-60 right-32 h-px w-72 rotate-45 bg-gradient-to-r from-transparent via-teal/8 to-transparent" />
+   312→            </div>
+   313→            {/* Floating decorative elements with animation */}
+   314→            <div className="animate-float absolute top-32 left-[15%] h-2.5 w-2.5 rotate-12 rounded-sm bg-primary/15" />
+   315→            <div className="animate-float-delayed absolute top-48 right-[20%] h-3 w-3 rotate-45 rounded-full bg-emerald/12" />
+   316→            <div className="animate-float-slow absolute bottom-40 left-[25%] h-2 w-2 rounded-full bg-teal/15" />
+   317→            <div className="animate-float absolute bottom-60 right-[30%] h-4 w-1 rotate-12 rounded-full bg-primary/10" />
+   318→            <div className="animate-float-delayed absolute top-64 left-[8%] h-1.5 w-8 rounded-full bg-emerald/10" />
+   319→            <div className="animate-float-slow absolute top-28 right-[12%] h-5 w-5 rounded-sm bg-primary/5 rotate-45" />
+   320→            <div className="animate-float absolute bottom-32 left-[40%] h-2 w-2 rounded-full bg-teal/10" />
+   321→            <div className="animate-float-delayed absolute top-52 right-[5%] h-3 w-3 rounded-full bg-primary/8" />
+   322→          </div>
+   323→
+   324→          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   325→            <div className="mx-auto max-w-4xl text-center">
+   326→              <Badge
+   327→                variant="secondary"
+   328→                className="mb-6 rounded-full border border-primary/10 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-primary"
+   329→              >
+   330→                Built for Lesotho &middot; Ready for Southern Africa
+   331→              </Badge>
+   332→              <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+   333→                {'The Intelligent '}
+   334→                <span className="gradient-text">{'Logistics Operating System'}</span>
+   335→                {' for Africa'}
+   336→              </h1>
+   337→              <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl">
+   338→                SwiftFreight connects courier companies, drivers, warehouses, and
+   339→                customers in one powerful ecosystem. Built for Lesotho, ready for
+   340→                Southern Africa.
+   341→              </p>
+   342→              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+   343→                <Button
+   344→                  size="lg"
+   345→                  className="h-12 w-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 sm:w-auto"
+   346→                  onClick={() => setView('register')}
+   347→                >
+   348→                  Start Free Trial
+   349→                  <ArrowRight className="ml-2 h-4 w-4" />
+   350→                </Button>
+   351→                <Button
+   352→                  size="lg"
+   353→                  variant="outline"
+   354→                  className="h-12 w-full border-border/60 px-8 text-base font-semibold transition-all duration-300 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 sm:w-auto"
+   355→                >
+   356→                  <Play className="mr-2 h-4 w-4" />
+   357→                  Watch Demo
+   358→                </Button>
+   359→              </div>
+   360→            </div>
+   361→
+   362→            {/* Stats bar with glass effect */}
+   363→            <div className="mx-auto mt-16 sm:mt-20">
+   364→              <div className="glass mx-auto grid max-w-3xl grid-cols-2 gap-0 overflow-hidden rounded-2xl shadow-lg shadow-primary/5 sm:grid-cols-4">
+   365→                {[
+   366→                  { value: '500+', label: 'Deliveries' },
+   367→                  { value: '3', label: 'Companies' },
+   368→                  { value: '60', label: 'Drivers' },
+   369→                  { value: '98%', label: 'On-Time' },
+   370→                ].map((stat, index) => (
+   371→                  <div
+   372→                    key={stat.label}
+   373→                    className={`relative flex flex-col items-center px-4 py-6 sm:py-8 ${
+   374→                      index < 3 ? 'border-border/30' : ''
+   375→                    } ${index % 2 === 0 ? 'sm:border-r sm:border-border/30' : ''} ${
+   376→                      index < 2 ? 'border-b sm:border-b-0' : ''
+   377→                    }`}
+   378→                  >
+   379→                    <div className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+   380→                      {stat.value}
+   381→                    </div>
+   382→                    <div className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+   383→                      {stat.label}
+   384→                    </div>
+   385→                  </div>
+   386→                ))}
+   387→              </div>
+   388→            </div>
+   389→          </div>
+   390→        </section>
+   391→
+   392→        <GradientDivider />
+   393→
+   394→        {/* ─────────── 3. PRODUCT OVERVIEW ─────────── */}
+   395→        <FadeIn>
+   396→          <section className="bg-muted/30 py-20 sm:py-24">
+   397→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   398→              <SectionHeading
+   399→                badge="Product Overview"
+   400→                title="One Platform. Every Logistics Need."
+   401→                description="From the first delivery request to proof of delivery, SwiftFreight handles your entire logistics operation in one unified system."
+   402→              />
+   403→              <div className="mt-14 grid gap-6 sm:mt-16 md:grid-cols-3">
+   404→                {[
+   405→                  {
+   406→                    icon: Workflow,
+   407→                    title: 'Complete Workflow',
+   408→                    description:
+   409→                      'From request to delivery and proof of delivery — manage every step of the logistics chain without switching tools.',
+   410→                  },
+   411→                  {
+   412→                    icon: Building2,
+   413→                    title: 'Multi-Tenant SaaS',
+   414→                    description:
+   415→                      'Each company gets its own isolated workspace with custom branding, users, vehicles, and data — all on one platform.',
+   416→                  },
+   417→                  {
+   418→                    icon: MapPin,
+   419→                    title: 'Real-Time Tracking',
+   420→                    description:
+   421→                      'Track every parcel with live status updates. Customers and operators see the same real-time view of all shipments.',
+   422→                  },
+   423→                ].map((item) => (
+   424→                  <Card
+   425→                    key={item.title}
+   426→                    className="group relative overflow-hidden border-border/50 bg-background transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
+   427→                  >
+   428→                    {/* Top gradient line on hover */}
+   429→                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/0 to-transparent transition-all duration-300 group-hover:via-primary/40" />
+   430→                    <CardHeader className="pb-4">
+   431→                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-emerald/10 text-primary transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-emerald group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20">
+   432→                        <item.icon className="h-5 w-5" />
+   433→                      </div>
+   434→                      <CardTitle className="mt-2 text-lg font-semibold">
+   435→                        {item.title}
+   436→                      </CardTitle>
+   437→                    </CardHeader>
+   438→                    <CardContent>
+   439→                      <CardDescription className="text-sm leading-relaxed">
+   440→                        {item.description}
+   441→                      </CardDescription>
+   442→                    </CardContent>
+   443→                  </Card>
+   444→                ))}
+   445→              </div>
+   446→            </div>
+   447→          </section>
+   448→        </FadeIn>
+   449→
+   450→        {/* ─────────── 4. FEATURES SECTION ─────────── */}
+   451→        <FadeIn delay={0.1}>
+   452→          <section id="features" className="py-20 sm:py-24">
+   453→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   454→              <SectionHeading
+   455→                badge="Features"
+   456→                title="Everything you need to run logistics"
+   457→                description="Powerful tools designed for the realities of logistics in Lesotho and Southern Africa."
+   458→              />
+   459→              <div className="mt-14 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+   460→                {[
+   461→                  {
+   462→                    icon: Brain,
+   463→                    title: 'Smart Dispatch',
+   464→                    description:
+   465→                      'AI-powered driver and vehicle assignment optimizes routes and reduces empty miles for every delivery.',
+   466→                  },
+   467→                  {
+   468→                    icon: Activity,
+   469→                    title: 'Live Tracking',
+   470→                    description:
+   471→                      'Real-time parcel tracking with full status timeline. Know exactly where every shipment is at all times.',
+   472→                  },
+   473→                  {
+   474→                    icon: Car,
+   475→                    title: 'Fleet Management',
+   476→                    description:
+   477→                      'Vehicle maintenance schedules, insurance tracking, and utilization analytics to maximize fleet performance.',
+   478→                  },
+   479→                  {
+   480→                    icon: ShoppingBag,
+   481→                    title: 'Sourcing Services',
+   482→                    description:
+   483→                      'Source products from South Africa with dedicated agent assistance. Cross-border logistics made simple.',
+   484→                  },
+   485→                  {
+   486→                    icon: BarChart3,
+   487→                    title: 'Analytics Dashboard',
+   488→                    description:
+   489→                      'Revenue, performance, and growth insights at a glance. Make data-driven decisions with powerful reporting.',
+   490→                  },
+   491→                  {
+   492→                    icon: MessageSquare,
+   493→                    title: 'Communication Hub',
+   494→                    description:
+   495→                      'Integrated messaging linked directly to deliveries. All conversations organized and traceable per shipment.',
+   496→                  },
+   497→                ].map((feature) => (
+   498→                  <Card
+   499→                    key={feature.title}
+   500→                    className="group relative overflow-hidden border-border/50 bg-background transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
+   501→                  >
+   502→                    {/* Top gradient line on hover */}
+   503→                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/0 to-transparent transition-all duration-300 group-hover:via-primary/40" />
+   504→                    <CardHeader className="pb-3">
+   505→                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-teal/10 text-primary transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-teal group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20">
+   506→                        <feature.icon className="h-5 w-5" />
+   507→                      </div>
+   508→                      <CardTitle className="mt-3 text-base font-semibold">
+   509→                        {feature.title}
+   510→                      </CardTitle>
+   511→                    </CardHeader>
+   512→                    <CardContent>
+   513→                      <CardDescription className="text-sm leading-relaxed">
+   514→                        {feature.description}
+   515→                      </CardDescription>
+   516→                    </CardContent>
+   517→                  </Card>
+   518→                ))}
+   519→              </div>
+   520→            </div>
+   521→          </section>
+   522→        </FadeIn>
+   523→
+   524→        <GradientDivider />
+   525→
+   526→        {/* ─────────── 5. HOW IT WORKS ─────────── */}
+   527→        <FadeIn delay={0.05}>
+   528→          <section id="how-it-works" className="bg-gradient-to-b from-muted/20 to-muted/40 py-20 sm:py-24">
+   529→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   530→              <SectionHeading
+   531→                badge="How It Works"
+   532→                title="From request to delivery in four steps"
+   533→                description="SwiftFreight streamlines the entire logistics process into a simple, intuitive workflow."
+   534→              />
+   535→              <div className="mt-14 grid gap-8 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
+   536→                {[
+   537→                  {
+   538→                    step: '01',
+   539→                    icon: FileText,
+   540→                    title: 'Submit Request',
+   541→                    description:
+   542→                      'Customer submits a delivery or sourcing request through the platform with all required details.',
+   543→                  },
+   544→                  {
+   545→                    step: '02',
+   546→                    icon: Quote,
+   547→                    title: 'Get Quote',
+   548→                    description:
+   549→                      'Receive competitive quotations instantly. Compare pricing, timelines, and service levels at a glance.',
+   550→                  },
+   551→                  {
+   552→                    step: '03',
+   553→                    icon: Route,
+   554→                    title: 'Track & Monitor',
+   555→                    description:
+   556→                      'Real-time tracking from pickup to delivery. Get status updates at every checkpoint along the route.',
+   557→                  },
+   558→                  {
+   559→                    step: '04',
+   560→                    icon: CheckCircle2,
+   561→                    title: 'Delivered',
+   562→                    description:
+   563→                      'Proof of delivery with photos and digital signatures. Complete audit trail for every shipment.',
+   564→                  },
+   565→                ].map((item, index) => (
+   566→                  <div key={item.step} className="relative">
+   567→                    {/* Connector line with arrow */}
+   568→                    {index < 3 && (
+   569→                      <div className="absolute top-10 left-[calc(50%+32px)] hidden h-px w-[calc(100%-64px)] lg:block" aria-hidden="true">
+   570→                        <div className="h-full w-full bg-gradient-to-r from-primary/30 via-primary/15 to-primary/5" />
+   571→                        <div className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-primary/30" />
+   572→                      </div>
+   573→                    )}
+   574→                    <div className="text-center">
+   575→                      <div className="mx-auto relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-emerald/8 to-teal/5 shadow-md shadow-primary/5 ring-1 ring-primary/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:ring-primary/20">
+   576→                        <item.icon className="h-6 w-6 text-primary" />
+   577→                        {/* Step number badge */}
+   578→                        <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-emerald text-[10px] font-bold text-primary-foreground shadow-sm">
+   579→                          {item.step}
+   580→                        </div>
+   581→                      </div>
+   582→                      <h3 className="mt-4 text-base font-semibold text-foreground">
+   583→                        {item.title}
+   584→                      </h3>
+   585→                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+   586→                        {item.description}
+   587→                      </p>
+   588→                    </div>
+   589→                  </div>
+   590→                ))}
+   591→              </div>
+   592→            </div>
+   593→          </section>
+   594→        </FadeIn>
+   595→
+   596→        {/* ─────────── 6. CUSTOMER TYPES ─────────── */}
+   597→        <FadeIn delay={0.1}>
+   598→          <section className="py-20 sm:py-24">
+   599→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   600→              <SectionHeading
+   601→                badge="For Everyone"
+   602→                title="Built for every logistics stakeholder"
+   603→                description="Whether you run a courier company, drive a truck, or ship goods — SwiftFreight has a role for you."
+   604→              />
+   605→              <div className="mt-14 grid gap-5 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+   606→                {[
+   607→                  {
+   608→                    icon: Building2,
+   609→                    title: 'Courier Companies',
+   610→                    description:
+   611→                      'Manage your entire fleet, drivers, and deliveries from a single dashboard with multi-branch support.',
+   612→                  },
+   613→                  {
+   614→                    icon: Users,
+   615→                    title: 'Independent Drivers',
+   616→                    description:
+   617→                      'Accept delivery assignments, update shipment status, and manage your earnings — all from your phone.',
+   618→                  },
+   619→                  {
+   620→                    icon: Warehouse,
+   621→                    title: 'Warehouse Partners',
+   622→                    description:
+   623→                      'Receive incoming parcels, organize storage, and coordinate outbound dispatches seamlessly.',
+   624→                  },
+   625→                  {
+   626→                    icon: Search,
+   627→                    title: 'Sourcing Agents',
+   628→                    description:
+   629→                      'Help customers source products from South Africa with built-in request and quotation management.',
+   630→                  },
+   631→                  {
+   632→                    icon: Car,
+   633→                    title: 'Trailer Owners',
+   634→                    description:
+   635→                      'List your vehicles for hire, track utilization, and manage maintenance schedules.',
+   636→                  },
+   637→                  {
+   638→                    icon: Package,
+   639→                    title: 'Customers',
+   640→                    description:
+   641→                      'Submit delivery requests, track parcels in real-time, and receive notifications every step of the way.',
+   642→                  },
+   643→                ].map((type) => (
+   644→                  <Card
+   645→                    key={type.title}
+   646→                    className="group border-border/50 bg-background transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 hover:ring-1 hover:ring-primary/10"
+   647→                  >
+   648→                    <CardContent className="flex items-start gap-4 p-5">
+   649→                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-emerald/8 text-primary transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-emerald group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/20">
+   650→                        <type.icon className="h-5 w-5" />
+   651→                      </div>
+   652→                      <div>
+   653→                        <h3 className="text-sm font-semibold text-foreground">
+   654→                          {type.title}
+   655→                        </h3>
+   656→                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+   657→                          {type.description}
+   658→                        </p>
+   659→                      </div>
+   660→                    </CardContent>
+   661→                  </Card>
+   662→                ))}
+   663→              </div>
+   664→            </div>
+   665→          </section>
+   666→        </FadeIn>
+   667→
+   668→        <GradientDivider />
+   669→
+   670→        {/* ─────────── 7. BENEFITS SECTION ─────────── */}
+   671→        <FadeIn>
+   672→          <section className="bg-muted/30 py-20 sm:py-24">
+   673→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   674→              <SectionHeading
+   675→                badge="Benefits"
+   676→                title="Why companies choose SwiftFreight"
+   677→                description="Real operational improvements that translate directly to your bottom line."
+   678→              />
+   679→              <div className="mt-14 grid gap-8 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
+   680→                {[
+   681→                  {
+   682→                    icon: FileText,
+   683→                    title: 'Reduce Paperwork',
+   684→                    description:
+   685→                      'Digital workflows replace manual processes. No more lost forms, delayed approvals, or manual data entry.',
+   686→                    stat: '80%',
+   687→                    statLabel: 'less paperwork',
+   688→                    fill: 80,
+   689→                  },
+   690→                  {
+   691→                    icon: Zap,
+   692→                    title: 'Faster Deliveries',
+   693→                    description:
+   694→                      'Smart dispatch reduces transit times by optimizing driver and vehicle assignments automatically.',
+   695→                    stat: '3x',
+   696→                    statLabel: 'faster dispatch',
+   697→                    fill: 85,
+   698→                  },
+   699→                  {
+   700→                    icon: Eye,
+   701→                    title: 'Complete Visibility',
+   702→                    description:
+   703→                      'Track everything in real-time. Customers, operators, and management all share the same live view.',
+   704→                    stat: '100%',
+   705→                    statLabel: 'visibility',
+   706→                    fill: 100,
+   707→                  },
+   708→                  {
+   709→                    icon: TrendingUp,
+   710→                    title: 'Scale Easily',
+   711→                    description:
+   712→                      'From 1 to 1,000 deliveries per day — SwiftFreight grows with your business without missing a beat.',
+   713→                    stat: '10x',
+   714→                    statLabel: 'growth capacity',
+   715→                    fill: 95,
+   716→                  },
+   717→                ].map((benefit) => (
+   718→                  <div key={benefit.title} className="group text-center">
+   719→                    {/* Decorative ring */}
+   720→                    <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center">
+   721→                      <div className="benefit-ring absolute h-28 w-28 rounded-full transition-transform duration-500 group-hover:scale-110" />
+   722→                      <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-muted/50 ring-1 ring-border/50 transition-colors duration-300 group-hover:bg-background group-hover:ring-primary/20">
+   723→                        <benefit.icon className="absolute top-2 right-2 h-4 w-4 text-primary/40" />
+   724→                        <span className="text-2xl font-extrabold gradient-text sm:text-3xl">
+   725→                          {benefit.stat}
+   726→                        </span>
+   727→                      </div>
+   728→                    </div>
+   729→                    <div className="text-xs font-semibold uppercase tracking-wider text-primary/70">
+   730→                      {benefit.statLabel}
+   731→                    </div>
+   732→                    <h3 className="mt-3 text-base font-semibold text-foreground">
+   733→                      {benefit.title}
+   734→                    </h3>
+   735→                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+   736→                      {benefit.description}
+   737→                    </p>
+   738→                  </div>
+   739→                ))}
+   740→              </div>
+   741→            </div>
+   742→          </section>
+   743→        </FadeIn>
+   744→
+   745→        {/* ─────────── 7.5 TESTIMONIALS SECTION ─────────── */}
+   746→        <FadeIn>
+   747→          <section className="py-20 sm:py-24 bg-background">
+   748→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   749→              <SectionHeading
+   750→                badge="Testimonials"
+   751→                title="Trusted by leading logistics companies across Southern Africa"
+   752→                description="Hear from operations leaders who transformed their delivery management with SwiftFreight."
+   753→              />
+   754→              <div className="mt-14 grid gap-8 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+   755→                {[
+   756→                  {
+   757→                    quote: 'SwiftFreight transformed how we manage cross-border deliveries. Our delivery times dropped by 40% and customer satisfaction is at an all-time high.',
+   758→                    name: 'Thabo Maseko',
+   759→                    role: 'Operations Director',
+   760→                    company: 'Mountain Express',
+   761→                    stars: 5,
+   762→                  },
+   763→                  {
+   764→                    quote: 'The real-time tracking and automated quoting saved us hours of manual work every day. Our team can focus on what matters.',
+   765→                    name: 'Lineo Tšoeu',
+   766→                    role: 'Logistics Manager',
+   767→                    company: 'Lesotho Swift Logistics',
+   768→                    stars: 5,
+   769→                  },
+   770→                  {
+   771→                    quote: 'As a growing company, SwiftFreight scaled with us effortlessly. The multi-tenant setup means each branch operates independently.',
+   772→                    name: 'Kabelo Mothibi',
+   773→                    role: 'CEO',
+   774→                    company: 'Highland Haulage',
+   775→                    stars: 4,
+   776→                  },
+   777→                ].map((testimonial) => (
+   778→                  <div
+   779→                    key={testimonial.name}
+   780→                    className="group relative rounded-xl border bg-card p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+   781→                  >
+   782→                    {/* Decorative quote mark */}
+   783→                    <span className="absolute -top-3 left-6 text-5xl font-serif leading-none text-primary/15 select-none">&ldquo;</span>
+   784→
+   785→                    <div className="flex gap-1 mb-4">
+   786→                      {Array.from({ length: 5 }).map((_, i) => (
+   787→                        <Star
+   788→                          key={i}
+   789→                          className={`h-4 w-4 ${
+   790→                            i < testimonial.stars
+   791→                              ? 'fill-amber-400 text-amber-400'
+   792→                              : 'fill-muted text-muted'
+   793→                          }`}
+   794→                        />
+   795→                      ))}
+   796→                    </div>
+   797→
+   798→                    <p className="text-sm leading-relaxed text-muted-foreground mb-6">
+   799→                      {testimonial.quote}
+   800→                    </p>
+   801→
+   802→                    <div className="flex items-center gap-3 pt-4 border-t">
+   803→                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
+   804→                        {testimonial.name.charAt(0)}
+   805→                      </div>
+   806→                      <div>
+   807→                        <p className="text-sm font-semibold text-foreground">{testimonial.name}</p>
+   808→                        <p className="text-xs text-muted-foreground">
+   809→                          {testimonial.role}, {testimonial.company}
+   810→                        </p>
+   811→                      </div>
+   812→                    </div>
+   813→                  </div>
+   814→                ))}
+   815→              </div>
+   816→            </div>
+   817→          </section>
+   818→        </FadeIn>
+   819→
+   820→        {/* ─────────── 8. PRICING SECTION ─────────── */}
+   821→        <FadeIn delay={0.1}>
+   822→          <section id="pricing" className="py-20 sm:py-24">
+   823→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   824→              <SectionHeading
+   825→                badge="Pricing"
+   826→                title="Simple, transparent pricing"
+   827→                description="No hidden fees. No per-delivery charges. Choose the plan that fits your operation."
+   828→              />
+   829→              <div className="mt-14 grid gap-6 sm:mt-16 lg:grid-cols-3 lg:gap-8">
+   830→                {[
+   831→                  {
+   832→                    name: 'Starter',
+   833→                    price: 'M299',
+   834→                    period: '/month',
+   835→                    description: 'Perfect for small operations getting started with digital logistics.',
+   836→                    features: [
+   837→                      '1 company workspace',
+   838→                      'Up to 5 users',
+   839→                      'Delivery management',
+   840→                      'Basic tracking',
+   841→                      'Driver management',
+   842→                      'Email support',
+   843→                    ],
+   844→                    cta: 'Get Started',
+   845→                    highlighted: false,
+   846→                  },
+   847→                  {
+   848→                    name: 'Professional',
+   849→                    price: 'M799',
+   850→                    period: '/month',
+   851→                    description: 'For growing companies that need advanced tools and analytics.',
+   852→                    features: [
+   853→                      '1 company workspace',
+   854→                      'Up to 25 users',
+   855→                      'Advanced dispatch',
+   856→                      'Real-time GPS tracking',
+   857→                      'Fleet management',
+   858→                      'Analytics dashboard',
+   859→                      'Communication hub',
+   860→                      'Priority support',
+   861→                    ],
+   862→                    cta: 'Get Started',
+   863→                    highlighted: true,
+   864→                  },
+   865→                  {
+   866→                    name: 'Enterprise',
+   867→                    price: 'M1,999',
+   868→                    period: '/month',
+   869→                    description: 'Full-featured platform for large-scale logistics operations.',
+   870→                    features: [
+   871→                      'Multiple companies',
+   872→                      'Unlimited users',
+   873→                      'AI-powered dispatch',
+   874→                      'Sourcing services',
+   875→                      'Custom analytics',
+   876→                      'API access',
+   877→                      'White-label option',
+   878→                      'Dedicated account manager',
+   879→                      'SLA guarantee',
+   880→                    ],
+   881→                    cta: 'Contact Sales',
+   882→                    highlighted: false,
+   883→                  },
+   884→                ].map((plan) => (
+   885→                  <Card
+   886→                    key={plan.name}
+   887→                    className={`relative flex flex-col transition-all duration-300 hover:-translate-y-1 ${
+   888→                      plan.highlighted
+   889→                        ? 'pricing-highlighted border-transparent bg-background shadow-2xl shadow-primary/15 scale-[1.02] lg:scale-105'
+   890→                        : 'border-border/50 bg-background hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'
+   891→                    }`}
+   892→                  >
+   893→                    {plan.highlighted && (
+   894→                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+   895→                        <Badge className="animate-shimmer rounded-full bg-gradient-to-r from-primary via-emerald to-primary px-4 py-1 text-xs font-bold text-primary-foreground shadow-lg shadow-primary/25">
+   896→                          <Star className="mr-1 h-3 w-3" />
+   897→                          Most Popular
+   898→                        </Badge>
+   899→                      </div>
+   900→                    )}
+   901→                    <CardHeader className="pb-2 pt-8 sm:pt-10">
+   902→                      <CardTitle className="text-lg font-semibold text-foreground">
+   903→                        {plan.name}
+   904→                      </CardTitle>
+   905→                      <CardDescription className="mt-1 text-sm">
+   906→                        {plan.description}
+   907→                      </CardDescription>
+   908→                      <div className="mt-4 flex items-baseline gap-1">
+   909→                        <span className={`text-4xl font-bold tracking-tight ${plan.highlighted ? 'gradient-text' : 'text-foreground'}`}>
+   910→                          {plan.price}
+   911→                        </span>
+   912→                        <span className="text-sm text-muted-foreground">
+   913→                          {plan.period}
+   914→                        </span>
+   915→                      </div>
+   916→                    </CardHeader>
+   917→                    <CardContent className="flex flex-1 flex-col pt-2">
+   918→                      <ul className="flex-1 space-y-3">
+   919→                        {plan.features.map((feature) => (
+   920→                          <li key={feature} className="flex items-start gap-2.5">
+   921→                            <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${plan.highlighted ? 'bg-primary/10' : ''}`}>
+   922→                              <Check className={`h-3 w-3 ${plan.highlighted ? 'text-primary' : 'text-primary'}`} />
+   923→                            </div>
+   924→                            <span className="text-sm text-muted-foreground">
+   925→                              {feature}
+   926→                            </span>
+   927→                          </li>
+   928→                        ))}
+   929→                      </ul>
+   930→                      <Button
+   931→                        className={`mt-8 h-11 w-full font-semibold transition-all duration-300 ${
+   932→                          plan.highlighted
+   933→                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30'
+   934→                            : 'bg-background text-foreground border border-border hover:bg-muted hover:border-primary/20'
+   935→                        }`}
+   936→                        onClick={() => setView('register')}
+   937→                      >
+   938→                        {plan.cta}
+   939→                        <ArrowRight className="ml-1.5 h-4 w-4" />
+   940→                      </Button>
+   941→                    </CardContent>
+   942→                  </Card>
+   943→                ))}
+   944→              </div>
+   945→            </div>
+   946→          </section>
+   947→        </FadeIn>
+   948→
+   949→        <GradientDivider />
+   950→
+   951→        {/* ─────────── 9. FAQ SECTION ─────────── */}
+   952→        <FadeIn>
+   953→          <section id="faq" className="bg-muted/30 py-20 sm:py-24">
+   954→            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+   955→              <SectionHeading
+   956→                badge="FAQ"
+   957→                title="Frequently asked questions"
+   958→                description="Everything you need to know about SwiftFreight. Can't find the answer? Contact our team."
+   959→              />
+   960→              <Accordion
+   961→                type="single"
+   962→                collapsible
+   963→                className="mt-12 w-full"
+   964→                value={faqOpenIndex}
+   965→                onValueChange={(val) => setFaqOpenIndex(val)}
+   966→              >
+   967→                {[
+   968→                  {
+   969→                    q: 'How long does it take to get started?',
+   970→                    a: 'You can sign up and start using SwiftFreight within minutes. Our onboarding wizard guides you through setting up your company, adding users, and configuring your first delivery routes. Most companies are fully operational within a day.',
+   971→                  },
+   972→                  {
+   973→                    q: 'Is there a free trial available?',
+   974→                    a: 'Yes! We offer a 14-day free trial on all plans with full access to features. No credit card required to start. You can upgrade or downgrade at any time during or after the trial.',
+   975→                  },
+   976→                  {
+   977→                    q: 'Does SwiftFreight work offline?',
+   978→                    a: 'SwiftFreight is a cloud-based platform, but our driver app supports offline mode. Drivers can update delivery statuses, capture proof of delivery photos, and collect signatures even without internet. Data syncs automatically when connectivity is restored.',
+   979→                  },
+   980→                  {
+   981→                    q: 'Can I use SwiftFreight for cross-border deliveries?',
+   982→                    a: 'Absolutely. SwiftFreight is built with cross-border logistics in mind, especially for the Lesotho–South Africa corridor. Our sourcing services module handles customs documentation, agent coordination, and border crossing tracking.',
+   983→                  },
+   984→                  {
+   985→                    q: 'How does multi-tenant support work?',
+   986→                    a: 'Each company on SwiftFreight gets its own completely isolated workspace. Your data, users, vehicles, and deliveries are fully separated from other companies. Enterprise plans can manage multiple company workspaces from a single account.',
+   987→                  },
+   988→                  {
+   989→                    q: 'What payment methods do you accept?',
+   990→                    a: 'We accept bank transfers, M-Pesa, and major credit/debit cards. All payments are processed securely. Enterprise customers can also arrange invoicing with net-30 payment terms.',
+   991→                  },
+   992→                  {
+   993→                    q: 'Can I integrate SwiftFreight with my existing systems?',
+   994→                    a: 'Yes. Our Professional and Enterprise plans include API access, allowing you to integrate SwiftFreight with your existing accounting, ERP, or e-commerce systems. We also offer webhook support for real-time event notifications.',
+   995→                  },
+   996→                  {
+   997→                    q: 'What kind of support do you provide?',
+   998→                    a: 'Starter plans include email support with 24-hour response times. Professional plans get priority email and chat support. Enterprise customers receive a dedicated account manager, phone support, and guaranteed SLA response times.',
+   999→                  },
+  1000→                ].map((item, index) => (
+  1001→                  <AccordionItem
+  1002→                    key={index}
+  1003→                    value={`faq-${index}`}
+  1004→                    className={`border-border/50 transition-all duration-200 ${faqOpenIndex === `faq-${index}` ? 'faq-item-active rounded-lg bg-background/80 shadow-sm' : 'hover:bg-muted/50'}`}
+  1005→                  >
+  1006→                    <AccordionTrigger className="text-left text-sm font-medium text-foreground hover:no-underline sm:text-base transition-colors duration-200 hover:text-primary">
+  1007→                      {item.q}
+  1008→                    </AccordionTrigger>
+  1009→                    <AccordionContent className="text-sm leading-relaxed text-muted-foreground pl-4">
+  1010→                      {item.a}
+  1011→                    </AccordionContent>
+  1012→                  </AccordionItem>
+  1013→                ))}
+  1014→              </Accordion>
+  1015→            </div>
+  1016→          </section>
+  1017→        </FadeIn>
+  1018→
+  1019→        {/* ─────────── 10. CONTACT SECTION ─────────── */}
+  1020→        <FadeIn delay={0.1}>
+  1021→          <section id="contact" className="py-20 sm:py-24">
+  1022→            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  1023→              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-emerald px-6 py-16 sm:px-12 sm:py-20 lg:px-20 lg:py-24">
+  1024→                {/* Background decoration with dot pattern */}
+  1025→                <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+  1026→                  <div className="dot-pattern absolute inset-0" />
+  1027→                  <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-white/5 blur-2xl" />
+  1028→                  <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-white/5 blur-2xl" />
+  1029→                  <div className="absolute top-1/2 left-1/3 h-40 w-40 rounded-full bg-white/3 blur-3xl" />
+  1030→                </div>
+  1031→
+  1032→                <div className="relative grid gap-12 lg:grid-cols-2 lg:gap-16">
+  1033→                  {/* Left - CTA */}
+  1034→                  <div className="flex flex-col justify-center text-white">
+  1035→                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+  1036→                      Ready to Transform Your Logistics?
+  1037→                    </h2>
+  1038→                    <p className="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">
+  1039→                      Join the growing network of logistics companies in Lesotho
+  1040→                      already using SwiftFreight to streamline their operations.
+  1041→                    </p>
+  1042→                    <div className="mt-8 space-y-4">
+  1043→                      <div className="flex items-center gap-3 text-white/90">
+  1044→                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/10">
+  1045→                          <Mail className="h-4.5 w-4.5 text-white/80" />
+  1046→                        </div>
+  1047→                        <div>
+  1048→                          <div className="text-xs font-medium uppercase tracking-wider text-white/50">Email</div>
+  1049→                          <span className="text-sm">info@swiftfreight.ls</span>
+  1050→                        </div>
+  1051→                      </div>
+  1052→                      <div className="flex items-center gap-3 text-white/90">
+  1053→                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/10">
+  1054→                          <Phone className="h-4.5 w-4.5 text-white/80" />
+  1055→                        </div>
+  1056→                        <div>
+  1057→                          <div className="text-xs font-medium uppercase tracking-wider text-white/50">Phone</div>
+  1058→                          <span className="text-sm">+266 2234 5678</span>
+  1059→                        </div>
+  1060→                      </div>
+  1061→                      <div className="flex items-center gap-3 text-white/90">
+  1062→                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/10">
+  1063→                          <MapPinned className="h-4.5 w-4.5 text-white/80" />
+  1064→                        </div>
+  1065→                        <div>
+  1066→                          <div className="text-xs font-medium uppercase tracking-wider text-white/50">Location</div>
+  1067→                          <span className="text-sm">Kingsway Road, Maseru, Lesotho</span>
+  1068→                        </div>
+  1069→                      </div>
+  1070→                    </div>
+  1071→                  </div>
+  1072→
+  1073→                  {/* Right - Form */}
+  1074→                  <div>
+  1075→                    {contactSubmitted ? (
+  1076→                      <div className="flex h-full min-h-[300px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/10 p-8 text-center backdrop-blur-sm">
+  1077→                        <div className="animate-pulse-ring flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+  1078→                          <CheckCircle2 className="h-7 w-7 text-white" />
+  1079→                        </div>
+  1080→                        <h3 className="mt-4 text-lg font-semibold text-white">
+  1081→                          Message Sent!
+  1082→                        </h3>
+  1083→                        <p className="mt-2 text-sm text-white/70">
+  1084→                          We&apos;ll get back to you within 24 hours.
+  1085→                        </p>
+  1086→                      </div>
+  1087→                    ) : (
+  1088→                      <form
+  1089→                        onSubmit={handleContactSubmit}
+  1090→                        className="space-y-4 rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-sm sm:p-8"
+  1091→                      >
+  1092→                        <div className="space-y-2">
+  1093→                          <label
+  1094→                            htmlFor="contact-name"
+  1095→                            className="text-sm font-medium text-white/80"
+  1096→                          >
+  1097→                            Full Name
+  1098→                          </label>
+  1099→                          <Input
+  1100→                            id="contact-name"
+  1101→                            type="text"
+  1102→                            placeholder="John Mokoena"
+  1103→                            required
+  1104→                            value={contactName}
+  1105→                            onChange={(e) => setContactName(e.target.value)}
+  1106→                            className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30 transition-all duration-200"
+  1107→                          />
+  1108→                        </div>
+  1109→                        <div className="space-y-2">
+  1110→                          <label
+  1111→                            htmlFor="contact-email"
+  1112→                            className="text-sm font-medium text-white/80"
+  1113→                          >
+  1114→                            Email Address
+  1115→                          </label>
+  1116→                          <Input
+  1117→                            id="contact-email"
+  1118→                            type="email"
+  1119→                            placeholder="john@company.co.ls"
+  1120→                            required
+  1121→                            value={contactEmail}
+  1122→                            onChange={(e) => setContactEmail(e.target.value)}
+  1123→                            className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30 transition-all duration-200"
+  1124→                          />
+  1125→                        </div>
+  1126→                        <div className="space-y-2">
+  1127→                          <label
+  1128→                            htmlFor="contact-message"
+  1129→                            className="text-sm font-medium text-white/80"
+  1130→                          >
+  1131→                            Message
+  1132→                          </label>
+  1133→                          <Textarea
+  1134→                            id="contact-message"
+  1135→                            placeholder="Tell us about your logistics needs..."
+  1136→                            required
+  1137→                            rows={4}
+  1138→                            value={contactMessage}
+  1139→                            onChange={(e) => setContactMessage(e.target.value)}
+  1140→                            className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30 transition-all duration-200"
+  1141→                          />
+  1142→                        </div>
+  1143→                        <Button
+  1144→                          type="submit"
+  1145→                          className="h-11 w-full bg-white font-semibold text-primary shadow-lg hover:bg-white/90 hover:shadow-xl transition-all duration-300"
+  1146→                        >
+  1147→                          <Send className="mr-2 h-4 w-4" />
+  1148→                          Send Message
+  1149→                        </Button>
+  1150→                      </form>
+  1151→                    )}
+  1152→                  </div>
+  1153→                </div>
+  1154→              </div>
+  1155→            </div>
+  1156→          </section>
+  1157→        </FadeIn>
+  1158→      </main>
+  1159→
+  1160→      {/* ─────────── 11. FOOTER ─────────── */}
+  1161→      <footer className="mt-auto border-t border-border/50 bg-muted/30">
+  1162→        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+  1163→          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+  1164→            {/* Brand */}
+  1165→            <div className="lg:col-span-2">
+  1166→              <div className="flex items-center gap-2">
+  1167→                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+  1168→                  <Truck className="h-4.5 w-4.5 text-primary-foreground" />
+  1169→                </div>
+  1170→                <span className="text-lg font-bold tracking-tight text-foreground">
+  1171→                  Swift<span className="gradient-text">Freight</span>
+  1172→                </span>
+  1173→              </div>
+  1174→              <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+  1175→                The intelligent logistics operating system for Lesotho and
+  1176→                Southern Africa. Connecting every link in the supply chain.
+  1177→              </p>
+  1178→              {/* Social Links */}
+  1179→              <div className="mt-5 flex gap-3">
+  1180→                {['Twitter', 'LinkedIn', 'Facebook'].map((social) => (
+  1181→                  <button
+  1182→                    key={social}
+  1183→                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/50 bg-background text-muted-foreground transition-all duration-200 hover:border-primary/20 hover:text-primary hover:shadow-sm hover:shadow-primary/5"
+  1184→                    aria-label={social}
+  1185→                  >
+  1186→                    <span className="text-xs font-semibold">
+  1187→                      {social[0]}
+  1188→                    </span>
+  1189→                  </button>
+  1190→                ))}
+  1191→              </div>
+  1192→            </div>
+  1193→
+  1194→            {/* Product */}
+  1195→            <div>
+  1196→              <h4 className="text-sm font-semibold text-foreground">Product</h4>
+  1197→              <ul className="mt-4 space-y-2.5">
+  1198→                {['Features', 'Pricing', 'Integrations', 'Changelog', 'Roadmap'].map(
+  1199→                  (link) => (
+  1200→                    <li key={link}>
+  1201→                      <button
+  1202→                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1203→                        onClick={() => {
+  1204→                          if (link === 'Pricing') scrollTo('#pricing');
+  1205→                          if (link === 'Features') scrollTo('#features');
+  1206→                        }}
+  1207→                      >
+  1208→                        {link}
+  1209→                      </button>
+  1210→                    </li>
+  1211→                  )
+  1212→                )}
+  1213→              </ul>
+  1214→            </div>
+  1215→
+  1216→            {/* Company */}
+  1217→            <div>
+  1218→              <h4 className="text-sm font-semibold text-foreground">Company</h4>
+  1219→              <ul className="mt-4 space-y-2.5">
+  1220→                {['About', 'Careers', 'Blog', 'Contact'].map((link) => (
+  1221→                  <li key={link}>
+  1222→                    <button
+  1223→                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1224→                      onClick={() => {
+  1225→                        if (link === 'Contact') scrollTo('#contact');
+  1226→                      }}
+  1227→                    >
+  1228→                      {link}
+  1229→                    </button>
+  1230→                  </li>
+  1231→                ))}
+  1232→              </ul>
+  1233→            </div>
+  1234→
+  1235→            {/* Resources & Legal */}
+  1236→            <div>
+  1237→              <h4 className="text-sm font-semibold text-foreground">Resources</h4>
+  1238→              <ul className="mt-4 space-y-2.5">
+  1239→                {['Documentation', 'Help Center', 'API Reference'].map(
+  1240→                  (link) => (
+  1241→                    <li key={link}>
+  1242→                      <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+  1243→                        {link}
+  1244→                      </span>
+  1245→                    </li>
+  1246→                  )
+  1247→                )}
+  1248→              </ul>
+  1249→              <h4 className="mt-6 text-sm font-semibold text-foreground">Legal</h4>
+  1250→              <ul className="mt-4 space-y-2.5">
+  1251→                {['Privacy Policy', 'Terms of Service'].map((link) => (
+  1252→                  <li key={link}>
+  1253→                    <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+  1254→                      {link}
+  1255→                    </span>
+  1256→                  </li>
+  1257→                ))}
+  1258→              </ul>
+  1259→            </div>
+  1260→          </div>
+  1261→
+  1262→          {/* Bottom bar */}
+  1263→          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 sm:flex-row">
+  1264→            <p className="text-sm text-muted-foreground">
+  1265→              &copy; 2025 SwiftFreight. All rights reserved.
+  1266→            </p>
+  1267→            <p className="text-sm text-muted-foreground">
+  1268→              Built with care in Maseru, Lesotho
+  1269→            </p>
+  1270→          </div>
+  1271→        </div>
+  1272→      </footer>
+  1273→
+  1274→      {/* ─────────── BACK TO TOP BUTTON ─────────── */}
+  1275→      <motion.button
+  1276→        initial={false}
+  1277→        animate={{ opacity: showBackToTop ? 1 : 0, y: showBackToTop ? 0 : 16 }}
+  1278→        transition={{ duration: 0.25, ease: 'easeOut' }}
+  1279→        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  1280→        className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-shadow duration-200 hover:shadow-xl hover:shadow-primary/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+  1281→        aria-label="Back to top"
+  1282→      >
+  1283→        <ArrowUp className="h-5 w-5" />
+  1284→      </motion.button>
+  1285→    </div>
+  1286→  );
+  1287→}

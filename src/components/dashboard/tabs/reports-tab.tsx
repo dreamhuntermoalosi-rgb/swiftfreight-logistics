@@ -104,6 +104,11 @@ const dayOfWeekConfig: ChartConfig = {
   avgTime: { label: 'Avg Time (days)', color: '#14b8a6' },
 };
 
+const crossBorderTrendConfig: ChartConfig = {
+  crossBorder: { label: 'Cross-Border', color: '#10b981' },
+  domestic: { label: 'Domestic', color: '#5eead4' },
+};
+
 // ============ Helpers ============
 function formatCurrency(value: number) {
   return `M${value.toLocaleString()}`;
@@ -158,6 +163,26 @@ const dayOfWeekData = [
   { day: 'Friday', deliveries: 58, avgTime: 2.5 },
   { day: 'Saturday', deliveries: 22, avgTime: 1.5 },
   { day: 'Sunday', deliveries: 8, avgTime: 1.2 },
+];
+
+// Border post performance data
+const borderPosts = [
+  { name: 'Maseru Bridge', totalCrossings: 145, avgWaitHours: 2.3, clearanceRate: 94, delays: 9 },
+  { name: "Maputsoe (Ficksburg)", totalCrossings: 98, avgWaitHours: 3.1, clearanceRate: 88, delays: 12 },
+  { name: 'Mokhotlong (Matatiele)', totalCrossings: 42, avgWaitHours: 4.5, clearanceRate: 76, delays: 10 },
+  { name: "Qacha's Nek (Matatiele)", totalCrossings: 35, avgWaitHours: 3.8, clearanceRate: 82, delays: 6 },
+  { name: 'Butha Buthe (Harrismith)', totalCrossings: 28, avgWaitHours: 2.8, clearanceRate: 89, delays: 3 },
+];
+
+// Cross-border vs domestic trend
+const crossBorderTrend = [
+  { month: 'Jan', crossBorder: 32, domestic: 45 },
+  { month: 'Feb', crossBorder: 38, domestic: 42 },
+  { month: 'Mar', crossBorder: 45, domestic: 48 },
+  { month: 'Apr', crossBorder: 42, domestic: 51 },
+  { month: 'May', crossBorder: 55, domestic: 47 },
+  { month: 'Jun', crossBorder: 62, domestic: 53 },
+  { month: 'Jul', crossBorder: 58, domestic: 49 },
 ];
 
 // Company comparison data
@@ -824,6 +849,106 @@ export function ReportsTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Cross-Border Delivery Analytics ── */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-emerald-600" />
+          <h3 className="text-lg font-semibold">Cross-Border Delivery Analytics</h3>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Border Post Performance Table */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Border Post Performance</CardTitle>
+              <CardDescription>Lesotho–South Africa border crossing metrics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
+                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">Border Post</TableHead>
+                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Total Crossings</TableHead>
+                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Avg Wait (hrs)</TableHead>
+                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Clearance Rate %</TableHead>
+                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-center">Active Delays</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {borderPosts.map((post) => (
+                      <TableRow key={post.name}>
+                        <TableCell className="font-medium text-sm">{post.name}</TableCell>
+                        <TableCell className="text-sm text-right font-mono">{post.totalCrossings}</TableCell>
+                        <TableCell className="text-sm text-right font-mono">{post.avgWaitHours}</TableCell>
+                        <TableCell className="text-sm text-right font-mono">
+                          <span className={
+                            post.clearanceRate >= 90
+                              ? 'text-emerald-600 font-medium'
+                              : post.clearanceRate >= 80
+                                ? 'text-amber-600 font-medium'
+                                : 'text-red-600 font-medium'
+                          }>
+                            {post.clearanceRate}%
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {post.delays > 0 ? (
+                            <Badge variant="outline" className={
+                              post.delays > 8
+                                ? 'text-red-600 border-red-300 dark:text-red-400 dark:border-red-700'
+                                : 'text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700'
+                            }>
+                              {post.delays}
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">0</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cross-Border Trend Chart */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-base">Cross-Border vs Domestic Volume</CardTitle>
+              </div>
+              <CardDescription>Monthly delivery volume comparison (2024)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={crossBorderTrendConfig} className="h-[300px] w-full">
+                <AreaChart data={crossBorderTrend} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fillCrossBorder" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="fillDomestic" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#5eead4" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#5eead4" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Area type="monotone" dataKey="crossBorder" stroke="#10b981" fill="url(#fillCrossBorder)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="domestic" stroke="#5eead4" fill="url(#fillDomestic)" strokeWidth={2} />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

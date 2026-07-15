@@ -228,7 +228,9 @@ export function MessagesTab() {
                   className={`mb-1 flex w-full items-center gap-3 rounded-lg p-2.5 text-left transition-all duration-150 ${
                     activeConversation === conv.contactId
                       ? 'bg-primary/10 text-foreground'
-                      : 'hover:bg-muted/50 active:bg-muted'
+                      : conv.unreadCount > 0
+                        ? 'border-l-2 border-l-primary/40 bg-primary/[0.03] hover:bg-primary/[0.06]'
+                        : 'hover:bg-muted/50 active:bg-muted'
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -238,9 +240,12 @@ export function MessagesTab() {
                       </AvatarFallback>
                     </Avatar>
                     {conv.unreadCount > 0 && (
-                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                        {conv.unreadCount}
-                      </span>
+                      <>
+                        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                          {conv.unreadCount}
+                        </span>
+                        <span className="absolute -right-0.5 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-primary" />
+                      </>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -328,7 +333,7 @@ export function MessagesTab() {
                             <div
                               className={`rounded-2xl px-3.5 py-2 ${
                                 isSent
-                                  ? 'rounded-br-sm bg-primary text-primary-foreground'
+                                  ? 'rounded-br-sm bg-gradient-to-br from-primary to-emerald-600 text-primary-foreground'
                                   : 'rounded-bl-sm bg-muted'
                               }`}
                             >
@@ -347,7 +352,7 @@ export function MessagesTab() {
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="border-t p-3">
+              <div className="border-t border-transparent bg-gradient-to-r from-transparent via-border to-transparent p-3">
                 <div className="mx-auto flex max-w-2xl items-center gap-2">
                   <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toast.info('Attachments coming soon')}>
                     <Paperclip className="h-4 w-4" />
@@ -361,7 +366,7 @@ export function MessagesTab() {
                   />
                   <Button
                     size="icon"
-                    className="shrink-0 bg-green-600 hover:bg-green-700"
+                    className="shrink-0 bg-gradient-to-r from-primary to-emerald-600 hover:brightness-110"
                     onClick={handleSend}
                     disabled={!messageInput.trim()}
                   >
@@ -371,14 +376,16 @@ export function MessagesTab() {
               </div>
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <div className="mb-4 rounded-full bg-muted p-4">
-                <MessageSquare className="h-10 w-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold">Select a conversation</h3>
+            <div className="flex flex-1 flex-col items-center justify-center text-center px-4">
+              <MessageSquare className="h-16 w-16 text-muted-foreground/20" />
+              <h3 className="mt-4 text-lg font-semibold">Select a conversation</h3>
               <p className="mt-1 max-w-xs text-sm text-muted-foreground">
                 Choose a conversation from the list to start messaging
               </p>
+              <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
+                <li>• View delivery updates in real-time</li>
+                <li>• Coordinate with drivers and warehouse teams</li>
+              </ul>
             </div>
           )}
         </div>

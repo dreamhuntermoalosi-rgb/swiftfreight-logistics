@@ -342,7 +342,7 @@ export function MarketingWebsite() {
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button
                   size="lg"
-                  className="h-12 w-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 sm:w-auto"
+                  className="h-12 w-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300 sm:w-auto"
                   onClick={() => setView('register')}
                 >
                   Start Free Trial
@@ -351,17 +351,22 @@ export function MarketingWebsite() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-12 w-full border-border/60 px-8 text-base font-semibold transition-all duration-300 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 sm:w-auto"
+                  className="h-12 w-full border-border/60 px-8 text-base font-semibold shadow-lg shadow-primary/20 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] sm:w-auto"
                 >
-                  <Play className="mr-2 h-4 w-4" />
+                  <span className="relative flex h-5 w-5 items-center justify-center mr-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/30" />
+                    <Play className="relative h-4 w-4" />
+                  </span>
                   Watch Demo
                 </Button>
               </div>
             </div>
 
-            {/* Stats bar with glass effect */}
+            {/* Stats bar with glass effect + shimmer sweep */}
             <div className="mx-auto mt-16 sm:mt-20">
-              <div className="glass mx-auto grid max-w-3xl grid-cols-2 gap-0 overflow-hidden rounded-2xl shadow-lg shadow-primary/5 sm:grid-cols-4">
+              <div className="relative mx-auto grid max-w-3xl grid-cols-2 gap-0 overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm shadow-lg shadow-primary/5 dark:bg-white/5 dark:border-white/10 sm:grid-cols-4">
+                {/* Shimmer sweep overlay */}
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent dark:via-white/5" style={{ animation: 'shimmer-sweep 5s ease-in-out infinite' }} />
                 {[
                   { value: '500+', label: 'Deliveries' },
                   { value: '3', label: 'Companies' },
@@ -741,6 +746,27 @@ export function MarketingWebsite() {
             </div>
           </section>
         </FadeIn>
+
+        {/* ─────────── 7.4 TRUSTED BY LOGO SCROLL ─────────── */}
+        <section className="overflow-hidden border-y border-border/40 bg-muted/30 py-10">
+          <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">Trusted by leading logistics companies</p>
+          <div className="relative">
+            {/* Fade edges */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-muted/30 to-transparent dark:from-muted/30" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-muted/30 to-transparent dark:from-muted/30" />
+            <div className="flex" style={{ animation: 'logo-scroll 25s linear infinite' }}>
+              {([...Array(2)] as const).map((_, setIdx) => (
+                <div key={setIdx} className="flex shrink-0 items-center gap-8 px-4">
+                  {['MX', 'BT', 'LF', 'SV', 'NE', 'CR'].map((initials) => (
+                    <div key={`${setIdx}-${initials}`} className="flex h-12 w-24 shrink-0 items-center justify-center rounded-lg bg-foreground/10 dark:bg-foreground/5">
+                      <span className="text-sm font-bold tracking-wider text-foreground/40 dark:text-foreground/30">{initials}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* ─────────── 7.5 TESTIMONIALS SECTION ─────────── */}
         <FadeIn>
