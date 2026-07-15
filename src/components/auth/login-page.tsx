@@ -18,11 +18,11 @@ import {
 import { motion } from 'framer-motion';
 
 const demoAccounts = [
-  { label: 'Company Owner', user: demoUsers[1] as User, color: 'text-emerald-700 border-emerald-200 hover:bg-emerald-50' },
-  { label: 'Operations Manager', user: demoUsers[2] as User, color: 'text-sky-700 border-sky-200 hover:bg-sky-50' },
-  { label: 'Dispatcher', user: demoUsers[3] as User, color: 'text-amber-700 border-amber-200 hover:bg-amber-50' },
-  { label: 'Driver', user: demoUsers[5] as User, color: 'text-violet-700 border-violet-200 hover:bg-violet-50' },
-  { label: 'Customer', user: demoUsers[6] as User, color: 'text-rose-700 border-rose-200 hover:bg-rose-50' },
+  { label: 'Company Owner', user: demoUsers[1] as User, color: 'text-emerald-700 border-l-[3px] border-l-emerald-500 hover:bg-emerald-50' },
+  { label: 'Operations Manager', user: demoUsers[2] as User, color: 'text-sky-700 border-l-[3px] border-l-sky-500 hover:bg-sky-50' },
+  { label: 'Dispatcher', user: demoUsers[3] as User, color: 'text-amber-700 border-l-[3px] border-l-amber-500 hover:bg-amber-50' },
+  { label: 'Driver', user: demoUsers[5] as User, color: 'text-violet-700 border-l-[3px] border-l-violet-500 hover:bg-violet-50' },
+  { label: 'Customer', user: demoUsers[6] as User, color: 'text-rose-700 border-l-[3px] border-l-rose-500 hover:bg-rose-50' },
 ];
 
 export function LoginPage() {
@@ -69,6 +69,14 @@ export function LoginPage() {
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Panel — Branding */}
       <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600 text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tl from-teal-500/20 via-transparent to-emerald-400/20 animate-[gradientShift_8s_ease-in-out_infinite_alternate] pointer-events-none" />
+        {/* Geometric pattern overlay (CSS only) */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
+          backgroundImage: `linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white)`,
+          backgroundSize: '40px 70px',
+          backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px',
+        }} />
         {/* Decorative shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
@@ -159,7 +167,7 @@ export function LoginPage() {
             Back to home
           </button>
 
-          <Card className="border-0 shadow-lg shadow-gray-200/60">
+          <Card className="relative border-0 shadow-xl shadow-emerald-500/[0.06] ring-1 ring-black/[0.04]">
             <CardHeader className="space-y-1 pb-4">
               <div className="flex items-center gap-2 md:hidden mb-2">
                 <div className="bg-emerald-600 p-1.5 rounded-lg">
@@ -267,7 +275,7 @@ export function LoginPage() {
                       key={demo.label}
                       variant="outline"
                       size="sm"
-                      className={`text-xs font-medium ${demo.color} transition-all`}
+                      className={`text-xs font-medium ${demo.color} transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]`}
                       onClick={() => handleDemoLogin(demo.user)}
                     >
                       {demo.label}
@@ -288,6 +296,10 @@ export function LoginPage() {
                 </button>
               </p>
             </CardFooter>
+            {/* Powered by footer */}
+            <p className="text-center text-[11px] text-muted-foreground/50 pb-4">
+              Powered by <span className="font-medium text-muted-foreground/70">SwiftFreight Technologies</span>
+            </p>
           </Card>
         </motion.div>
       </div>

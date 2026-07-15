@@ -141,6 +141,7 @@ function KpiCard({
   isNegative = false,
   iconBg = 'bg-emerald-50 dark:bg-emerald-950/50',
   iconColor = 'text-emerald-600',
+  pulse = false,
 }: {
   title: string;
   value: string;
@@ -151,19 +152,25 @@ function KpiCard({
   isNegative?: boolean;
   iconBg?: string;
   iconColor?: string;
+  pulse?: boolean;
 }) {
   const isPositive = growth !== undefined && growth >= 0;
   return (
-    <Card className="relative overflow-hidden border-l-4 border-l-primary/30 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-300 dark:hover:border-emerald-700">
-      <CardContent className="p-4">
+    <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+      {/* Gradient top border */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
+      <CardContent className="p-4 pt-5">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              {title}
+              {pulse && <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
+            </p>
             <p className="text-2xl font-bold tracking-tight">
               {prefix}{value}{suffix}
             </p>
           </div>
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 ${iconBg}`}>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
             <Icon className={`h-6 w-6 ${iconColor}`} />
           </div>
         </div>
@@ -681,6 +688,7 @@ function CompanyOverview() {
           value={analyticsData.totalDeliveries.toLocaleString()}
           growth={analyticsData.deliveriesGrowth}
           icon={Package}
+          pulse
         />
         <KpiCard
           title="On-Time Rate"

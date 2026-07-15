@@ -29,6 +29,7 @@ import {
   Info,
   User as UserIcon,
   FileText,
+  Warehouse,
 } from 'lucide-react';
 import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -139,9 +140,9 @@ const staffNavItems: NavItem[] = [
   { tab: 'customers', label: 'Customers', icon: Users },
   { tab: 'drivers', label: 'Drivers', icon: UserCog },
   { tab: 'fleet', label: 'Fleet', icon: Truck },
+  { tab: 'warehouse', label: 'Warehouse', icon: Warehouse },
   { tab: 'dispatch', label: 'Dispatch', icon: Radio },
   { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
-  { tab: 'messages', label: 'Messages', icon: MessageSquare },
   { tab: 'notifications', label: 'Notifications', icon: Bell },
   { tab: 'invoices', label: 'Invoices', icon: Receipt },
   { tab: 'quotations', label: 'Quotations', icon: FileText },
@@ -190,6 +191,7 @@ const tabTitles: Record<DashboardTab, string> = {
   customers: 'Customers',
   drivers: 'Drivers',
   fleet: 'Fleet',
+  warehouse: 'Warehouse',
   dispatch: 'Dispatch',
   sourcing: 'Sourcing',
   messages: 'Messages',
@@ -258,7 +260,7 @@ function SidebarNavContent({
       {/* Gradient top line */}
       <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
       {/* Logo area */}
-      <div className="relative flex h-16 items-center gap-3 border-b px-4 bg-white/60 dark:bg-black/20 backdrop-blur-sm">
+      <div className="relative flex h-16 items-center gap-3 px-4 bg-white/60 dark:bg-black/20 backdrop-blur-sm">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Truck className="h-5 w-5" />
         </div>
@@ -273,7 +275,7 @@ function SidebarNavContent({
       </div>
 
       {/* Gradient border below logo */}
-      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="h-[3px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
       <ScrollArea className="flex-1 px-3 py-3">
         <nav className="space-y-1" aria-label="Main navigation">
           {navItems.map((item) => {
@@ -287,13 +289,13 @@ function SidebarNavContent({
                 onClick={() => handleNavClick(item.tab)}
                 className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent text-primary'
+                    ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
                 }`}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
                 )}
                 <Icon
                   className={`h-5 w-5 shrink-0 ${
@@ -323,12 +325,12 @@ function SidebarNavContent({
           onClick={() => handleNavClick('settings')}
           className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
             dashboardTab === 'settings'
-              ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent text-primary'
+              ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
           }`}
         >
           {dashboardTab === 'settings' && (
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
           )}
           <Settings className={`h-5 w-5 shrink-0 ${dashboardTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
           <span className="flex-1 text-left">Settings</span>
@@ -403,7 +405,7 @@ function NotificationDropdown() {
         className="w-80 p-0"
         sideOffset={8}
       >
-        <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex items-center justify-between border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-teal-500/5">
           <DropdownMenuLabel className="p-0 text-sm font-semibold">
             Notifications
           </DropdownMenuLabel>
@@ -435,7 +437,13 @@ function NotificationDropdown() {
                 return (
                   <DropdownMenuItem
                     key={notification.id}
-                    className="flex cursor-pointer items-start gap-3 px-4 py-3"
+                    className={`flex cursor-pointer items-start gap-3 px-4 py-3.5 border-l-2 ${
+                      notification.type === 'delivery_update' ? 'border-l-emerald-400' :
+                      notification.type === 'new_message' ? 'border-l-primary' :
+                      notification.type === 'payment' || notification.type === 'quote_received' ? 'border-l-teal-400' :
+                      notification.type === 'alert' ? 'border-l-amber-400' :
+                      'border-l-transparent'
+                    } ${!notification.isRead ? 'bg-primary/[0.02]' : ''}`}
                     onClick={() => markAsRead(notification.id)}
                   >
                     <div
@@ -509,11 +517,13 @@ function UserDropdown() {
           variant="ghost"
           className="relative flex h-9 items-center gap-2 rounded-full px-2"
         >
-          <Avatar className="h-7 w-7">
+          <div className="relative h-7 w-7 rounded-full p-[2px] bg-gradient-to-br from-primary to-teal-500">
+          <Avatar className="h-full w-full">
             <AvatarFallback className="bg-primary text-xs text-primary-foreground">
               {initials}
             </AvatarFallback>
           </Avatar>
+          </div>
           <span className="hidden text-sm font-medium lg:inline-block">
             {displayName}
           </span>
@@ -528,7 +538,7 @@ function UserDropdown() {
             </p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
         <DropdownMenuItem className="cursor-pointer">
           <UserIcon className="mr-2 h-4 w-4" />
           My Profile
@@ -540,7 +550,7 @@ function UserDropdown() {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
         <DropdownMenuItem
           className="cursor-pointer text-destructive focus:text-destructive"
           onClick={handleSignOut}
@@ -622,7 +632,7 @@ function DashboardHeader() {
               placeholder="Quick track..."
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
-              className="h-9 w-48 bg-muted/50 pl-8 text-sm lg:w-64"
+              className="h-9 w-48 bg-muted/50 pl-8 text-sm lg:w-64 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/30"
             />
           </div>
         </form>

@@ -254,6 +254,17 @@
   50% { background-position: 100% 50%; }
 }
 
+@keyframes gradientShift {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.55 0.15 155 / 0.4); }
+  50% { box-shadow: 0 0 0 6px oklch(0.55 0.15 155 / 0); }
+}
+
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-float-delayed { animation: float-delayed 7s ease-in-out infinite 1s; }
 .animate-float-slow { animation: float-slow 8s ease-in-out infinite 2s; }

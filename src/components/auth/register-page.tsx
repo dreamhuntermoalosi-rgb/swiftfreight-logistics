@@ -156,16 +156,20 @@ export function RegisterPage() {
 
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="customer" className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                    <User className="h-4 w-4" />
-                    Customer
-                  </TabsTrigger>
-                  <TabsTrigger value="company" className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                    <Building2 className="h-4 w-4" />
-                    Company
-                  </TabsTrigger>
-                </TabsList>
+                <div className="relative mb-6">
+                  <TabsList className="grid w-full grid-cols-2 relative">
+                    <TabsTrigger value="customer" className="gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white relative z-10">
+                      <User className="h-4 w-4" />
+                      Customer
+                    </TabsTrigger>
+                    <TabsTrigger value="company" className="gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white relative z-10">
+                      <Building2 className="h-4 w-4" />
+                      Company
+                    </TabsTrigger>
+                    {/* Sliding indicator */}
+                    <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-4px)] rounded-md bg-emerald-600 transition-transform duration-300 ease-out ${activeTab === 'company' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`} />
+                  </TabsList>
+                </div>
 
                 {/* Customer Tab */}
                 <TabsContent value="customer">
@@ -179,7 +183,7 @@ export function RegisterPage() {
                           placeholder="Mmathapelo Mphatsoe"
                           value={custName}
                           onChange={(e) => setCustName(e.target.value)}
-                          className="pl-9"
+                          className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                         />
                       </div>
                     </div>
@@ -195,7 +199,7 @@ export function RegisterPage() {
                             placeholder="you@email.co.ls"
                             value={custEmail}
                             onChange={(e) => setCustEmail(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                         </div>
                       </div>
@@ -209,7 +213,7 @@ export function RegisterPage() {
                             placeholder="+266 2xxx xxxx"
                             value={custPhone}
                             onChange={(e) => setCustPhone(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                         </div>
                       </div>
@@ -226,7 +230,7 @@ export function RegisterPage() {
                             placeholder="Min. 6 characters"
                             value={custPassword}
                             onChange={(e) => setCustPassword(e.target.value)}
-                            className="pl-9 pr-9"
+                            className="pl-9 pr-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                           <button
                             type="button"
@@ -247,7 +251,7 @@ export function RegisterPage() {
                             placeholder="Re-enter password"
                             value={custConfirmPassword}
                             onChange={(e) => setCustConfirmPassword(e.target.value)}
-                            className="pl-9 pr-9"
+                            className="pl-9 pr-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                           <button
                             type="button"
@@ -389,6 +393,8 @@ export function RegisterPage() {
                     </div>
 
                     {/* Plan Selection */}
+                    {/* Gradient divider before plan selector */}
+                    <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent my-2" />
                     <div className="space-y-2">
                       <Label>Plan</Label>
                       <div className="grid grid-cols-3 gap-3">

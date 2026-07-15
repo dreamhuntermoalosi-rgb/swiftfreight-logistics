@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { vehicles, companies, analyticsData } from '@/lib/mock-data';
+import { vehicles as mockVehicles, deliveries as mockDeliveries, companies, analyticsData } from '@/lib/mock-data';
 import type { Vehicle } from '@/lib/types';
 import {
-  Truck, Search, Plus, Car, Bike, Fuel, Wrench, Shield,
-  AlertTriangle, Clock, MapPin, ArrowUpRight, User,
+  Truck, Search, Plus, Car, Bike, Fuel, Wrench,
+  AlertTriangle, Clock, MapPin, ArrowUpRight, User, Package, Calendar,
 } from 'lucide-react';
 
 function formatDate(iso: string) {
@@ -69,6 +69,16 @@ const fuelLabels: Record<Vehicle['fuelType'], string> = {
   hybrid: 'Hybrid',
 };
 
+const maintenanceHistory = [
+  { date: '2025-07-10', type: 'Oil Change', cost: 850, technician: 'T. Moletsane', notes: 'Full synthetic oil' },
+  { date: '2025-06-15', type: 'Brake Service', cost: 2400, technician: 'M. Thabo', notes: 'Front and rear brake pads replaced' },
+  { date: '2025-05-20', type: 'Tire Rotation', cost: 600, technician: 'K. Ntsie', notes: 'All 4 tires rotated, pressure adjusted' },
+  { date: '2025-04-08', type: 'Engine Service', cost: 5200, technician: 'T. Moletsane', notes: 'Major service - filters, plugs, belts' },
+  { date: '2025-03-01', type: 'Battery Replacement', cost: 1800, technician: 'P. Makhoro', notes: 'New 12V heavy-duty battery' },
+];
+
+const activeDeliveryStatuses = ['collected', 'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery'];
+
 export function FleetTab() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -77,7 +87,7 @@ export function FleetTab() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const filtered = useMemo(() => {
-    let list = [...vehicles];
+    let list = [...mockVehicles];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -99,16 +109,16 @@ export function FleetTab() {
     return list;
   }, [search, typeFilter, statusFilter, companyFilter]);
 
-  const availableCount = vehicles.filter((v) => v.status === 'available').length;
-  const inUseCount = vehicles.filter((v) => v.status === 'in_use').length;
-  const maintenanceCount = vehicles.filter((v) => v.status === 'maintenance').length;
+  const availableCount = mockVehicles.filter((v) => v.status === 'available').length;
+  const inUseCount = mockVehicles.filter((v) => v.status === 'in_use').length;
+  const maintenanceCount = mockVehicles.filter((v) => v.status === 'maintenance').length;
 
   // Fleet utilization from analytics data
   const fleetUtil = analyticsData.fleetUtilization;
 
   // Maintenance schedule: vehicles with nextServiceDate within 30 days
   const maintenanceSchedule = useMemo(() => {
-    return vehicles
+    return mockVehicles
       .filter((v) => {
         if (!v.nextServiceDate) return false;
         const days = getDaysUntil(v.nextServiceDate);
@@ -133,7 +143,7 @@ export function FleetTab() {
             <h2 className="text-2xl font-bold tracking-tight">Fleet Management</h2>
             <p className="text-sm text-muted-foreground">
               <Badge variant="secondary" className="font-mono">{filtered.length}</Badge>{' '}
-              {filtered.length === vehicles.length ? 'total' : 'of'} {vehicles.length} vehicles
+              {filtered.length === mockVehicles.length ? 'total' : 'of'} {mockVehicles.length} vehicles
             </p>
           </div>
         </div>
@@ -201,7 +211,7 @@ export function FleetTab() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Vehicles</p>
-              <p className="text-xl font-bold">{vehicles.length}</p>
+              <p className="text-xl font-bold">{mockVehicles.length}</p>
             </div>
           </CardContent>
         </Card>
@@ -258,7 +268,7 @@ export function FleetTab() {
               const licDays = vehicle.licenseExpiry ? getDaysUntil(vehicle.licenseExpiry) : null;
 
               return (
-                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${accentColors.border}`}>
+                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${accentColors.border} cursor-pointer`} onClick={() => setSelectedVehicle(vehicle)}>
                   <CardContent className="p-4 space-y-3">
                     {/* Header: Type icon + Plate + Status */}
                     <div className="flex items-start justify-between">
@@ -509,45 +519,56 @@ export function FleetTab() {
         </CardContent>
       </Card>
 
-      {/* Vehicle Detail Dialog */}
-      <Dialog open={!!selectedVehicle} onOpenChange={(open) => { if (!open) setSelectedVehicle(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      {/* Vehicle Detail Sheet */}
+      <Sheet open={!!selectedVehicle} onOpenChange={(open) => { if (!open) setSelectedVehicle(null); }}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
           {selectedVehicle && (() => {
             const statusCfg = vehicleStatusConfig[selectedVehicle.status];
             const company = companies.find((c) => c.id === selectedVehicle.companyId);
-            const insDays = selectedVehicle.insuranceExpiry ? getDaysUntil(selectedVehicle.insuranceExpiry) : null;
-            const licDays = selectedVehicle.licenseExpiry ? getDaysUntil(selectedVehicle.licenseExpiry) : null;
-            const svcDays = selectedVehicle.nextServiceDate ? getDaysUntil(selectedVehicle.nextServiceDate) : null;
+            const activeDeliveries = mockDeliveries
+              .filter((d) => d.vehicleId === selectedVehicle.id && activeDeliveryStatuses.includes(d.status))
+              .slice(0, 3);
+            const statusDot = vehicleStatusDots[selectedVehicle.status] || 'bg-gray-400';
 
             return (
               <>
-                <DialogHeader>
+                {/* Vehicle Header */}
+                <SheetHeader className="pr-6">
                   <div className="flex items-center gap-4">
-                    <div className="rounded-lg bg-primary/10 p-3 text-primary">
+                    <div className="relative rounded-lg bg-primary/10 p-3 text-primary">
                       {vehicleTypeIcons[selectedVehicle.type]}
+                      <span className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${statusDot}`} />
                     </div>
-                    <div className="flex-1">
-                      <DialogTitle className="text-xl font-mono">{selectedVehicle.plateNumber}</DialogTitle>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <SheetTitle className="text-xl font-mono">{selectedVehicle.plateNumber}</SheetTitle>
+                      <SheetDescription className="text-sm">
                         {selectedVehicle.make} {selectedVehicle.model} {selectedVehicle.year}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className={statusCfg.className}>
+                      </SheetDescription>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="secondary" className={`${statusCfg.className} gap-1.5`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
                           {statusCfg.label}
                         </Badge>
                         <Badge variant="outline">{vehicleTypeLabels[selectedVehicle.type]}</Badge>
                       </div>
+                      {company && (
+                        <p className="text-xs text-muted-foreground mt-1.5">{company.name}</p>
+                      )}
                     </div>
                   </div>
-                </DialogHeader>
+                </SheetHeader>
 
                 <Separator />
 
-                {/* Key Info */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                {/* Info Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Company</p>
-                    <p className="font-medium mt-1">{company?.name || 'Unknown'}</p>
+                    <p className="text-xs text-muted-foreground">Make / Model</p>
+                    <p className="font-medium mt-1">{selectedVehicle.make} {selectedVehicle.model}</p>
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground">Year</p>
+                    <p className="font-medium mt-1">{selectedVehicle.year}</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3">
                     <p className="text-xs text-muted-foreground">Color</p>
@@ -561,75 +582,99 @@ export function FleetTab() {
                     </p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Capacity</p>
-                    <p className="font-medium mt-1">
-                      {selectedVehicle.capacity >= 1000
-                        ? `${(selectedVehicle.capacity / 1000).toFixed(1)} tonnes`
-                        : `${selectedVehicle.capacity} kg`}
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Current Mileage</p>
+                    <p className="text-xs text-muted-foreground">Mileage</p>
                     <p className="font-medium mt-1">{selectedVehicle.currentMileage.toLocaleString()} km</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Assigned Driver</p>
-                    <p className="font-medium mt-1 flex items-center gap-1">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
-                      {selectedVehicle.assignedDriverName || 'Unassigned'}
+                    <p className="text-xs text-muted-foreground">Next Service</p>
+                    <p className="font-medium mt-1">
+                      {selectedVehicle.nextServiceDate ? formatDate(selectedVehicle.nextServiceDate) : 'N/A'}
                     </p>
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* Expiry Dates */}
+                {/* Maintenance History */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Expiry & Service Dates
+                    <Wrench className="h-4 w-4" />
+                    Maintenance History
                   </h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                      <span className="text-muted-foreground">Insurance Expiry</span>
-                      <span className={insDays !== null && insDays <= 30 ? 'text-amber-600 font-medium' : 'font-medium'}>
-                        {selectedVehicle.insuranceExpiry ? formatDate(selectedVehicle.insuranceExpiry) : 'N/A'}
-                        {insDays !== null && insDays <= 30 && insDays > 0 && (
-                          <AlertTriangle className="ml-1.5 inline h-3.5 w-3.5" />
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                      <span className="text-muted-foreground">License Expiry</span>
-                      <span className={licDays !== null && licDays <= 30 ? 'text-amber-600 font-medium' : 'font-medium'}>
-                        {selectedVehicle.licenseExpiry ? formatDate(selectedVehicle.licenseExpiry) : 'N/A'}
-                        {licDays !== null && licDays <= 30 && licDays > 0 && (
-                          <AlertTriangle className="ml-1.5 inline h-3.5 w-3.5" />
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                      <span className="text-muted-foreground">Next Service</span>
-                      <span className={svcDays !== null && svcDays <= 7 ? 'text-amber-600 font-medium' : 'font-medium'}>
-                        {selectedVehicle.nextServiceDate ? formatDate(selectedVehicle.nextServiceDate) : 'N/A'}
-                        {svcDays !== null && svcDays <= 7 && svcDays > 0 && (
-                          <AlertTriangle className="ml-1.5 inline h-3.5 w-3.5" />
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                      <span className="text-muted-foreground">Last Service</span>
-                      <span className="font-medium">
-                        {selectedVehicle.lastServiceDate ? formatDate(selectedVehicle.lastServiceDate) : 'N/A'}
-                      </span>
-                    </div>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {maintenanceHistory.map((item, idx) => (
+                      <div key={idx} className="rounded-lg border p-3 text-sm space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{item.type}</span>
+                          <span className="font-mono text-emerald-600 font-medium">M{item.cost.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(item.date)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            {item.technician}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{item.notes}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 <Separator />
 
+                {/* Active Deliveries */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Active Deliveries
+                    {activeDeliveries.length > 0 && (
+                      <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs">
+                        {activeDeliveries.length}
+                      </Badge>
+                    )}
+                  </h4>
+                  {activeDeliveries.length === 0 ? (
+                    <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                      No active deliveries assigned to this vehicle.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-xs">Tracking #</TableHead>
+                            <TableHead className="text-xs">Customer</TableHead>
+                            <TableHead className="text-xs hidden sm:table-cell">Route</TableHead>
+                            <TableHead className="text-xs">Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {activeDeliveries.map((d) => (
+                            <TableRow key={d.id}>
+                              <TableCell className="font-mono text-xs">{d.trackingNumber}</TableCell>
+                              <TableCell className="text-xs max-w-[100px] truncate">{d.customerName}</TableCell>
+                              <TableCell className="text-xs hidden sm:table-cell max-w-[120px] truncate">
+                                {d.pickup.city} → {d.destination.city}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-[10px] capitalize">
+                                  {d.status.replace(/_/g, ' ')}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-auto pt-4">
                   <Button className="flex-1 bg-green-600 text-white hover:bg-green-700">
                     <User className="mr-2 h-4 w-4" />
                     {selectedVehicle.assignedDriverName ? 'Reassign Driver' : 'Assign Driver'}
@@ -642,8 +687,8 @@ export function FleetTab() {
               </>
             );
           })()}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

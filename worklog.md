@@ -353,3 +353,263 @@ Work Log:
 Stage Summary:
 - Driver sidebar now: Overview, My Jobs, My Vehicle, Messages, Settings
 - ESLint: zero errors
+
+---
+Task ID: style-r4
+Agent: frontend-styling-expert
+Task: Styling polish — dashboard + auth pages (detailed micro-interactions)
+
+Work Log:
+
+**Login Page (login-page.tsx):**
+- Added animated gradient overlay (gradientShift keyframe) to left branding panel for subtle shimmer
+- Added CSS-only geometric herringbone pattern overlay at 4% opacity
+- Improved demo login buttons: 3px left border colored per role (emerald/sky/amber/violet/rose), hover:scale-[1.03] + active:scale-[0.98] transitions
+- Enhanced login card shadow to shadow-xl with subtle emerald glow (shadow-emerald-500/[0.06]) and ring-1
+- Added "Powered by SwiftFreight Technologies" footer text below the card
+
+**Register Page (register-page.tsx):**
+- Replaced TabsList with custom sliding indicator: absolute-positioned emerald-600 div that translates based on activeTab with 300ms ease-out
+- TabsTrigger now uses transparent active bg with white text (indicator slides behind)
+- Added focus-visible:ring-primary/40 and focus-visible:border-primary/50 to all customer form inputs
+- Added gradient divider (h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent) before plan selector
+
+**Dashboard Layout (dashboard-layout.tsx):**
+- Sidebar logo area: removed border-b, added h-[3px] gradient bottom border (via-primary/40)
+- Active nav items: smoother gradient bg (from-primary/15 via-primary/8), 3px wide accent bar (h-6 w-[3px]) with gradient fill
+- Settings button in bottom section: same active state treatment
+- Quick Track search: added focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/30
+- Notification dropdown: gradient header bar (from-primary/5 to-teal-500/5), left border color per notification type (emerald/primary/teal/amber), unread item subtle bg tint, increased py-3 to py-3.5
+- User dropdown: wrapped Avatar in gradient border container (from-primary to-teal-500), gradient section dividers in dropdown menu
+
+**Overview Tab KPI Cards (overview-tab.tsx):**
+- Added h-1 gradient top border (from-primary to-teal-500) on every KPI card
+- Changed hover from -translate-y-0.5 to -translate-y-[2px] with shadow-lg for stronger lift
+- Removed border-l-4 from cards (cleaner look with top border)
+- Icon container: replaced flat bg with gradient (from-primary/10 to-teal-500/10)
+- Added pulse prop: renders a 2px emerald pulsing dot next to the title
+- Applied pulse to "Total Deliveries" KPI card in staff overview
+
+**Deliveries Tab (deliveries-tab.tsx):**
+- Status badges in table: changed dot from bg-current/60 to bg-current (more visible)
+- Status badges in card view: added gap-1 with matching dot indicator
+- New Delivery button: gradient background (from-primary to-emerald-600) with hover:brightness-110
+
+**Tracking Tab (tracking-tab.tsx):**
+- Progress bar fill: changed to from-primary via-emerald-500 to-teal-500 gradient
+- Completed step circles: gradient bg (from-primary/80 to-emerald-500/80) with primary border
+- Current step: gradient bg (from-primary to-emerald-500), animate-[ring-pulse_2s_ease-in-out_infinite] instead of generic pulse
+- Timeline connecting lines: bg-gradient-to-b from-primary/60 to-primary/10 (fading gradient)
+- Timeline dots: bg-primary with animate-[ring-pulse_...] for current event
+- Timeline events: wrapped content in hover-interactive div with group-hover:bg-primary/[0.03] and group-hover:-translate-y-[1px]
+
+**Global CSS (globals.css):**
+- Added @keyframes gradientShift (opacity 0.6→1→0.6) for login panel animation
+- Added @keyframes ring-pulse (box-shadow expansion/contraction with primary oklch color) for tracking step
+
+Stage Summary:
+- 7 files modified with subtle, professional styling improvements
+- All changes use existing oklch green/emerald/teal theme variables
+- No new dependencies introduced
+- ESLint: zero errors
+
+---
+Task ID: r5-warehouse-rating
+Agent: full-stack-developer
+Task: Add Warehouse Management Tab + Interactive Star Rating Dialog
+
+Work Log:
+
+**Feature 1: Warehouse Management Tab:**
+- Created `/src/components/dashboard/tabs/warehouse-tab.tsx` (~210 lines):
+  - Header: "Warehouse Management" title with Warehouse icon and description
+  - 4 KPI summary cards in a responsive grid (sm:2cols, lg:4cols):
+    1. Total Warehouses (emerald theme) - count from mock data
+    2. Packages in Storage (teal theme) - sum of all warehouse used capacity
+    3. Storage Utilization (primary theme) - percentage (73%)
+    4. Pending Dispatch (amber theme) - static count of 47
+  - Warehouse cards grid (md:2cols, 1col mobile) with 4 warehouse objects:
+    - Name + location with MapPin icon
+    - Utilization progress bar with color coding (green <70%, amber 70-90%, red >90%)
+    - Stats row: Zones count, Temperature, Last Inspection date
+    - Manager with avatar circle (initials) and "Warehouse Manager" label
+    - Status badge (active=green, near_capacity=amber)
+    - Hover effect: -translate-y-0.5 + shadow-lg transition
+  - Storage Breakdown Chart (recharts BarChart) showing Capacity vs Used per warehouse in emerald/green scheme
+  - Recent Activity section with 6 items, alert/warning items highlighted with red/amber backgrounds
+- Added `'warehouse'` to DashboardTab union type in `types.ts`
+- Registered WarehouseTab in `tabs/index.tsx` (import, export, tabComponentMap)
+- Added Warehouse nav item to `dashboard-layout.tsx`:
+  - Imported `Warehouse` from lucide-react
+  - Added `{ tab: 'warehouse', label: 'Warehouse', icon: Warehouse }` to staffNavItems (after fleet, before dispatch)
+  - Added `warehouse: 'Warehouse'` to tabTitles
+
+**Feature 2: Interactive Star Rating Dialog:**
+- Modified `/src/components/dashboard/tabs/deliveries-tab.tsx`:
+  - Added 4 useState hooks to DeliveryDetailPanel (moved before early return to satisfy rules of hooks):
+    - `ratingDialogOpen`, `selectedRating`, `hoveredRating`, `ratingComment`
+  - Replaced toast-only "Rate Delivery" button with dialog open + state reset logic
+  - Created Dialog component with:
+    - Title "Rate Delivery" with amber Star icon
+    - Tracking number display in monospace
+    - 5 large interactive stars (h-8 w-8) with amber-400 fill when active, gray-300 when empty
+    - Hover highlights stars up to hovered position, click sets rating
+    - Scale-125 hover transition on each star button
+    - Rating label text (Poor/Fair/Good/Very Good/Excellent)
+    - Textarea for optional comments with "Share your delivery experience..." placeholder
+    - Cancel and Submit Rating buttons (Submit disabled when rating=0)
+    - On submit: closes dialog and shows success toast "Rating submitted! Thank you for your feedback."
+
+Stage Summary:
+- 1 new file created (warehouse-tab.tsx)
+- 4 existing files modified (types.ts, tabs/index.tsx, dashboard-layout.tsx, deliveries-tab.tsx)
+- No new dependencies added
+- ESLint: zero errors
+- Dev server: compiles successfully with no errors
+
+---
+Task ID: r6-fleet-reports
+Agent: full-stack-developer
+Task: Enhance Fleet Tab with Vehicle Detail Sheet + Reports Tab with New Visualizations
+
+Work Log:
+
+**Fleet Tab Enhancement (fleet-tab.tsx):**
+- Replaced Dialog-based vehicle detail view with Sheet component (slides in from right)
+- Vehicle cards now clickable (cursor-pointer, onClick opens Sheet)
+- Vehicle detail Sheet includes:
+  1. Vehicle header: plate number (large, mono), type badge, status badge with dot, company name
+  2. Info grid (2 cols): Make/Model, Year, Color, Fuel Type, Mileage, Next Service
+  3. Maintenance History: 5 items showing date, type, cost (M{amount}), technician name, notes — in scrollable list (max-h-48)
+  4. Active Deliveries: filters mockDeliveries by vehicleId + active statuses, shows up to 3 in table with tracking #, customer, route, status
+- Updated imports: Dialog → Sheet components, added Package/Calendar icons, removed unused Shield
+- Changed mock data imports to use `vehicles as mockVehicles` and `deliveries as mockDeliveries` pattern
+- All internal references updated from `vehicles` to `mockVehicles`
+
+**Reports Tab Enhancement (reports-tab.tsx):**
+- Added "Delivery Volume by Day of Week" BarChart section after existing charts
+  - 7-day data (Mon-Sun) with green/emerald gradient bars
+  - Custom tooltip showing delivery count + avg delivery time
+  - ChartContainer with dayOfWeekConfig
+- Added "Company Performance Comparison" table section after day-of-week chart
+  - 5-column table: Company, Deliveries, Revenue, On-Time %, Rating
+  - Emerald-themed header row (bg-emerald-50 / dark variant)
+  - Color-coded on-time % (green ≥92%, amber <92%)
+  - Star rating with amber-filled icon
+  - Building2 icon in card header
+
+Stage Summary:
+- 2 existing files modified (fleet-tab.tsx, reports-tab.tsx)
+- No new dependencies added
+- ESLint: zero errors
+- Dev server: compiles successfully with no errors
+
+---
+Task ID: cron-r4
+Agent: Main Orchestrator + 3 subagents (frontend-styling-expert, full-stack-developer x2)
+Task: QA testing, bug fixes, styling improvements, and new feature development (Round 4)
+
+Work Log:
+
+**QA Testing (agent-browser):**
+- Marketing website: all sections render correctly (hero, features, how-it-works, customer types, benefits, testimonials, pricing, FAQ, contact, footer)
+- Login page: 5 demo role buttons work correctly
+- Company Owner dashboard: all 14 nav tabs load correctly
+- Driver dashboard: Overview, My Jobs, My Vehicle, Messages, Settings - all verified
+- Customer dashboard: My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices - all verified
+- Dark mode: works correctly across all views
+- Sign out: returns to marketing page
+
+**Bugs Found & Fixed:**
+1. Duplicate "Messages" in staff sidebar — `messages` was in both `commonNavItems` and `staffNavItems`; removed from `staffNavItems` (dashboard-layout.tsx line 144)
+2. Star Rating dialog never triggered — all mock delivered deliveries had ratings; modified mock-data.ts: (a) changed delivery generator so 30% of delivered deliveries have no rating, (b) set demo delivery SF2025000606LS rating to undefined
+
+**Styling Improvements (by frontend-styling-expert):**
+- Login page: animated gradient overlay, geometric pattern, role-colored left borders on demo buttons, card glow, "Powered by" footer
+- Register page: sliding tab indicator with 300ms animation, primary-tinted focus rings, gradient divider
+- Dashboard header: 3px gradient logo border, 3px active nav accent bar, search focus glow, gradient notification header with type-colored left borders, gradient avatar ring
+- Overview KPI cards: gradient top border, enhanced hover lift (2px + shadow-lg), gradient icon containers, pulsing dot on Total Deliveries
+- Deliveries tab: brighter status dots, card view dot indicators, gradient New Delivery button
+- Tracking tab: gradient progress fill, gradient completed steps, ring-pulse animation on current step, gradient timeline lines, hover-lift event cards
+- Global CSS: added gradientShift and ring-pulse keyframe animations
+
+**New Features (by full-stack-developer agents):**
+1. Warehouse Management Tab (new file: warehouse-tab.tsx):
+   - 4 KPI cards (Total Warehouses, Packages in Storage, Storage Utilization 70%, Pending Dispatch)
+   - 4 warehouse cards with utilization bars (color-coded: green/amber/red), stats, manager avatars, status badges
+   - Storage Breakdown BarChart (Capacity vs Used per warehouse)
+   - Recent Activity feed with 6 items including alert/warning highlights
+   - Registered in types.ts, tabs/index.tsx, dashboard-layout.tsx
+2. Interactive Star Rating Dialog (modified deliveries-tab.tsx):
+   - 5 large clickable amber stars with hover highlighting and scale transition
+   - Rating labels (Poor/Fair/Good/Very Good/Excellent)
+   - Optional comment textarea
+   - Submit disabled until star selected
+   - Success toast on submit
+3. Fleet Vehicle Detail Sheet (modified fleet-tab.tsx):
+   - Sheet slides in from right on vehicle card click
+   - Vehicle info grid (Make/Model, Year, Color, Fuel, Mileage, Next Service)
+   - Maintenance history (5 items with date, type, cost, technician)
+   - Active deliveries table (filtered by vehicleId, up to 3)
+   - Action buttons: Assign Driver, Schedule Service
+4. Reports Tab New Visualizations (modified reports-tab.tsx):
+   - "Delivery Volume by Day of Week" BarChart (7 days, green/emerald gradient)
+   - "Company Performance Comparison" table (3 companies, 5 metrics)
+
+**Verification Results:**
+- ESLint: zero errors (verified after each change)
+- Dev server: compiles clean, no runtime errors
+- Browser QA: all new features verified via agent-browser
+- Star rating dialog: confirmed opens, stars interactive, submit works with toast
+- Vehicle detail Sheet: confirmed opens with full info, maintenance history, active deliveries
+- Reports: both new chart sections render correctly
+- Warehouse tab: KPIs and cards render, chart visible in full accessibility tree
+
+Stage Summary:
+- 1 bug fixed (duplicate sidebar Messages), 1 data issue fixed (unrateable deliveries)
+- 7 files styled (login, register, dashboard-layout, overview, deliveries, tracking, globals.css)
+- 1 new tab created (Warehouse), 3 existing tabs enhanced (Deliveries, Fleet, Reports)
+- Total dashboard tabs: 16 (Overview, Deliveries, Tracking, Messages, Customers, Drivers, Fleet, Warehouse, Dispatch, Sourcing, Invoices, Quotations, Reports, Notifications, Settings + My Vehicle for drivers)
+- Staff sidebar nav items: 14 (Overview, Deliveries, Tracking, Messages, Customers, Drivers, Fleet, Warehouse, Dispatch, Sourcing, Notifications, Invoices, Quotations, Reports)
+
+---
+## HANDOVER DOCUMENT
+
+### Current Project Status / Assessment
+SwiftFreight is a comprehensive, investor-ready multi-tenant SaaS Logistics Operating System demo for Lesotho. The application is fully functional with a professional marketing website, role-based authentication with 5 demo roles, and 16 dashboard tabs covering all aspects of logistics operations. The codebase is stable with zero ESLint errors, clean compilation, and no runtime errors. Dark mode support, mobile responsiveness, and micro-interaction animations are implemented throughout.
+
+**Feature completeness:**
+- Marketing website (11 sections + testimonials)
+- Auth pages (Login, Register, Forgot Password)
+- 16 dashboard tabs: Overview (3 role variants), Deliveries, Tracking, Messages, Customers, Drivers, Fleet (with vehicle detail Sheet), Warehouse, Dispatch (with map placeholder), Sourcing, Invoices, Quotations, Reports (6+ charts), Notifications, Settings
+- 9 API routes
+- Prisma schema with 13 models
+- 500+ demo deliveries, 60 drivers, 40 vehicles, 300 customers, 3 companies
+
+### Current Goals / Completed Modifications / Verification Results
+**This round completed:**
+- Fixed duplicate Messages sidebar bug
+- Fixed unratable deliveries data issue
+- 7 files received detailed styling improvements (animations, gradients, hover effects, micro-interactions)
+- 1 new Warehouse Management tab created
+- Interactive Star Rating dialog added to delivery details
+- Fleet tab enhanced with vehicle detail Sheet
+- Reports tab enhanced with Day-of-Week chart and Company Comparison table
+- All changes verified via agent-browser and ESLint (zero errors)
+
+### Unresolved Issues / Risks + Priority Recommendations for Next Phase
+1. **[Low] Customer "My Shipments" may still show deliveries from other companies** — The deliveries filter uses `currentUser.id` to match customerId, which is correct for demo data. No action needed unless demo data changes.
+2. **[Low] Driver "Monthly Earnings" not fully personalized** — Uses driverId-filtered delivery amounts, which is functional but doesn't account for commission rates.
+3. **[Medium] No mobile-specific Sheet/Drawer for vehicle details** — The vehicle detail Sheet works on desktop but may need responsive adjustments for very small screens.
+4. **[Enhancement] No real-time WebSocket integration** — All data is mock/static. For investor demo, this is acceptable.
+5. **[Enhancement] Maps integration** — Currently uses a CSS/SVG placeholder. A real map (Leaflet/Mapbox) would elevate the demo.
+6. **[Enhancement] Print/export functionality** — "Print Manifests" and "Generate Invoice" buttons show toasts. Real PDF generation would add polish.
+7. **[Enhancement] More role-specific dashboards** — Sourcing Agent, Trailer Owner, and Warehouse Partner roles have no dedicated views yet.
+8. **[Enhancement] Data export** — CSV/Excel export from tables would be valuable for operations users.
+
+**Priority recommendations for next phase:**
+1. Add more role-specific dashboards (Sourcing Agent, Trailer Owner)
+2. Enhance mobile responsiveness of Sheet components
+3. Add PDF invoice generation
+4. Improve the Dispatch tab with more interactivity (drag-and-drop assignment)
+5. Add a "Live Map" tab using Leaflet or similar

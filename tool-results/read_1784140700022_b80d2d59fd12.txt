@@ -1,0 +1,990 @@
+     1→'use client';
+     2→
+     3→import { useMemo } from 'react';
+     4→import {
+     5→  AreaChart,
+     6→  Area,
+     7→  BarChart,
+     8→  Bar,
+     9→  PieChart,
+    10→  Pie,
+    11→  Cell,
+    12→  XAxis,
+    13→  YAxis,
+    14→  CartesianGrid,
+    15→} from 'recharts';
+    16→import {
+    17→  DollarSign,
+    18→  Package,
+    19→  Clock,
+    20→  Users,
+    21→  TrendingUp,
+    22→  TrendingDown,
+    23→  Truck,
+    24→  MapPin,
+    25→  Star,
+    26→  Bell,
+    27→  AlertCircle,
+    28→  MessageSquare,
+    29→  CreditCard,
+    30→  Shield,
+    31→  ArrowUpRight,
+    32→  Plus,
+    33→  Search,
+    34→  Phone,
+    35→  ClipboardCheck,
+    36→  CheckCircle2,
+    37→} from 'lucide-react';
+    38→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+    39→import { Button } from '@/components/ui/button';
+    40→import { Badge } from '@/components/ui/badge';
+    41→import { Skeleton } from '@/components/ui/skeleton';
+    42→import {
+    43→  Table,
+    44→  TableBody,
+    45→  TableCell,
+    46→  TableHead,
+    47→  TableHeader,
+    48→  TableRow,
+    49→} from '@/components/ui/table';
+    50→import {
+    51→  ChartContainer,
+    52→  ChartTooltip,
+    53→  ChartTooltipContent,
+    54→  ChartLegend,
+    55→  ChartLegendContent,
+    56→  type ChartConfig,
+    57→} from '@/components/ui/chart';
+    58→import { analyticsData, deliveries, notifications, statusLabels, statusColors, customers } from '@/lib/mock-data';
+    59→import { useAuthStore, useNavStore } from '@/lib/store';
+    60→import type { Delivery } from '@/lib/types';
+    61→
+    62→// ============ Chart Configs ============
+    63→const revenueChartConfig: ChartConfig = {
+    64→  revenue: { label: 'Revenue (M)', color: '#16a34a' },
+    65→  deliveries: { label: 'Deliveries', color: '#14b8a6' },
+    66→};
+    67→
+    68→const statusChartConfig: ChartConfig = {
+    69→  delivered: { label: 'Delivered', color: '#22c55e' },
+    70→  inTransit: { label: 'In Transit', color: '#06b6d4' },
+    71→  atBorder: { label: 'At Border', color: '#f59e0b' },
+    72→  outForDelivery: { label: 'Out for Delivery', color: '#8b5cf6' },
+    73→  collected: { label: 'Collected', color: '#14b8a6' },
+    74→  atWarehouse: { label: 'At Warehouse', color: '#6366f1' },
+    75→  quoteAccepted: { label: 'Quote Accepted', color: '#3b82f6' },
+    76→  awaitingQuote: { label: 'Awaiting Quote', color: '#f97316' },
+    77→  requestReceived: { label: 'Request Received', color: '#94a3b8' },
+    78→  cancelled: { label: 'Cancelled', color: '#ef4444' },
+    79→  returned: { label: 'Returned', color: '#f43f5e' },
+    80→};
+    81→
+    82→const PIE_COLORS: Record<string, string> = {
+    83→  Delivered: '#22c55e',
+    84→  'In Transit': '#06b6d4',
+    85→  'At Border': '#f59e0b',
+    86→  'Out for Delivery': '#8b5cf6',
+    87→  Collected: '#14b8a6',
+    88→  'At Warehouse': '#6366f1',
+    89→  'Quote Accepted': '#3b82f6',
+    90→  'Awaiting Quote': '#f97316',
+    91→  'Request Received': '#94a3b8',
+    92→  Cancelled: '#ef4444',
+    93→  Returned: '#f43f5e',
+    94→};
+    95→
+    96→const spendingChartConfig: ChartConfig = {
+    97→  spent: { label: 'Spent (M)', color: '#16a34a' },
+    98→};
+    99→
+   100→// ============ Helpers ============
+   101→function formatCurrency(value: number) {
+   102→  return `M${value.toLocaleString()}`;
+   103→}
+   104→
+   105→function timeAgo(dateStr: string): string {
+   106→  const diff = Date.now() - new Date(dateStr).getTime();
+   107→  const hours = Math.floor(diff / 3600000);
+   108→  if (hours < 1) return `${Math.floor(diff / 60000)}m ago`;
+   109→  if (hours < 24) return `${hours}h ago`;
+   110→  const days = Math.floor(hours / 24);
+   111→  return `${days}d ago`;
+   112→}
+   113→
+   114→function notifIcon(type: string) {
+   115→  switch (type) {
+   116→    case 'delivery_update':
+   117→      return <Truck className="h-4 w-4 text-emerald-600" />;
+   118→    case 'new_message':
+   119→      return <MessageSquare className="h-4 w-4 text-blue-500" />;
+   120→    case 'quote_received':
+   121→      return <CreditCard className="h-4 w-4 text-amber-500" />;
+   122→    case 'payment':
+   123→      return <DollarSign className="h-4 w-4 text-green-600" />;
+   124→    case 'system':
+   125→      return <Shield className="h-4 w-4 text-slate-500" />;
+   126→    case 'alert':
+   127→      return <AlertCircle className="h-4 w-4 text-orange-500" />;
+   128→    default:
+   129→      return <Bell className="h-4 w-4" />;
+   130→  }
+   131→}
+   132→
+   133→// ============ KPI Card ============
+   134→function KpiCard({
+   135→  title,
+   136→  value,
+   137→  growth,
+   138→  icon: Icon,
+   139→  prefix = '',
+   140→  suffix = '',
+   141→  isNegative = false,
+   142→  iconBg = 'bg-emerald-50 dark:bg-emerald-950/50',
+   143→  iconColor = 'text-emerald-600',
+   144→}: {
+   145→  title: string;
+   146→  value: string;
+   147→  growth?: number;
+   148→  icon: React.ComponentType<{ className?: string }>;
+   149→  prefix?: string;
+   150→  suffix?: string;
+   151→  isNegative?: boolean;
+   152→  iconBg?: string;
+   153→  iconColor?: string;
+   154→}) {
+   155→  const isPositive = growth !== undefined && growth >= 0;
+   156→  return (
+   157→    <Card className="relative overflow-hidden border-l-4 border-l-primary/30 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-300 dark:hover:border-emerald-700">
+   158→      <CardContent className="p-4">
+   159→        <div className="flex items-center justify-between">
+   160→          <div className="space-y-1">
+   161→            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+   162→            <p className="text-2xl font-bold tracking-tight">
+   163→              {prefix}{value}{suffix}
+   164→            </p>
+   165→          </div>
+   166→          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 ${iconBg}`}>
+   167→            <Icon className={`h-6 w-6 ${iconColor}`} />
+   168→          </div>
+   169→        </div>
+   170→        {growth !== undefined && (
+   171→          <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
+   172→            {isPositive ? (
+   173→              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+   174→            ) : (
+   175→              <TrendingDown className={`h-3.5 w-3.5 ${isNegative ? 'text-red-500' : 'text-emerald-600'}`} />
+   176→            )}
+   177→            <span
+   178→              className={`text-sm font-semibold ${
+   179→                isNegative ? (isPositive ? 'text-red-500' : 'text-emerald-600') : 'text-emerald-600'
+   180→              }`}
+   181→            >
+   182→              {isPositive ? '+' : ''}{growth}%
+   183→            </span>
+   184→            <span className="text-xs text-muted-foreground">vs last period</span>
+   185→          </div>
+   186→        )}
+   187→      </CardContent>
+   188→    </Card>
+   189→  );
+   190→}
+   191→
+   192→// ============ Loading Skeleton ============
+   193→function OverviewLoadingSkeleton() {
+   194→  return (
+   195→    <div className="space-y-6">
+   196→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   197→        {Array.from({ length: 4 }).map((_, i) => (
+   198→          <Card key={i}>
+   199→            <CardContent className="p-4">
+   200→              <Skeleton className="mb-2 h-4 w-24" />
+   201→              <Skeleton className="mb-2 h-8 w-32" />
+   202→              <Skeleton className="h-4 w-20" />
+   203→            </CardContent>
+   204→          </Card>
+   205→        ))}
+   206→      </div>
+   207→      <div className="grid gap-6 lg:grid-cols-2">
+   208→        <Card>
+   209→          <CardContent className="p-6">
+   210→            <Skeleton className="mb-4 h-5 w-40" />
+   211→            <Skeleton className="h-64 w-full" />
+   212→          </CardContent>
+   213→        </Card>
+   214→        <Card>
+   215→          <CardContent className="p-6">
+   216→            <Skeleton className="mb-4 h-5 w-40" />
+   217→            <Skeleton className="h-64 w-full" />
+   218→          </CardContent>
+   219→        </Card>
+   220→      </div>
+   221→    </div>
+   222→  );
+   223→}
+   224→
+   225→// ============ Customer Overview ============
+   226→function CustomerOverview() {
+   227→  const { currentUser } = useAuthStore();
+   228→  const { setDashboardTab } = useNavStore();
+   229→
+   230→  // Find customer matching the logged-in user
+   231→  const customerRecord = useMemo(() => {
+   232→    return customers.find((c) => c.name === currentUser?.name) || customers[0];
+   233→  }, [currentUser]);
+   234→
+   235→  const customerDeliveries = useMemo(
+   236→    () => deliveries.filter((d) => d.customerId === customerRecord.id),
+   237→    [customerRecord.id]
+   238→  );
+   239→
+   240→  const activeShipments = useMemo(
+   241→    () => customerDeliveries.filter((d) => d.status !== 'delivered' && d.status !== 'cancelled' && d.status !== 'returned'),
+   242→    [customerDeliveries]
+   243→  );
+   244→
+   245→  const deliveredShipments = useMemo(
+   246→    () => customerDeliveries.filter((d) => d.status === 'delivered'),
+   247→    [customerDeliveries]
+   248→  );
+   249→
+   250→  const totalSpent = useMemo(
+   251→    () => customerDeliveries.reduce((sum, d) => sum + (d.paidAmount || 0), 0),
+   252→    [customerDeliveries]
+   253→  );
+   254→
+   255→  const recentShipments = useMemo(
+   256→    () => [...customerDeliveries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5),
+   257→    [customerDeliveries]
+   258→  );
+   259→
+   260→  // Mock spending by month (last 6 months)
+   261→  const spendingByMonth = useMemo(() => {
+   262→    const now = new Date();
+   263→    const months = [];
+   264→    for (let i = 5; i >= 0; i--) {
+   265→      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+   266→      const monthLabel = date.toLocaleString('default', { month: 'short' });
+   267→      const monthDeliveries = customerDeliveries.filter((d) => {
+   268→        const dDate = new Date(d.createdAt);
+   269→        return dDate.getMonth() === date.getMonth() && dDate.getFullYear() === date.getFullYear();
+   270→      });
+   271→      const spent = monthDeliveries.reduce((s, d) => s + (d.paidAmount || 0), 0);
+   272→      months.push({ month: monthLabel, spent: spent || Math.floor(Math.random() * 3000 + 500) });
+   273→    }
+   274→    return months;
+   275→  }, [customerDeliveries]);
+   276→
+   277→  const today = new Date().toLocaleDateString('default', {
+   278→    weekday: 'long',
+   279→    year: 'numeric',
+   280→    month: 'long',
+   281→    day: 'numeric',
+   282→  });
+   283→
+   284→  const firstName = currentUser?.name?.split(' ')[0] || 'Customer';
+   285→
+   286→  return (
+   287→    <div className="space-y-6">
+   288→      {/* Greeting */}
+   289→      <div className="relative">
+   290→        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 blur-3xl pointer-events-none" />
+   291→        <h1 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}!</h1>
+   292→        <p className="text-muted-foreground">{today}</p>
+   293→      </div>
+   294→
+   295→      {/* KPI Cards */}
+   296→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   297→        <KpiCard
+   298→          title="Active Shipments"
+   299→          value={activeShipments.length.toString()}
+   300→          icon={Package}
+   301→          iconBg="bg-amber-50 dark:bg-amber-950/50"
+   302→          iconColor="text-amber-600"
+   303→        />
+   304→        <KpiCard
+   305→          title="Delivered"
+   306→          value={deliveredShipments.length.toString()}
+   307→          icon={CheckCircle2}
+   308→          iconBg="bg-green-50 dark:bg-green-950/50"
+   309→          iconColor="text-green-600"
+   310→        />
+   311→        <KpiCard
+   312→          title="Total Spent"
+   313→          value={formatCurrency(totalSpent)}
+   314→          icon={DollarSign}
+   315→          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
+   316→          iconColor="text-emerald-600"
+   317→        />
+   318→        <KpiCard
+   319→          title="Avg Delivery Time"
+   320→          value="3.2"
+   321→          suffix=" days"
+   322→          icon={Clock}
+   323→          iconBg="bg-teal-50 dark:bg-teal-950/50"
+   324→          iconColor="text-teal-600"
+   325→        />
+   326→      </div>
+   327→
+   328→      {/* Quick Actions */}
+   329→      <div>
+   330→        <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
+   331→        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+   332→          <Card
+   333→            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+   334→            onClick={() => setDashboardTab('deliveries')}
+   335→          >
+   336→            <CardContent className="flex items-center gap-4 p-4">
+   337→              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+   338→                <Plus className="h-5 w-5 text-emerald-600" />
+   339→              </div>
+   340→              <div>
+   341→                <p className="font-medium">New Shipment</p>
+   342→                <p className="text-xs text-muted-foreground">Create a delivery request</p>
+   343→              </div>
+   344→              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+   345→            </CardContent>
+   346→          </Card>
+   347→          <Card
+   348→            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+   349→            onClick={() => setDashboardTab('tracking')}
+   350→          >
+   351→            <CardContent className="flex items-center gap-4 p-4">
+   352→              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
+   353→                <Search className="h-5 w-5 text-teal-600" />
+   354→              </div>
+   355→              <div>
+   356→                <p className="font-medium">Track a Parcel</p>
+   357→                <p className="text-xs text-muted-foreground">Look up your shipment</p>
+   358→              </div>
+   359→              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+   360→            </CardContent>
+   361→          </Card>
+   362→          <Card
+   363→            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+   364→            onClick={() => setDashboardTab('sourcing')}
+   365→          >
+   366→            <CardContent className="flex items-center gap-4 p-4">
+   367→              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50">
+   368→                <Truck className="h-5 w-5 text-amber-600" />
+   369→              </div>
+   370→              <div>
+   371→                <p className="font-medium">Request Sourcing</p>
+   372→                <p className="text-xs text-muted-foreground">Source products from SA</p>
+   373→              </div>
+   374→              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+   375→            </CardContent>
+   376→          </Card>
+   377→        </div>
+   378→      </div>
+   379→
+   380→      {/* Recent Shipments + Spending Chart */}
+   381→      <div className="grid gap-6 lg:grid-cols-2">
+   382→        {/* Recent Shipments */}
+   383→        <Card>
+   384→          <CardHeader className="pb-2">
+   385→            <CardTitle className="text-base">Recent Shipments</CardTitle>
+   386→            <CardDescription>Your latest delivery activity</CardDescription>
+   387→          </CardHeader>
+   388→          <CardContent className="p-0">
+   389→            <div className="max-h-96 overflow-y-auto">
+   390→              <Table>
+   391→                <TableHeader>
+   392→                  <TableRow>
+   393→                    <TableHead className="text-xs">Tracking #</TableHead>
+   394→                    <TableHead className="hidden text-xs sm:table-cell">Route</TableHead>
+   395→                    <TableHead className="text-xs">Status</TableHead>
+   396→                    <TableHead className="hidden text-xs md:table-cell">Amount</TableHead>
+   397→                  </TableRow>
+   398→                </TableHeader>
+   399→                <TableBody>
+   400→                  {recentShipments.length === 0 && (
+   401→                    <TableRow>
+   402→                      <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+   403→                        No shipments yet
+   404→                      </TableCell>
+   405→                    </TableRow>
+   406→                  )}
+   407→                  {recentShipments.map((d) => (
+   408→                    <TableRow key={d.id} className="cursor-pointer">
+   409→                      <TableCell className="max-w-[130px] truncate font-mono text-xs">
+   410→                        {d.trackingNumber}
+   411→                      </TableCell>
+   412→                      <TableCell className="hidden max-w-[120px] truncate text-xs sm:table-cell">
+   413→                        {d.pickup.city} → {d.destination.city}
+   414→                      </TableCell>
+   415→                      <TableCell>
+   416→                        <Badge
+   417→                          variant="secondary"
+   418→                          className={`text-[10px] ${statusColors[d.status] || ''}`}
+   419→                        >
+   420→                          {statusLabels[d.status] || d.status}
+   421→                        </Badge>
+   422→                      </TableCell>
+   423→                      <TableCell className="hidden text-xs md:table-cell">
+   424→                        {d.quotedAmount ? formatCurrency(d.quotedAmount) : '—'}
+   425→                      </TableCell>
+   426→                    </TableRow>
+   427→                  ))}
+   428→                </TableBody>
+   429→              </Table>
+   430→            </div>
+   431→          </CardContent>
+   432→        </Card>
+   433→
+   434→        {/* Spending Overview */}
+   435→        <Card>
+   436→          <CardHeader className="pb-2">
+   437→            <CardTitle className="text-base">Spending Overview</CardTitle>
+   438→            <CardDescription>Your monthly delivery spend</CardDescription>
+   439→          </CardHeader>
+   440→          <CardContent>
+   441→            <ChartContainer config={spendingChartConfig} className="h-[280px] w-full">
+   442→              <BarChart data={spendingByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+   443→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+   444→                <XAxis
+   445→                  dataKey="month"
+   446→                  tickLine={false}
+   447→                  axisLine={false}
+   448→                  tickMargin={8}
+   449→                  className="text-xs"
+   450→                />
+   451→                <YAxis
+   452→                  tickLine={false}
+   453→                  axisLine={false}
+   454→                  tickMargin={8}
+   455→                  tickFormatter={(v: number) => `M${v}`}
+   456→                  className="text-xs"
+   457→                />
+   458→                <ChartTooltip content={<ChartTooltipContent />} />
+   459→                <Bar
+   460→                  dataKey="spent"
+   461→                  fill="#16a34a"
+   462→                  opacity={0.85}
+   463→                  radius={[4, 4, 0, 0]}
+   464→                  barSize={36}
+   465→                />
+   466→              </BarChart>
+   467→            </ChartContainer>
+   468→          </CardContent>
+   469→        </Card>
+   470→      </div>
+   471→    </div>
+   472→  );
+   473→}
+   474→
+   475→// ============ Driver Overview ============
+   476→function DriverOverview() {
+   477→  const { currentUser } = useAuthStore();
+   478→
+   479→  const today = new Date().toLocaleDateString('default', {
+   480→    weekday: 'long',
+   481→    year: 'numeric',
+   482→    month: 'long',
+   483→    day: 'numeric',
+   484→  });
+   485→
+   486→  const firstName = currentUser?.name?.split(' ')[0] || 'Driver';
+   487→
+   488→  // Compute driver stats from actual delivery data
+   489→  const myDeliveries = useMemo(
+   490→    () => deliveries.filter((d) => d.driverId === currentUser?.id),
+   491→    [currentUser]
+   492→  );
+   493→
+   494→  const todayStr = new Date().toDateString();
+   495→  const todayJobs = useMemo(
+   496→    () => myDeliveries.filter((d) => {
+   497→      const createdToday = new Date(d.createdAt).toDateString() === todayStr;
+   498→      const isActive = !['delivered', 'cancelled', 'returned'].includes(d.status);
+   499→      return createdToday || (isActive && d.status !== 'delivered');
+   500→    }).length,
+   501→    [myDeliveries, todayStr]
+   502→  );
+   503→
+   504→  const completedThisWeek = useMemo(() => {
+   505→    const weekAgo = Date.now() - 7 * 86400000;
+   506→    return myDeliveries.filter((d) => d.status === 'delivered' && new Date(d.actualDelivery || d.updatedAt).getTime() > weekAgo).length;
+   507→  }, [myDeliveries]);
+   508→
+   509→  const monthlyEarnings = useMemo(() => {
+   510→    const monthAgo = Date.now() - 30 * 86400000;
+   511→    const total = myDeliveries
+   512→      .filter((d) => d.status === 'delivered' && new Date(d.actualDelivery || d.updatedAt).getTime() > monthAgo)
+   513→      .reduce((sum, d) => sum + (d.quotedAmount || 0), 0);
+   514→    return `M${total.toLocaleString()}`;
+   515→  }, [myDeliveries]);
+   516→
+   517→  const avgRating = useMemo(() => {
+   518→    const rated = myDeliveries.filter((d) => d.rating);
+   519→    if (rated.length === 0) return 0;
+   520→    return (rated.reduce((sum, d) => sum + Number(d.rating || 0), 0) / rated.length).toFixed(1);
+   521→  }, [myDeliveries]);
+   522→
+   523→  // Active deliveries (not delivered/cancelled/returned)
+   524→  const activeDeliveries = useMemo(
+   525→    () => myDeliveries.filter((d) => !['delivered', 'cancelled', 'returned'].includes(d.status)).slice(0, 5),
+   526→    [myDeliveries]
+   527→  );
+   528→
+   529→  return (
+   530→    <div className="space-y-6">
+   531→      {/* Greeting */}
+   532→      <div className="relative">
+   533→        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 blur-3xl pointer-events-none" />
+   534→        <h1 className="text-2xl font-bold tracking-tight">Welcome, {firstName}!</h1>
+   535→        <p className="text-muted-foreground">{today}</p>
+   536→      </div>
+   537→
+   538→      {/* KPI Cards */}
+   539→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   540→        <KpiCard
+   541→          title="Today&apos;s Jobs"
+   542→          value={todayJobs.toString()}
+   543→          icon={ClipboardCheck}
+   544→          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
+   545→          iconColor="text-emerald-600"
+   546→        />
+   547→        <KpiCard
+   548→          title="Completed This Week"
+   549→          value={completedThisWeek.toString()}
+   550→          icon={CheckCircle2}
+   551→          iconBg="bg-green-50 dark:bg-green-950/50"
+   552→          iconColor="text-green-600"
+   553→        />
+   554→        <KpiCard
+   555→          title="This Month&apos;s Earnings"
+   556→          value={monthlyEarnings}
+   557→          icon={DollarSign}
+   558→          iconBg="bg-amber-50 dark:bg-amber-950/50"
+   559→          iconColor="text-amber-600"
+   560→        />
+   561→        <KpiCard
+   562→          title="Rating"
+   563→          value={avgRating.toString()}
+   564→          icon={Star}
+   565→          iconBg="bg-yellow-50 dark:bg-yellow-950/50"
+   566→          iconColor="text-yellow-500"
+   567→        />
+   568→      </div>
+   569→
+   570→      {/* Quick Actions */}
+   571→      <div>
+   572→        <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
+   573→        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+   574→          <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
+   575→            <CardContent className="flex items-center gap-4 p-4">
+   576→              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+   577→                <Truck className="h-5 w-5 text-emerald-600" />
+   578→              </div>
+   579→              <div>
+   580→                <p className="font-medium">Update Status</p>
+   581→                <p className="text-xs text-muted-foreground">Update delivery progress</p>
+   582→              </div>
+   583→              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+   584→            </CardContent>
+   585→          </Card>
+   586→          <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
+   587→            <CardContent className="flex items-center gap-4 p-4">
+   588→              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
+   589→                <Phone className="h-5 w-5 text-teal-600" />
+   590→              </div>
+   591→              <div>
+   592→                <p className="font-medium">Contact Dispatcher</p>
+   593→                <p className="text-xs text-muted-foreground">Message or call dispatch</p>
+   594→              </div>
+   595→              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+   596→            </CardContent>
+   597→          </Card>
+   598→        </div>
+   599→      </div>
+   600→
+   601→      {/* Today's Deliveries */}
+   602→      <Card>
+   603→        <CardHeader className="pb-2">
+   604→          <CardTitle className="text-base">Today&apos;s Assigned Deliveries</CardTitle>
+   605→          <CardDescription>Deliveries assigned to you</CardDescription>
+   606→        </CardHeader>
+   607→        <CardContent className="p-0">
+   608→          <div className="max-h-96 overflow-y-auto">
+   609→            <Table>
+   610→              <TableHeader>
+   611→                <TableRow>
+   612→                  <TableHead className="text-xs">Tracking #</TableHead>
+   613→                  <TableHead className="text-xs">Customer</TableHead>
+   614→                  <TableHead className="hidden text-xs sm:table-cell">Route</TableHead>
+   615→                  <TableHead className="text-xs">Status</TableHead>
+   616→                </TableRow>
+   617→              </TableHeader>
+   618→              <TableBody>
+   619→                {activeDeliveries.length === 0 ? (
+   620→                  <TableRow>
+   621→                    <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+   622→                      No deliveries assigned for today
+   623→                    </TableCell>
+   624→                  </TableRow>
+   625→                ) : (
+   626→                  activeDeliveries.map((d) => (
+   627→                    <TableRow key={d.id}>
+   628→                      <TableCell className="max-w-[130px] truncate font-mono text-xs">
+   629→                        {d.trackingNumber}
+   630→                      </TableCell>
+   631→                      <TableCell className="max-w-[120px] truncate text-xs">
+   632→                        {d.customerName}
+   633→                      </TableCell>
+   634→                      <TableCell className="hidden max-w-[120px] truncate text-xs sm:table-cell">
+   635→                        {d.pickup.city} → {d.destination.city}
+   636→                      </TableCell>
+   637→                      <TableCell>
+   638→                        <Badge
+   639→                          variant="secondary"
+   640→                          className={`text-[10px] ${statusColors[d.status] || ''}`}
+   641→                        >
+   642→                          {statusLabels[d.status] || d.status}
+   643→                        </Badge>
+   644→                      </TableCell>
+   645→                    </TableRow>
+   646→                  ))
+   647→                )}
+   648→              </TableBody>
+   649→            </Table>
+   650→          </div>
+   651→        </CardContent>
+   652→      </Card>
+   653→    </div>
+   654→  );
+   655→}
+   656→
+   657→// ============ Company (Staff) Overview ============
+   658→function CompanyOverview() {
+   659→  const { selectDelivery, setDashboardTab } = useNavStore();
+   660→
+   661→  const recentDeliveries = useMemo(() => deliveries.slice(0, 5), []);
+   662→  const totalDrivers = analyticsData.activeDrivers + 18;
+   663→
+   664→  const handleDeliveryClick = (delivery: Delivery) => {
+   665→    selectDelivery(delivery.id);
+   666→    setDashboardTab('deliveries');
+   667→  };
+   668→
+   669→  return (
+   670→    <div className="space-y-6">
+   671→      {/* Top KPI Cards */}
+   672→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   673→        <KpiCard
+   674→          title="Total Revenue"
+   675→          value={formatCurrency(analyticsData.totalRevenue)}
+   676→          growth={analyticsData.revenueGrowth}
+   677→          icon={DollarSign}
+   678→        />
+   679→        <KpiCard
+   680→          title="Total Deliveries"
+   681→          value={analyticsData.totalDeliveries.toLocaleString()}
+   682→          growth={analyticsData.deliveriesGrowth}
+   683→          icon={Package}
+   684→        />
+   685→        <KpiCard
+   686→          title="On-Time Rate"
+   687→          value={`${analyticsData.onTimeRate}%`}
+   688→          growth={analyticsData.onTimeGrowth}
+   689→          icon={Clock}
+   690→        />
+   691→        <KpiCard
+   692→          title="Active Drivers"
+   693→          value={`${analyticsData.activeDrivers}/${totalDrivers}`}
+   694→          growth={5.3}
+   695→          icon={Users}
+   696→        />
+   697→      </div>
+   698→
+   699→      {/* Middle Row: Revenue Chart + Status Pie */}
+   700→      <div className="grid gap-6 lg:grid-cols-2">
+   701→        {/* Revenue & Deliveries Combo Chart */}
+   702→        <Card>
+   703→          <CardHeader className="pb-2">
+   704→            <CardTitle className="text-base">Revenue & Deliveries</CardTitle>
+   705→            <CardDescription>Monthly performance over the last 12 months</CardDescription>
+   706→          </CardHeader>
+   707→          <CardContent>
+   708→            <ChartContainer config={revenueChartConfig} className="h-[280px] w-full">
+   709→              <AreaChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+   710→                <defs>
+   711→                  <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+   712→                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.2} />
+   713→                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0.02} />
+   714→                  </linearGradient>
+   715→                </defs>
+   716→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+   717→                <XAxis
+   718→                  dataKey="month"
+   719→                  tickLine={false}
+   720→                  axisLine={false}
+   721→                  tickMargin={8}
+   722→                  className="text-xs"
+   723→                />
+   724→                <YAxis
+   725→                  yAxisId="left"
+   726→                  tickLine={false}
+   727→                  axisLine={false}
+   728→                  tickMargin={8}
+   729→                  tickFormatter={(v: number) => `M${(v / 1000).toFixed(0)}k`}
+   730→                  className="text-xs"
+   731→                />
+   732→                <YAxis
+   733→                  yAxisId="right"
+   734→                  orientation="right"
+   735→                  tickLine={false}
+   736→                  axisLine={false}
+   737→                  tickMargin={8}
+   738→                  className="text-xs"
+   739→                />
+   740→                <ChartTooltip content={<ChartTooltipContent />} />
+   741→                <Area
+   742→                  yAxisId="left"
+   743→                  type="monotone"
+   744→                  dataKey="revenue"
+   745→                  stroke="#16a34a"
+   746→                  strokeWidth={2}
+   747→                  fill="url(#fillRevenue)"
+   748→                />
+   749→                <Bar
+   750→                  yAxisId="right"
+   751→                  dataKey="deliveries"
+   752→                  fill="#14b8a6"
+   753→                  opacity={0.7}
+   754→                  radius={[4, 4, 0, 0]}
+   755→                  barSize={20}
+   756→                />
+   757→              </AreaChart>
+   758→            </ChartContainer>
+   759→          </CardContent>
+   760→        </Card>
+   761→
+   762→        {/* Delivery Status Breakdown */}
+   763→        <Card>
+   764→          <CardHeader className="pb-2">
+   765→            <CardTitle className="text-base">Delivery Status Breakdown</CardTitle>
+   766→            <CardDescription>Current deliveries by status</CardDescription>
+   767→          </CardHeader>
+   768→          <CardContent>
+   769→            <ChartContainer config={statusChartConfig} className="mx-auto h-[280px] w-full">
+   770→              <PieChart>
+   771→                <ChartTooltip content={<ChartTooltipContent nameKey="status" />} />
+   772→                <Pie
+   773→                  data={analyticsData.deliveriesByStatus}
+   774→                  cx="50%"
+   775→                  cy="45%"
+   776→                  innerRadius={55}
+   777→                  outerRadius={90}
+   778→                  dataKey="count"
+   779→                  nameKey="status"
+   780→                  strokeWidth={2}
+   781→                  stroke="hsl(var(--background))"
+   782→                >
+   783→                  {analyticsData.deliveriesByStatus.map((entry, idx) => (
+   784→                    <Cell
+   785→                      key={`cell-${idx}`}
+   786→                      fill={PIE_COLORS[entry.status] || '#94a3b8'}
+   787→                    />
+   788→                  ))}
+   789→                </Pie>
+   790→                <ChartLegend
+   791→                  content={<ChartLegendContent nameKey="status" className="flex-wrap gap-x-3 gap-y-1" />}
+   792→                />
+   793→              </PieChart>
+   794→            </ChartContainer>
+   795→          </CardContent>
+   796→        </Card>
+   797→      </div>
+   798→
+   799→      {/* Bottom Row: 3 Columns */}
+   800→      <div className="grid gap-6 lg:grid-cols-3">
+   801→        {/* Recent Deliveries */}
+   802→        <Card className="lg:col-span-1">
+   803→          <CardHeader className="pb-2">
+   804→            <CardTitle className="text-base">Recent Deliveries</CardTitle>
+   805→            <CardDescription>Latest delivery activity</CardDescription>
+   806→          </CardHeader>
+   807→          <CardContent className="p-0">
+   808→            <div className="max-h-96 overflow-y-auto">
+   809→              <Table>
+   810→                <TableHeader>
+   811→                  <TableRow>
+   812→                    <TableHead className="text-xs">Tracking #</TableHead>
+   813→                    <TableHead className="text-xs">Customer</TableHead>
+   814→                    <TableHead className="hidden text-xs sm:table-cell">Route</TableHead>
+   815→                    <TableHead className="text-xs">Status</TableHead>
+   816→                  </TableRow>
+   817→                </TableHeader>
+   818→                <TableBody>
+   819→                  {recentDeliveries.map((d) => (
+   820→                    <TableRow
+   821→                      key={d.id}
+   822→                      className="cursor-pointer"
+   823→                      onClick={() => handleDeliveryClick(d)}
+   824→                    >
+   825→                      <TableCell className="max-w-[110px] truncate font-mono text-xs">
+   826→                        {d.trackingNumber}
+   827→                      </TableCell>
+   828→                      <TableCell className="max-w-[100px] truncate text-xs">
+   829→                        {d.customerName}
+   830→                      </TableCell>
+   831→                      <TableCell className="hidden max-w-[100px] truncate text-xs sm:table-cell">
+   832→                        {d.pickup.city} → {d.destination.city}
+   833→                      </TableCell>
+   834→                      <TableCell>
+   835→                        <Badge
+   836→                          variant="secondary"
+   837→                          className={`text-[10px] ${statusColors[d.status] || ''}`}
+   838→                        >
+   839→                          {statusLabels[d.status] || d.status}
+   840→                        </Badge>
+   841→                      </TableCell>
+   842→                    </TableRow>
+   843→                  ))}
+   844→                </TableBody>
+   845→              </Table>
+   846→            </div>
+   847→          </CardContent>
+   848→        </Card>
+   849→
+   850→        {/* Top Routes */}
+   851→        <Card className="lg:col-span-1">
+   852→          <CardHeader className="pb-2">
+   853→            <CardTitle className="text-base">Top Routes</CardTitle>
+   854→            <CardDescription>Most active delivery corridors</CardDescription>
+   855→          </CardHeader>
+   856→          <CardContent>
+   857→            <div className="space-y-4 max-h-96 overflow-y-auto">
+   858→              {analyticsData.topRoutes.map((route) => {
+   859→                const maxCount = analyticsData.topRoutes[0].count;
+   860→                const pct = (route.count / maxCount) * 100;
+   861→                return (
+   862→                  <div key={route.route} className="space-y-1.5">
+   863→                    <div className="flex items-center justify-between text-sm">
+   864→                      <span className="flex items-center gap-1.5 font-medium truncate max-w-[180px]">
+   865→                        <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+   866→                        {route.route}
+   867→                      </span>
+   868→                      <span className="text-xs text-muted-foreground shrink-0 ml-2">
+   869→                        {route.count} trips
+   870→                      </span>
+   871→                    </div>
+   872→                    <div className="flex items-center gap-3">
+   873→                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+   874→                        <div
+   875→                          className="h-full rounded-full bg-emerald-500 transition-all"
+   876→                          style={{ width: `${pct}%` }}
+   877→                        />
+   878→                      </div>
+   879→                      <span className="text-xs font-medium text-muted-foreground w-16 text-right shrink-0">
+   880→                        {formatCurrency(route.revenue)}
+   881→                      </span>
+   882→                    </div>
+   883→                  </div>
+   884→                );
+   885→              })}
+   886→            </div>
+   887→          </CardContent>
+   888→        </Card>
+   889→
+   890→        {/* Fleet Utilization */}
+   891→        <Card className="lg:col-span-1">
+   892→          <CardHeader className="pb-2">
+   893→            <CardTitle className="text-base">Fleet Utilization</CardTitle>
+   894→            <CardDescription>Vehicle usage by type</CardDescription>
+   895→          </CardHeader>
+   896→          <CardContent>
+   897→            <div className="space-y-5">
+   898→              {analyticsData.fleetUtilization.map((fleet) => {
+   899→                const pct = Math.round((fleet.inUse / fleet.total) * 100);
+   900→                return (
+   901→                  <div key={fleet.type} className="space-y-2">
+   902→                    <div className="flex items-center justify-between">
+   903→                      <div className="flex items-center gap-2">
+   904→                        <Truck className="h-4 w-4 text-muted-foreground" />
+   905→                        <span className="text-sm font-medium">{fleet.type}</span>
+   906→                      </div>
+   907→                      <span className="text-sm text-muted-foreground">
+   908→                        {fleet.inUse}/{fleet.total} in use
+   909→                      </span>
+   910→                    </div>
+   911→                    <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
+   912→                      <div
+   913→                        className="absolute inset-y-0 left-0 rounded-full bg-emerald-500 transition-all"
+   914→                        style={{ width: `${pct}%` }}
+   915→                      />
+   916→                      <div
+   917→                        className="absolute inset-y-0 rounded-full bg-amber-400 transition-all"
+   918→                        style={{
+   919→                          left: `${pct}%`,
+   920→                          width: `${Math.round((fleet.maintenance / fleet.total) * 100)}%`,
+   921→                        }}
+   922→                      />
+   923→                    </div>
+   924→                    <div className="flex gap-4 text-[11px] text-muted-foreground">
+   925→                      <span className="flex items-center gap-1">
+   926→                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+   927→                        Active: {fleet.inUse}
+   928→                      </span>
+   929→                      <span className="flex items-center gap-1">
+   930→                        <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
+   931→                        Maintenance: {fleet.maintenance}
+   932→                      </span>
+   933→                      <span className="flex items-center gap-1">
+   934→                        <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30" />
+   935→                        Available: {fleet.available}
+   936→                      </span>
+   937→                    </div>
+   938→                  </div>
+   939→                );
+   940→              })}
+   941→            </div>
+   942→          </CardContent>
+   943→        </Card>
+   944→      </div>
+   945→
+   946→      {/* Activity Feed */}
+   947→      <Card>
+   948→        <CardHeader className="pb-2">
+   949→          <CardTitle className="text-base">Activity Feed</CardTitle>
+   950→          <CardDescription>Recent events and notifications</CardDescription>
+   951→        </CardHeader>
+   952→        <CardContent>
+   953→          <div className="max-h-64 overflow-y-auto space-y-3">
+   954→            {notifications.slice(0, 6).map((notif) => (
+   955→              <div
+   956→                key={notif.id}
+   957→                className="flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
+   958→              >
+   959→                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+   960→                  {notifIcon(notif.type)}
+   961→                </div>
+   962→                <div className="flex-1 min-w-0">
+   963→                  <div className="flex items-center justify-between gap-2">
+   964→                    <p className="text-sm font-medium leading-tight truncate">{notif.title}</p>
+   965→                    <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(notif.createdAt)}</span>
+   966→                  </div>
+   967→                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{notif.message}</p>
+   968→                </div>
+   969→                {!notif.isRead && (
+   970→                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+   971→                )}
+   972→              </div>
+   973→            ))}
+   974→          </div>
+   975→        </CardContent>
+   976→      </Card>
+   977→    </div>
+   978→  );
+   979→}
+   980→
+   981→// ============ Overview Tab (Router) ============
+   982→export function OverviewTab() {
+   983→  const { currentUser } = useAuthStore();
+   984→  const isCustomer = currentUser?.role === 'customer';
+   985→  const isDriver = currentUser?.role === 'driver';
+   986→
+   987→  if (isCustomer) return <CustomerOverview />;
+   988→  if (isDriver) return <DriverOverview />;
+   989→  return <CompanyOverview />;
+   990→}

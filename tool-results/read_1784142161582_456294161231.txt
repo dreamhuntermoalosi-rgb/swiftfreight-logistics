@@ -1,0 +1,649 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useMemo } from 'react';
+     4→     4→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     5→     5→import { Button } from '@/components/ui/button';
+     6→     6→import { Badge } from '@/components/ui/badge';
+     7→     7→import { Input } from '@/components/ui/input';
+     8→     8→import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+     9→     9→import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+    10→    10→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    11→    11→import { Separator } from '@/components/ui/separator';
+    12→    12→import { vehicles, companies, analyticsData } from '@/lib/mock-data';
+    13→    13→import type { Vehicle } from '@/lib/types';
+    14→    14→import {
+    15→    15→  Truck, Search, Plus, Car, Bike, Fuel, Wrench, Shield,
+    16→    16→  AlertTriangle, Clock, MapPin, ArrowUpRight, User,
+    17→    17→} from 'lucide-react';
+    18→    18→
+    19→    19→function formatDate(iso: string) {
+    20→    20→  return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+    21→    21→}
+    22→    22→
+    23→    23→function getDaysUntil(dateStr: string) {
+    24→    24→  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+    25→    25→}
+    26→    26→
+    27→    27→const vehicleTypeIcons: Record<Vehicle['type'], React.ReactNode> = {
+    28→    28→  motorcycle: <Bike className="h-5 w-5" />,
+    29→    29→  van: <Car className="h-5 w-5" />,
+    30→    30→  truck: <Truck className="h-5 w-5" />,
+    31→    31→  trailer: <Truck className="h-5 w-5" />,
+    32→    32→  pickup: <Car className="h-5 w-5" />,
+    33→    33→};
+    34→    34→
+    35→    35→const vehicleTypeLabels: Record<Vehicle['type'], string> = {
+    36→    36→  motorcycle: 'Motorcycle',
+    37→    37→  van: 'Van',
+    38→    38→  truck: 'Truck',
+    39→    39→  trailer: 'Trailer',
+    40→    40→  pickup: 'Pickup',
+    41→    41→};
+    42→    42→
+    43→    43→const vehicleTypeAccentColors: Record<Vehicle['type'], { border: string; dot: string }> = {
+    44→    44→  motorcycle: { border: 'border-l-blue-400', dot: 'bg-blue-400' },
+    45→    45→  van: { border: 'border-l-teal-400', dot: 'bg-teal-400' },
+    46→    46→  truck: { border: 'border-l-emerald-400', dot: 'bg-emerald-400' },
+    47→    47→  trailer: { border: 'border-l-purple-400', dot: 'bg-purple-400' },
+    48→    48→  pickup: { border: 'border-l-amber-400', dot: 'bg-amber-400' },
+    49→    49→};
+    50→    50→
+    51→    51→const vehicleStatusDots: Record<Vehicle['status'], string> = {
+    52→    52→  available: 'bg-green-500',
+    53→    53→  in_use: 'bg-blue-500',
+    54→    54→  maintenance: 'bg-amber-500',
+    55→    55→  out_of_service: 'bg-red-500',
+    56→    56→};
+    57→    57→
+    58→    58→const vehicleStatusConfig: Record<Vehicle['status'], { label: string; className: string }> = {
+    59→    59→  available: { label: 'Available', className: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+    60→    60→  in_use: { label: 'In Use', className: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+    61→    61→  maintenance: { label: 'Maintenance', className: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+    62→    62→  out_of_service: { label: 'Out of Service', className: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+    63→    63→};
+    64→    64→
+    65→    65→const fuelLabels: Record<Vehicle['fuelType'], string> = {
+    66→    66→  petrol: 'Petrol',
+    67→    67→  diesel: 'Diesel',
+    68→    68→  electric: 'Electric',
+    69→    69→  hybrid: 'Hybrid',
+    70→    70→};
+    71→    71→
+    72→    72→export function FleetTab() {
+    73→    73→  const [search, setSearch] = useState('');
+    74→    74→  const [typeFilter, setTypeFilter] = useState('all');
+    75→    75→  const [statusFilter, setStatusFilter] = useState('all');
+    76→    76→  const [companyFilter, setCompanyFilter] = useState('all');
+    77→    77→  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+    78→    78→
+    79→    79→  const filtered = useMemo(() => {
+    80→    80→    let list = [...vehicles];
+    81→    81→    if (search) {
+    82→    82→      const q = search.toLowerCase();
+    83→    83→      list = list.filter(
+    84→    84→        (v) =>
+    85→    85→          v.plateNumber.toLowerCase().includes(q) ||
+    86→    86→          v.make.toLowerCase().includes(q) ||
+    87→    87→          v.model.toLowerCase().includes(q)
+    88→    88→      );
+    89→    89→    }
+    90→    90→    if (typeFilter !== 'all') {
+    91→    91→      list = list.filter((v) => v.type === typeFilter);
+    92→    92→    }
+    93→    93→    if (statusFilter !== 'all') {
+    94→    94→      list = list.filter((v) => v.status === statusFilter);
+    95→    95→    }
+    96→    96→    if (companyFilter !== 'all') {
+    97→    97→      list = list.filter((v) => v.companyId === companyFilter);
+    98→    98→    }
+    99→    99→    return list;
+   100→   100→  }, [search, typeFilter, statusFilter, companyFilter]);
+   101→   101→
+   102→   102→  const availableCount = vehicles.filter((v) => v.status === 'available').length;
+   103→   103→  const inUseCount = vehicles.filter((v) => v.status === 'in_use').length;
+   104→   104→  const maintenanceCount = vehicles.filter((v) => v.status === 'maintenance').length;
+   105→   105→
+   106→   106→  // Fleet utilization from analytics data
+   107→   107→  const fleetUtil = analyticsData.fleetUtilization;
+   108→   108→
+   109→   109→  // Maintenance schedule: vehicles with nextServiceDate within 30 days
+   110→   110→  const maintenanceSchedule = useMemo(() => {
+   111→   111→    return vehicles
+   112→   112→      .filter((v) => {
+   113→   113→        if (!v.nextServiceDate) return false;
+   114→   114→        const days = getDaysUntil(v.nextServiceDate);
+   115→   115→        return days <= 30;
+   116→   116→      })
+   117→   117→      .sort((a, b) => {
+   118→   118→        const da = a.nextServiceDate ? getDaysUntil(a.nextServiceDate) : 999;
+   119→   119→        const db = b.nextServiceDate ? getDaysUntil(b.nextServiceDate) : 999;
+   120→   120→        return da - db;
+   121→   121→      });
+   122→   122→  }, []);
+   123→   123→
+   124→   124→  return (
+   125→   125→    <div className="space-y-6">
+   126→   126→      {/* Header */}
+   127→   127→      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   128→   128→        <div className="flex items-center gap-3">
+   129→   129→          <div className="rounded-full bg-primary/10 p-2.5">
+   130→   130→            <Truck className="h-5 w-5 text-primary" />
+   131→   131→          </div>
+   132→   132→          <div>
+   133→   133→            <h2 className="text-2xl font-bold tracking-tight">Fleet Management</h2>
+   134→   134→            <p className="text-sm text-muted-foreground">
+   135→   135→              <Badge variant="secondary" className="font-mono">{filtered.length}</Badge>{' '}
+   136→   136→              {filtered.length === vehicles.length ? 'total' : 'of'} {vehicles.length} vehicles
+   137→   137→            </p>
+   138→   138→          </div>
+   139→   139→        </div>
+   140→   140→        <Button className="bg-green-600 text-white hover:bg-green-700">
+   141→   141→          <Plus className="mr-2 h-4 w-4" />
+   142→   142→          Add Vehicle
+   143→   143→        </Button>
+   144→   144→      </div>
+   145→   145→
+   146→   146→      {/* Filters */}
+   147→   147→      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+   148→   148→        <div className="relative flex-1 sm:max-w-xs">
+   149→   149→          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   150→   150→          <Input
+   151→   151→            placeholder="Search plate, make, model..."
+   152→   152→            value={search}
+   153→   153→            onChange={(e) => setSearch(e.target.value)}
+   154→   154→            className="pl-9"
+   155→   155→          />
+   156→   156→        </div>
+   157→   157→        <Select value={typeFilter} onValueChange={setTypeFilter}>
+   158→   158→          <SelectTrigger className="w-full sm:w-40">
+   159→   159→            <SelectValue placeholder="Vehicle type" />
+   160→   160→          </SelectTrigger>
+   161→   161→          <SelectContent>
+   162→   162→            <SelectItem value="all">All Types</SelectItem>
+   163→   163→            <SelectItem value="motorcycle">Motorcycle</SelectItem>
+   164→   164→            <SelectItem value="van">Van</SelectItem>
+   165→   165→            <SelectItem value="truck">Truck</SelectItem>
+   166→   166→            <SelectItem value="trailer">Trailer</SelectItem>
+   167→   167→            <SelectItem value="pickup">Pickup</SelectItem>
+   168→   168→          </SelectContent>
+   169→   169→        </Select>
+   170→   170→        <Select value={statusFilter} onValueChange={setStatusFilter}>
+   171→   171→          <SelectTrigger className="w-full sm:w-40">
+   172→   172→            <SelectValue placeholder="Status" />
+   173→   173→          </SelectTrigger>
+   174→   174→          <SelectContent>
+   175→   175→            <SelectItem value="all">All Statuses</SelectItem>
+   176→   176→            <SelectItem value="available">Available</SelectItem>
+   177→   177→            <SelectItem value="in_use">In Use</SelectItem>
+   178→   178→            <SelectItem value="maintenance">Maintenance</SelectItem>
+   179→   179→            <SelectItem value="out_of_service">Out of Service</SelectItem>
+   180→   180→          </SelectContent>
+   181→   181→        </Select>
+   182→   182→        <Select value={companyFilter} onValueChange={setCompanyFilter}>
+   183→   183→          <SelectTrigger className="w-full sm:w-52">
+   184→   184→            <SelectValue placeholder="Company" />
+   185→   185→          </SelectTrigger>
+   186→   186→          <SelectContent>
+   187→   187→            <SelectItem value="all">All Companies</SelectItem>
+   188→   188→            {companies.map((c) => (
+   189→   189→              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+   190→   190→            ))}
+   191→   191→          </SelectContent>
+   192→   192→        </Select>
+   193→   193→      </div>
+   194→   194→
+   195→   195→      {/* Fleet Overview Stats */}
+   196→   196→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   197→   197→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   198→   198→          <CardContent className="flex items-center gap-4 p-4">
+   199→   199→            <div className="rounded-full bg-primary/10 p-3">
+   200→   200→              <Truck className="h-5 w-5 text-primary" />
+   201→   201→            </div>
+   202→   202→            <div>
+   203→   203→              <p className="text-sm text-muted-foreground">Total Vehicles</p>
+   204→   204→              <p className="text-xl font-bold">{vehicles.length}</p>
+   205→   205→            </div>
+   206→   206→          </CardContent>
+   207→   207→        </Card>
+   208→   208→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   209→   209→          <CardContent className="flex items-center gap-4 p-4">
+   210→   210→            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
+   211→   211→              <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
+   212→   212→            </div>
+   213→   213→            <div>
+   214→   214→              <p className="text-sm text-muted-foreground">Available</p>
+   215→   215→              <p className="text-xl font-bold text-green-600">{availableCount}</p>
+   216→   216→            </div>
+   217→   217→          </CardContent>
+   218→   218→        </Card>
+   219→   219→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   220→   220→          <CardContent className="flex items-center gap-4 p-4">
+   221→   221→            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+   222→   222→              <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+   223→   223→            </div>
+   224→   224→            <div>
+   225→   225→              <p className="text-sm text-muted-foreground">In Use</p>
+   226→   226→              <p className="text-xl font-bold text-blue-600">{inUseCount}</p>
+   227→   227→            </div>
+   228→   228→          </CardContent>
+   229→   229→        </Card>
+   230→   230→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   231→   231→          <CardContent className="flex items-center gap-4 p-4">
+   232→   232→            <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/30">
+   233→   233→              <Wrench className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+   234→   234→            </div>
+   235→   235→            <div>
+   236→   236→              <p className="text-sm text-muted-foreground">Maintenance</p>
+   237→   237→              <p className="text-xl font-bold text-amber-600">{maintenanceCount}</p>
+   238→   238→            </div>
+   239→   239→          </CardContent>
+   240→   240→        </Card>
+   241→   241→      </div>
+   242→   242→
+   243→   243→      {/* Vehicle Card Grid */}
+   244→   244→      <div>
+   245→   245→        <h3 className="mb-4 text-lg font-semibold">Vehicles</h3>
+   246→   246→        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+   247→   247→          {filtered.length === 0 ? (
+   248→   248→            <div className="col-span-full py-12 text-center text-muted-foreground">
+   249→   249→              No vehicles found matching your filters.
+   250→   250→            </div>
+   251→   251→          ) : (
+   252→   252→            filtered.map((vehicle) => {
+   253→   253→              const statusCfg = vehicleStatusConfig[vehicle.status];
+   254→   254→              const company = companies.find((c) => c.id === vehicle.companyId);
+   255→   255→              const accentColors = vehicleTypeAccentColors[vehicle.type] || { border: 'border-l-gray-400', dot: 'bg-gray-400' };
+   256→   256→              const statusDot = vehicleStatusDots[vehicle.status] || 'bg-gray-400';
+   257→   257→              const insDays = vehicle.insuranceExpiry ? getDaysUntil(vehicle.insuranceExpiry) : null;
+   258→   258→              const licDays = vehicle.licenseExpiry ? getDaysUntil(vehicle.licenseExpiry) : null;
+   259→   259→
+   260→   260→              return (
+   261→   261→                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${accentColors.border}`}>
+   262→   262→                  <CardContent className="p-4 space-y-3">
+   263→   263→                    {/* Header: Type icon + Plate + Status */}
+   264→   264→                    <div className="flex items-start justify-between">
+   265→   265→                      <div className="flex items-center gap-3">
+   266→   266→                        <div className="relative rounded-lg bg-primary/10 p-2 text-primary">
+   267→   267→                          {vehicleTypeIcons[vehicle.type]}
+   268→   268→                          <span className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${statusDot}`} />
+   269→   269→                        </div>
+   270→   270→                        <div>
+   271→   271→                          <p className="font-mono text-lg font-bold tracking-wide">{vehicle.plateNumber}</p>
+   272→   272→                          <p className="text-sm text-muted-foreground">
+   273→   273→                            {vehicle.make} {vehicle.model} {vehicle.year}
+   274→   274→                          </p>
+   275→   275→                        </div>
+   276→   276→                      </div>
+   277→   277→                      <Badge variant="secondary" className={`${statusCfg.className} gap-1.5`}>
+   278→   278→                        <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
+   279→   279→                        {statusCfg.label}
+   280→   280→                      </Badge>
+   281→   281→                    </div>
+   282→   282→
+   283→   283→                    {/* Type + Fuel + Capacity */}
+   284→   284→                    <div className="flex flex-wrap gap-2">
+   285→   285→                      <Badge variant="outline" className="text-xs">
+   286→   286→                        {vehicleTypeLabels[vehicle.type]}
+   287→   287→                      </Badge>
+   288→   288→                      <Badge variant="outline" className="text-xs">
+   289→   289→                        <Fuel className="mr-1 h-3 w-3" />
+   290→   290→                        {fuelLabels[vehicle.fuelType]}
+   291→   291→                      </Badge>
+   292→   292→                      <Badge variant="outline" className="text-xs">
+   293→   293→                        {vehicle.capacity >= 1000 ? `${(vehicle.capacity / 1000).toFixed(1)}t` : `${vehicle.capacity}kg`}
+   294→   294→                      </Badge>
+   295→   295→                    </div>
+   296→   296→
+   297→   297→                    <Separator />
+   298→   298→
+   299→   299→                    {/* Details Grid */}
+   300→   300→                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+   301→   301→                      <div>
+   302→   302→                        <p className="text-muted-foreground text-xs">Mileage</p>
+   303→   303→                        <p className="font-medium">{vehicle.currentMileage.toLocaleString()} km</p>
+   304→   304→                      </div>
+   305→   305→                      <div>
+   306→   306→                        <p className="text-muted-foreground text-xs">Assigned Driver</p>
+   307→   307→                        <p className="font-medium flex items-center gap-1">
+   308→   308→                          <User className="h-3 w-3" />
+   309→   309→                          {vehicle.assignedDriverName || (
+   310→   310→                            <span className="text-muted-foreground">Unassigned</span>
+   311→   311→                          )}
+   312→   312→                        </p>
+   313→   313→                      </div>
+   314→   314→                      <div>
+   315→   315→                        <p className="text-muted-foreground text-xs">Insurance Expiry</p>
+   316→   316→                        <p className={`font-medium ${insDays !== null && insDays <= 30 ? 'text-amber-600' : ''}`}>
+   317→   317→                          {vehicle.insuranceExpiry ? formatDate(vehicle.insuranceExpiry) : 'N/A'}
+   318→   318→                          {insDays !== null && insDays <= 30 && insDays > 0 && (
+   319→   319→                            <AlertTriangle className="ml-1 inline h-3 w-3" />
+   320→   320→                          )}
+   321→   321→                        </p>
+   322→   322→                      </div>
+   323→   323→                      <div>
+   324→   324→                        <p className="text-muted-foreground text-xs">License Expiry</p>
+   325→   325→                        <p className={`font-medium ${licDays !== null && licDays <= 30 ? 'text-amber-600' : ''}`}>
+   326→   326→                          {vehicle.licenseExpiry ? formatDate(vehicle.licenseExpiry) : 'N/A'}
+   327→   327→                          {licDays !== null && licDays <= 30 && licDays > 0 && (
+   328→   328→                            <AlertTriangle className="ml-1 inline h-3 w-3" />
+   329→   329→                          )}
+   330→   330→                        </p>
+   331→   331→                      </div>
+   332→   332→                    </div>
+   333→   333→
+   334→   334→                    {vehicle.nextServiceDate && (
+   335→   335→                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+   336→   336→                        <Wrench className="h-3.5 w-3.5" />
+   337→   337→                        <span>Next service: {formatDate(vehicle.nextServiceDate)}</span>
+   338→   338→                        {getDaysUntil(vehicle.nextServiceDate) <= 7 && (
+   339→   339→                          <Badge variant="secondary" className="ml-auto bg-amber-50 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400 animate-pulse">
+   340→   340→                            Due soon
+   341→   341→                          </Badge>
+   342→   342→                        )}
+   343→   343→                      </div>
+   344→   344→                    )}
+   345→   345→
+   346→   346→                    {company && (
+   347→   347→                      <p className="text-xs text-muted-foreground">{company.name}</p>
+   348→   348→                    )}
+   349→   349→
+   350→   350→                    {/* Actions */}
+   351→   351→                    <div className="flex gap-2 pt-1">
+   352→   352→                      <Button
+   353→   353→                        variant="outline"
+   354→   354→                        size="sm"
+   355→   355→                        className="flex-1"
+   356→   356→                        onClick={() => setSelectedVehicle(vehicle)}
+   357→   357→                      >
+   358→   358→                        <ArrowUpRight className="mr-1.5 h-3.5 w-3.5" />
+   359→   359→                        View
+   360→   360→                      </Button>
+   361→   361→                      <Button variant="outline" size="sm" className="flex-1">
+   362→   362→                        <User className="mr-1.5 h-3.5 w-3.5" />
+   363→   363→                        Assign
+   364→   364→                      </Button>
+   365→   365→                      <Button variant="outline" size="sm" className="flex-1">
+   366→   366→                        <Wrench className="mr-1.5 h-3.5 w-3.5" />
+   367→   367→                        Maintain
+   368→   368→                      </Button>
+   369→   369→                    </div>
+   370→   370→                  </CardContent>
+   371→   371→                </Card>
+   372→   372→              );
+   373→   373→            })
+   374→   374→          )}
+   375→   375→        </div>
+   376→   376→      </div>
+   377→   377→
+   378→   378→      {/* Fleet Utilization */}
+   379→   379→      <Card>
+   380→   380→        <CardHeader className="pb-3">
+   381→   381→          <CardTitle className="text-lg">Fleet Utilization by Type</CardTitle>
+   382→   382→        </CardHeader>
+   383→   383→        <CardContent className="space-y-5">
+   384→   384→          {fleetUtil.map((item) => {
+   385→   385→            const pct = Math.round((item.inUse / item.total) * 100);
+   386→   386→            const availablePct = Math.round((item.available / item.total) * 100);
+   387→   387→            const maintPct = Math.round((item.maintenance / item.total) * 100);
+   388→   388→            return (
+   389→   389→              <div key={item.type} className="space-y-2">
+   390→   390→                <div className="flex items-center justify-between text-sm">
+   391→   391→                  <span className="font-medium">{item.type}</span>
+   392→   392→                  <span className="text-muted-foreground">
+   393→   393→                    {item.inUse}/{item.total} in use ({pct}%)
+   394→   394→                  </span>
+   395→   395→                </div>
+   396→   396→                <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
+   397→   397→                  <div
+   398→   398→                    className="absolute inset-y-0 left-0 rounded-full bg-green-500"
+   399→   399→                    style={{ width: `${pct}%` }}
+   400→   400→                  />
+   401→   401→                  <div
+   402→   402→                    className="absolute inset-y-0 rounded-full bg-amber-400"
+   403→   403→                    style={{ left: `${pct}%`, width: `${maintPct}%` }}
+   404→   404→                  />
+   405→   405→                </div>
+   406→   406→                <div className="flex gap-4 text-xs text-muted-foreground">
+   407→   407→                  <span className="flex items-center gap-1">
+   408→   408→                    <span className="h-2 w-2 rounded-full bg-green-500" />
+   409→   409→                    In Use: {item.inUse}
+   410→   410→                  </span>
+   411→   411→                  <span className="flex items-center gap-1">
+   412→   412→                    <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+   413→   413→                    Available: {item.available}
+   414→   414→                  </span>
+   415→   415→                  <span className="flex items-center gap-1">
+   416→   416→                    <span className="h-2 w-2 rounded-full bg-amber-400" />
+   417→   417→                    Maintenance: {item.maintenance}
+   418→   418→                  </span>
+   419→   419→                </div>
+   420→   420→              </div>
+   421→   421→            );
+   422→   422→          })}
+   423→   423→        </CardContent>
+   424→   424→      </Card>
+   425→   425→
+   426→   426→      {/* Maintenance Schedule */}
+   427→   427→      <Card>
+   428→   428→        <CardHeader className="pb-3">
+   429→   429→          <div className="flex items-center gap-2">
+   430→   430→            <Wrench className="h-5 w-5 text-amber-500" />
+   431→   431→            <CardTitle className="text-lg">Upcoming Maintenance</CardTitle>
+   432→   432→            <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+   433→   433→              {maintenanceSchedule.length} vehicles
+   434→   434→            </Badge>
+   435→   435→          </div>
+   436→   436→        </CardHeader>
+   437→   437→        <CardContent className="p-0">
+   438→   438→          {maintenanceSchedule.length === 0 ? (
+   439→   439→            <div className="py-8 text-center text-sm text-muted-foreground">
+   440→   440→              No vehicles due for maintenance in the next 30 days.
+   441→   441→            </div>
+   442→   442→          ) : (
+   443→   443→            <div className="overflow-x-auto">
+   444→   444→              <Table>
+   445→   445→                <TableHeader>
+   446→   446→                  <TableRow>
+   447→   447→                    <TableHead>Vehicle</TableHead>
+   448→   448→                    <TableHead>Plate</TableHead>
+   449→   449→                    <TableHead className="hidden sm:table-cell">Last Service</TableHead>
+   450→   450→                    <TableHead>Next Service</TableHead>
+   451→   451→                    <TableHead>Days Until</TableHead>
+   452→   452→                  </TableRow>
+   453→   453→                </TableHeader>
+   454→   454→                <TableBody>
+   455→   455→                  {maintenanceSchedule.map((v) => {
+   456→   456→                    const days = v.nextServiceDate ? getDaysUntil(v.nextServiceDate) : 999;
+   457→   457→                    const isOverdue = days < 0;
+   458→   458→                    const isUrgent = days >= 0 && days <= 7;
+   459→   459→                    const daysColor = isOverdue
+   460→   460→                      ? 'text-red-600 dark:text-red-400'
+   461→   461→                      : isUrgent
+   462→   462→                        ? 'text-amber-600 dark:text-amber-400'
+   463→   463→                        : 'text-green-600 dark:text-green-400';
+   464→   464→                    const daysBadge = isOverdue
+   465→   465→                      ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+   466→   466→                      : isUrgent
+   467→   467→                        ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+   468→   468→                        : 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+   469→   469→
+   470→   470→                    return (
+   471→   471→                      <TableRow key={v.id}>
+   472→   472→                        <TableCell className="font-medium">
+   473→   473→                          <div className="flex items-center gap-2">
+   474→   474→                            <span className="text-primary">{vehicleTypeIcons[v.type]}</span>
+   475→   475→                            {v.make} {v.model} ({v.year})
+   476→   476→                          </div>
+   477→   477→                        </TableCell>
+   478→   478→                        <TableCell className="font-mono text-sm">{v.plateNumber}</TableCell>
+   479→   479→                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+   480→   480→                          {v.lastServiceDate ? formatDate(v.lastServiceDate) : 'N/A'}
+   481→   481→                        </TableCell>
+   482→   482→                        <TableCell className="text-sm font-medium">
+   483→   483→                          {v.nextServiceDate ? formatDate(v.nextServiceDate) : 'N/A'}
+   484→   484→                        </TableCell>
+   485→   485→                        <TableCell>
+   486→   486→                          {isOverdue ? (
+   487→   487→                            <Badge variant="secondary" className={daysBadge}>
+   488→   488→                              <AlertTriangle className="mr-1 h-3 w-3" />
+   489→   489→                              {Math.abs(days)}d overdue
+   490→   490→                            </Badge>
+   491→   491→                          ) : isUrgent ? (
+   492→   492→                            <Badge variant="secondary" className={daysBadge}>
+   493→   493→                              <AlertTriangle className="mr-1 h-3 w-3" />
+   494→   494→                              {days} days
+   495→   495→                            </Badge>
+   496→   496→                          ) : (
+   497→   497→                            <Badge variant="secondary" className={daysBadge}>
+   498→   498→                              {days} days
+   499→   499→                            </Badge>
+   500→   500→                          )}
+   501→   501→                        </TableCell>
+   502→   502→                      </TableRow>
+   503→   503→                    );
+   504→   504→                  })}
+   505→   505→                </TableBody>
+   506→   506→              </Table>
+   507→   507→            </div>
+   508→   508→          )}
+   509→   509→        </CardContent>
+   510→   510→      </Card>
+   511→   511→
+   512→   512→      {/* Vehicle Detail Dialog */}
+   513→   513→      <Dialog open={!!selectedVehicle} onOpenChange={(open) => { if (!open) setSelectedVehicle(null); }}>
+   514→   514→        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+   515→   515→          {selectedVehicle && (() => {
+   516→   516→            const statusCfg = vehicleStatusConfig[selectedVehicle.status];
+   517→   517→            const company = companies.find((c) => c.id === selectedVehicle.companyId);
+   518→   518→            const insDays = selectedVehicle.insuranceExpiry ? getDaysUntil(selectedVehicle.insuranceExpiry) : null;
+   519→   519→            const licDays = selectedVehicle.licenseExpiry ? getDaysUntil(selectedVehicle.licenseExpiry) : null;
+   520→   520→            const svcDays = selectedVehicle.nextServiceDate ? getDaysUntil(selectedVehicle.nextServiceDate) : null;
+   521→   521→
+   522→   522→            return (
+   523→   523→              <>
+   524→   524→                <DialogHeader>
+   525→   525→                  <div className="flex items-center gap-4">
+   526→   526→                    <div className="rounded-lg bg-primary/10 p-3 text-primary">
+   527→   527→                      {vehicleTypeIcons[selectedVehicle.type]}
+   528→   528→                    </div>
+   529→   529→                    <div className="flex-1">
+   530→   530→                      <DialogTitle className="text-xl font-mono">{selectedVehicle.plateNumber}</DialogTitle>
+   531→   531→                      <p className="text-sm text-muted-foreground">
+   532→   532→                        {selectedVehicle.make} {selectedVehicle.model} {selectedVehicle.year}
+   533→   533→                      </p>
+   534→   534→                      <div className="flex items-center gap-2 mt-1">
+   535→   535→                        <Badge variant="secondary" className={statusCfg.className}>
+   536→   536→                          {statusCfg.label}
+   537→   537→                        </Badge>
+   538→   538→                        <Badge variant="outline">{vehicleTypeLabels[selectedVehicle.type]}</Badge>
+   539→   539→                      </div>
+   540→   540→                    </div>
+   541→   541→                  </div>
+   542→   542→                </DialogHeader>
+   543→   543→
+   544→   544→                <Separator />
+   545→   545→
+   546→   546→                {/* Key Info */}
+   547→   547→                <div className="grid grid-cols-2 gap-4 text-sm">
+   548→   548→                  <div className="rounded-lg bg-muted/50 p-3">
+   549→   549→                    <p className="text-xs text-muted-foreground">Company</p>
+   550→   550→                    <p className="font-medium mt-1">{company?.name || 'Unknown'}</p>
+   551→   551→                  </div>
+   552→   552→                  <div className="rounded-lg bg-muted/50 p-3">
+   553→   553→                    <p className="text-xs text-muted-foreground">Color</p>
+   554→   554→                    <p className="font-medium mt-1">{selectedVehicle.color}</p>
+   555→   555→                  </div>
+   556→   556→                  <div className="rounded-lg bg-muted/50 p-3">
+   557→   557→                    <p className="text-xs text-muted-foreground">Fuel Type</p>
+   558→   558→                    <p className="font-medium mt-1 flex items-center gap-1">
+   559→   559→                      <Fuel className="h-3.5 w-3.5 text-muted-foreground" />
+   560→   560→                      {fuelLabels[selectedVehicle.fuelType]}
+   561→   561→                    </p>
+   562→   562→                  </div>
+   563→   563→                  <div className="rounded-lg bg-muted/50 p-3">
+   564→   564→                    <p className="text-xs text-muted-foreground">Capacity</p>
+   565→   565→                    <p className="font-medium mt-1">
+   566→   566→                      {selectedVehicle.capacity >= 1000
+   567→   567→                        ? `${(selectedVehicle.capacity / 1000).toFixed(1)} tonnes`
+   568→   568→                        : `${selectedVehicle.capacity} kg`}
+   569→   569→                    </p>
+   570→   570→                  </div>
+   571→   571→                  <div className="rounded-lg bg-muted/50 p-3">
+   572→   572→                    <p className="text-xs text-muted-foreground">Current Mileage</p>
+   573→   573→                    <p className="font-medium mt-1">{selectedVehicle.currentMileage.toLocaleString()} km</p>
+   574→   574→                  </div>
+   575→   575→                  <div className="rounded-lg bg-muted/50 p-3">
+   576→   576→                    <p className="text-xs text-muted-foreground">Assigned Driver</p>
+   577→   577→                    <p className="font-medium mt-1 flex items-center gap-1">
+   578→   578→                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+   579→   579→                      {selectedVehicle.assignedDriverName || 'Unassigned'}
+   580→   580→                    </p>
+   581→   581→                  </div>
+   582→   582→                </div>
+   583→   583→
+   584→   584→                <Separator />
+   585→   585→
+   586→   586→                {/* Expiry Dates */}
+   587→   587→                <div className="space-y-3">
+   588→   588→                  <h4 className="text-sm font-semibold flex items-center gap-2">
+   589→   589→                    <Shield className="h-4 w-4" />
+   590→   590→                    Expiry & Service Dates
+   591→   591→                  </h4>
+   592→   592→                  <div className="space-y-2">
+   593→   593→                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+   594→   594→                      <span className="text-muted-foreground">Insurance Expiry</span>
+   595→   595→                      <span className={insDays !== null && insDays <= 30 ? 'text-amber-600 font-medium' : 'font-medium'}>
+   596→   596→                        {selectedVehicle.insuranceExpiry ? formatDate(selectedVehicle.insuranceExpiry) : 'N/A'}
+   597→   597→                        {insDays !== null && insDays <= 30 && insDays > 0 && (
+   598→   598→                          <AlertTriangle className="ml-1.5 inline h-3.5 w-3.5" />
+   599→   599→                        )}
+   600→   600→                      </span>
+   601→   601→                    </div>
+   602→   602→                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+   603→   603→                      <span className="text-muted-foreground">License Expiry</span>
+   604→   604→                      <span className={licDays !== null && licDays <= 30 ? 'text-amber-600 font-medium' : 'font-medium'}>
+   605→   605→                        {selectedVehicle.licenseExpiry ? formatDate(selectedVehicle.licenseExpiry) : 'N/A'}
+   606→   606→                        {licDays !== null && licDays <= 30 && licDays > 0 && (
+   607→   607→                          <AlertTriangle className="ml-1.5 inline h-3.5 w-3.5" />
+   608→   608→                        )}
+   609→   609→                      </span>
+   610→   610→                    </div>
+   611→   611→                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+   612→   612→                      <span className="text-muted-foreground">Next Service</span>
+   613→   613→                      <span className={svcDays !== null && svcDays <= 7 ? 'text-amber-600 font-medium' : 'font-medium'}>
+   614→   614→                        {selectedVehicle.nextServiceDate ? formatDate(selectedVehicle.nextServiceDate) : 'N/A'}
+   615→   615→                        {svcDays !== null && svcDays <= 7 && svcDays > 0 && (
+   616→   616→                          <AlertTriangle className="ml-1.5 inline h-3.5 w-3.5" />
+   617→   617→                        )}
+   618→   618→                      </span>
+   619→   619→                    </div>
+   620→   620→                    <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+   621→   621→                      <span className="text-muted-foreground">Last Service</span>
+   622→   622→                      <span className="font-medium">
+   623→   623→                        {selectedVehicle.lastServiceDate ? formatDate(selectedVehicle.lastServiceDate) : 'N/A'}
+   624→   624→                      </span>
+   625→   625→                    </div>
+   626→   626→                  </div>
+   627→   627→                </div>
+   628→   628→
+   629→   629→                <Separator />
+   630→   630→
+   631→   631→                {/* Actions */}
+   632→   632→                <div className="flex gap-2">
+   633→   633→                  <Button className="flex-1 bg-green-600 text-white hover:bg-green-700">
+   634→   634→                    <User className="mr-2 h-4 w-4" />
+   635→   635→                    {selectedVehicle.assignedDriverName ? 'Reassign Driver' : 'Assign Driver'}
+   636→   636→                  </Button>
+   637→   637→                  <Button variant="outline" className="flex-1">
+   638→   638→                    <Wrench className="mr-2 h-4 w-4" />
+   639→   639→                    Schedule Service
+   640→   640→                  </Button>
+   641→   641→                </div>
+   642→   642→              </>
+   643→   643→            );
+   644→   644→          })()}
+   645→   645→        </DialogContent>
+   646→   646→      </Dialog>
+   647→   647→    </div>
+   648→   648→  );
+   649→   649→}

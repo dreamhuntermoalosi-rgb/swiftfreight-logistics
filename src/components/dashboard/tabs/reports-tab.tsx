@@ -32,6 +32,7 @@ import {
   ChevronDown,
   Clock,
   MapPin,
+  Building2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -98,6 +99,11 @@ const satisfactionConfig: ChartConfig = {
   dissatisfied: { label: 'Dissatisfied (1-2★)', color: '#ef4444' },
 };
 
+const dayOfWeekConfig: ChartConfig = {
+  deliveries: { label: 'Deliveries', color: '#16a34a' },
+  avgTime: { label: 'Avg Time (days)', color: '#14b8a6' },
+};
+
 // ============ Helpers ============
 function formatCurrency(value: number) {
   return `M${value.toLocaleString()}`;
@@ -141,6 +147,24 @@ const customerGrowth = [
   { month: 'Oct', revenue: 298, customers: 298 },
   { month: 'Nov', customers: 305 },
   { month: 'Dec', customers: 312 },
+];
+
+// Delivery performance by day of week
+const dayOfWeekData = [
+  { day: 'Monday', deliveries: 42, avgTime: 2.1 },
+  { day: 'Tuesday', deliveries: 38, avgTime: 1.8 },
+  { day: 'Wednesday', deliveries: 45, avgTime: 2.3 },
+  { day: 'Thursday', deliveries: 51, avgTime: 1.9 },
+  { day: 'Friday', deliveries: 58, avgTime: 2.5 },
+  { day: 'Saturday', deliveries: 22, avgTime: 1.5 },
+  { day: 'Sunday', deliveries: 8, avgTime: 1.2 },
+];
+
+// Company comparison data
+const companyComparison = [
+  { name: 'Mountain Express', deliveries: 245, revenue: 'M485,200', onTime: '94%', avgRating: 4.5 },
+  { name: 'Lesotho Swift', deliveries: 178, revenue: 'M312,800', onTime: '89%', avgRating: 4.2 },
+  { name: 'Highland Haulage', deliveries: 77, revenue: 'M145,600', onTime: '91%', avgRating: 4.4 },
 ];
 
 // Maintenance schedule summary
@@ -716,6 +740,90 @@ export function ReportsTab() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Delivery Volume by Day of Week ── */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-base">Delivery Volume by Day of Week</CardTitle>
+          </div>
+          <CardDescription>Average delivery count per day of the week</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={dayOfWeekConfig} className="h-[280px] w-full">
+            <BarChart data={dayOfWeekData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="dayBarGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#16a34a" stopOpacity={0.9} />
+                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.7} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+              <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+              <YAxis tickLine={false} axisLine={false} tickMargin={8} className="text-xs" />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name) => {
+                      if (name === 'deliveries') return [`${value} deliveries`, 'Deliveries'];
+                      if (name === 'avgTime') return [`${value} days`, 'Avg Delivery Time'];
+                      return [value, name];
+                    }}
+                  />
+                }
+              />
+              <Bar dataKey="deliveries" fill="url(#dayBarGradient)" radius={[4, 4, 0, 0]} barSize={32} />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      {/* ── Company Performance Comparison ── */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-base">Company Performance Comparison</CardTitle>
+          </div>
+          <CardDescription>How the 3 companies compare across key metrics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
+                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">Company</TableHead>
+                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Deliveries</TableHead>
+                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Revenue</TableHead>
+                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">On-Time</TableHead>
+                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-center">Rating</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {companyComparison.map((company) => (
+                  <TableRow key={company.name}>
+                    <TableCell className="font-medium text-sm">{company.name}</TableCell>
+                    <TableCell className="text-sm text-right font-mono">{company.deliveries}</TableCell>
+                    <TableCell className="text-sm text-right font-mono text-emerald-600 font-medium">{company.revenue}</TableCell>
+                    <TableCell className="text-sm text-right font-mono">
+                      <span className={Number(company.onTime.replace('%', '')) >= 92 ? 'text-emerald-600 font-medium' : 'text-amber-600'}>
+                        {company.onTime}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="inline-flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        <span className="text-sm font-medium">{company.avgRating}</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -277,7 +277,7 @@ export function TrackingTab() {
                   {/* Progress fill */}
                   {currentStepIndex >= 0 && (
                     <div
-                      className="absolute top-3 left-4 h-1 rounded-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 transition-all duration-500"
+                      className="absolute top-3 left-4 h-1 rounded-full bg-gradient-to-r from-primary via-emerald-500 to-teal-500 transition-all duration-500"
                       style={{ width: `calc(${(currentStepIndex / (PROGRESS_STATUSES.length - 1)) * 100}% - ${currentStepIndex === 0 ? 0 : 32}px)` }}
                     />
                   )}
@@ -291,11 +291,11 @@ export function TrackingTab() {
                         <div key={status} className="flex flex-col items-center" style={{ width: `${100 / PROGRESS_STATUSES.length}%` }}>
                           <div className={`relative z-10 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                             isCurrent && !isTerminalFailed
-                              ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/30 scale-110'
+                              ? 'bg-gradient-to-br from-primary to-emerald-500 border-primary shadow-lg shadow-primary/30 scale-110'
                               : isCompleted
-                                ? 'bg-green-500 border-green-500'
+                                ? 'bg-gradient-to-br from-primary/80 to-emerald-500/80 border-primary/60'
                                 : 'bg-background border-muted-foreground/30'
-                          } ${isCurrent && !isTerminalFailed ? 'animate-pulse' : ''}`}>
+                          } ${isCurrent && !isTerminalFailed ? 'animate-[ring-pulse_2s_ease-in-out_infinite]' : ''}`}>
                             {isCompleted ? (
                               <CheckCircle2 className="h-4 w-4 text-white" />
                             ) : (
@@ -334,20 +334,18 @@ export function TrackingTab() {
                       const isCurrent = idx === timeline.length - 1 &&
                         !['delivered', 'returned', 'cancelled'].includes(delivery.status);
                       return (
-                        <div key={event.id} className="relative pb-6 last:pb-0">
-                          {/* Connecting line */}
+                        <div key={event.id} className="relative pb-6 last:pb-0 group">
                           {!isLast && (
-                            <div className={`absolute left-[-20px] top-5 bottom-0 w-px ${
-                              idx < timeline.length - 1 ? 'bg-green-300 dark:bg-green-700' : 'bg-muted'
-                            }`} />
+                            <div className="absolute left-[-20px] top-5 bottom-0 w-px bg-gradient-to-b from-primary/60 to-primary/10" />
                           )}
                           {/* Dot */}
                           <div className={`absolute left-[-25px] top-1 h-3.5 w-3.5 rounded-full border-2 ${
                             isCurrent
-                              ? 'bg-green-500 border-green-500 animate-pulse shadow-md shadow-green-500/30'
-                              : 'bg-green-500 border-green-500'
+                              ? 'bg-primary border-primary animate-[ring-pulse_2s_ease-in-out_infinite] shadow-md shadow-primary/30'
+                              : 'bg-primary border-primary'
                           }`} />
-                          <div>
+                          {/* Event card with hover lift */}
+                          <div className="-ml-2 p-2 -my-1 rounded-lg transition-all duration-200 group-hover:bg-primary/[0.03] group-hover:-translate-y-[1px]">
                             <p className="text-sm font-medium">{event.description}</p>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className="text-xs text-muted-foreground flex items-center gap-1">

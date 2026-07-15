@@ -273,6 +273,7 @@ export type DashboardTab =
   | 'messages'
   | 'reports'
   | 'invoices'
+  | 'warehouse'
   | 'quotations'
   | 'notifications'
   | 'settings';

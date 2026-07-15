@@ -148,7 +148,7 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">
+        <Button className="bg-gradient-to-r from-primary to-emerald-600 hover:brightness-110 text-white">
           <Plus className="mr-2 h-4 w-4" /> {isCustomer ? 'Request Delivery' : 'New Delivery'}
         </Button>
       </DialogTrigger>
@@ -247,6 +247,11 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
 
 // Delivery Detail Sheet
 function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery | null; open: boolean; onClose: () => void }) {
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [ratingComment, setRatingComment] = useState('');
+
   if (!delivery) return null;
   const timeline = getDeliveryTimeline(delivery);
 
@@ -428,7 +433,10 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                   size="sm"
                   className="gap-1.5"
                   onClick={() => {
-                    toast.success('Rating submitted! Thank you for your feedback.');
+                    setSelectedRating(0);
+                    setHoveredRating(0);
+                    setRatingComment('');
+                    setRatingDialogOpen(true);
                   }}
                 >
                   <Star className="h-3.5 w-3.5" />
@@ -517,6 +525,86 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           </div>
         </div>
       </SheetContent>
+
+      {/* Star Rating Dialog */}
+      <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-amber-400" />
+              Rate Delivery
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5">
+            <p className="text-sm text-muted-foreground">
+              Tracking: <span className="font-mono font-medium text-foreground">{delivery.trackingNumber}</span>
+            </p>
+
+            {/* Interactive Stars */}
+            <div className="flex items-center justify-center gap-2 py-2">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const isFilled = star <= (hoveredRating || selectedRating);
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    className="transition-transform duration-150 hover:scale-125 focus:outline-none"
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    onClick={() => setSelectedRating(star)}
+                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                  >
+                    <Star
+                      className={`h-8 w-8 transition-colors duration-150 ${
+                        isFilled
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'fill-none text-gray-300 dark:text-gray-600'
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            {selectedRating > 0 && (
+              <p className="text-center text-sm text-muted-foreground">
+                {selectedRating === 1 && 'Poor'}
+                {selectedRating === 2 && 'Fair'}
+                {selectedRating === 3 && 'Good'}
+                {selectedRating === 4 && 'Very Good'}
+                {selectedRating === 5 && 'Excellent'}
+              </p>
+            )}
+
+            {/* Comment */}
+            <div className="space-y-2">
+              <Label htmlFor="rating-comment" className="text-sm font-medium">
+                Comments (optional)
+              </Label>
+              <Textarea
+                id="rating-comment"
+                placeholder="Share your delivery experience..."
+                value={ratingComment}
+                onChange={(e) => setRatingComment(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setRatingDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setRatingDialogOpen(false);
+                toast.success('Rating submitted! Thank you for your feedback.');
+              }}
+              disabled={selectedRating === 0}
+            >
+              Submit Rating
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }
@@ -788,7 +876,7 @@ export function DeliveriesTab() {
                       <TableCell className="text-sm">{d.packageWeight} kg</TableCell>
                       <TableCell>
                         <Badge className={`${statusColors[d.status] || ''} gap-1.5`} variant="secondary">
-                          <span className="h-1.5 w-1.5 rounded-full bg-current/60" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-current" />
                           {statusLabels[d.status] || d.status}
                         </Badge>
                       </TableCell>
@@ -905,7 +993,8 @@ export function DeliveriesTab() {
                           <Badge className={`${priorityColors[d.priority] || ''} capitalize text-xs`} variant="secondary">
                             {d.priority}
                           </Badge>
-                          <Badge className={`${statusColors[d.status] || ''} text-xs`} variant="secondary">
+                          <Badge className={`${statusColors[d.status] || ''} text-xs gap-1`} variant="secondary">
+                            <span className="h-1.5 w-1.5 rounded-full bg-current" />
                             {statusLabels[d.status] || d.status}
                           </Badge>
                         </div>

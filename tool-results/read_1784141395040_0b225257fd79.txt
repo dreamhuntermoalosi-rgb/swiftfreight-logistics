@@ -1,0 +1,747 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import React, { useCallback, useEffect, useMemo } from 'react';
+     4→     4→import { useTheme } from 'next-themes';
+     5→     5→import {
+     6→     6→  LayoutDashboard,
+     7→     7→  Package,
+     8→     8→  MapPin,
+     9→     9→  MessageSquare,
+    10→    10→  Users,
+    11→    11→  UserCog,
+    12→    12→  Truck,
+    13→    13→  Radio,
+    14→    14→  ShoppingBag,
+    15→    15→  BarChart3,
+    16→    16→  Settings,
+    17→    17→  LogOut,
+    18→    18→  Menu,
+    19→    19→  Search,
+    20→    20→  Bell,
+    21→    21→  Sun,
+    22→    22→  Moon,
+    23→    23→  ClipboardList,
+    24→    24→  Receipt,
+    25→    25→  ChevronRight,
+    26→    26→  PackageCheck,
+    27→    27→  CreditCard,
+    28→    28→  AlertTriangle,
+    29→    29→  Info,
+    30→    30→  User as UserIcon,
+    31→    31→  FileText,
+    32→    32→} from 'lucide-react';
+    33→    33→import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
+    34→    34→import { Button } from '@/components/ui/button';
+    35→    35→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    36→    36→import { Badge } from '@/components/ui/badge';
+    37→    37→import { Input } from '@/components/ui/input';
+    38→    38→import {
+    39→    39→  Sheet,
+    40→    40→  SheetContent,
+    41→    41→  SheetTitle,
+    42→    42→} from '@/components/ui/sheet';
+    43→    43→import {
+    44→    44→  DropdownMenu,
+    45→    45→  DropdownMenuContent,
+    46→    46→  DropdownMenuItem,
+    47→    47→  DropdownMenuLabel,
+    48→    48→  DropdownMenuSeparator,
+    49→    49→  DropdownMenuTrigger,
+    50→    50→} from '@/components/ui/dropdown-menu';
+    51→    51→import { ScrollArea } from '@/components/ui/scroll-area';
+    52→    52→import { Separator } from '@/components/ui/separator';
+    53→    53→import {
+    54→    54→  Breadcrumb,
+    55→    55→  BreadcrumbList,
+    56→    56→  BreadcrumbItem,
+    57→    57→  BreadcrumbPage,
+    58→    58→} from '@/components/ui/breadcrumb';
+    59→    59→import { useIsMobile } from '@/hooks/use-mobile';
+    60→    60→import { notifications as mockNotifications, roleLabels, companies } from '@/lib/mock-data';
+    61→    61→import type { DashboardTab, UserRole, NotificationType } from '@/lib/types';
+    62→    62→import { tabComponentMap } from '@/components/dashboard/tabs';
+    63→    63→
+    64→    64→// ============ TYPES ============
+    65→    65→interface NavItem {
+    66→    66→  tab: DashboardTab;
+    67→    67→  label: string;
+    68→    68→  icon: React.ElementType;
+    69→    69→}
+    70→    70→
+    71→    71→// ============ HELPERS ============
+    72→    72→function getInitials(name: string): string {
+    73→    73→  return name
+    74→    74→    .split(' ')
+    75→    75→    .map((w) => w[0])
+    76→    76→    .join('')
+    77→    77→    .toUpperCase()
+    78→    78→    .slice(0, 2);
+    79→    79→}
+    80→    80→
+    81→    81→function getTimeAgo(dateStr: string): string {
+    82→    82→  const now = Date.now();
+    83→    83→  const then = new Date(dateStr).getTime();
+    84→    84→  const diffMs = now - then;
+    85→    85→  const diffMins = Math.floor(diffMs / 60000);
+    86→    86→  const diffHours = Math.floor(diffMs / 3600000);
+    87→    87→  const diffDays = Math.floor(diffMs / 86400000);
+    88→    88→
+    89→    89→  if (diffMins < 1) return 'Just now';
+    90→    90→  if (diffMins < 60) return `${diffMins}m ago`;
+    91→    91→  if (diffHours < 24) return `${diffHours}h ago`;
+    92→    92→  if (diffDays < 7) return `${diffDays}d ago`;
+    93→    93→  return `${Math.floor(diffDays / 7)}w ago`;
+    94→    94→}
+    95→    95→
+    96→    96→function getNotificationIcon(type: NotificationType) {
+    97→    97→  switch (type) {
+    98→    98→    case 'delivery_update':
+    99→    99→      return PackageCheck;
+   100→   100→    case 'new_message':
+   101→   101→      return MessageSquare;
+   102→   102→    case 'quote_received':
+   103→   103→    case 'payment':
+   104→   104→      return CreditCard;
+   105→   105→    case 'alert':
+   106→   106→      return AlertTriangle;
+   107→   107→    case 'system':
+   108→   108→    default:
+   109→   109→      return Info;
+   110→   110→  }
+   111→   111→}
+   112→   112→
+   113→   113→function getNotificationIconColor(type: NotificationType) {
+   114→   114→  switch (type) {
+   115→   115→    case 'delivery_update':
+   116→   116→      return 'text-emerald-500';
+   117→   117→    case 'new_message':
+   118→   118→      return 'text-primary';
+   119→   119→    case 'quote_received':
+   120→   120→    case 'payment':
+   121→   121→      return 'text-teal-500';
+   122→   122→    case 'alert':
+   123→   123→      return 'text-amber-500';
+   124→   124→    case 'system':
+   125→   125→    default:
+   126→   126→      return 'text-muted-foreground';
+   127→   127→  }
+   128→   128→}
+   129→   129→
+   130→   130→// ============ NAV CONFIGURATION ============
+   131→   131→const commonNavItems: NavItem[] = [
+   132→   132→  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
+   133→   133→  { tab: 'deliveries', label: 'Deliveries', icon: Package },
+   134→   134→  { tab: 'tracking', label: 'Tracking', icon: MapPin },
+   135→   135→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   136→   136→];
+   137→   137→
+   138→   138→const staffNavItems: NavItem[] = [
+   139→   139→  { tab: 'customers', label: 'Customers', icon: Users },
+   140→   140→  { tab: 'drivers', label: 'Drivers', icon: UserCog },
+   141→   141→  { tab: 'fleet', label: 'Fleet', icon: Truck },
+   142→   142→  { tab: 'dispatch', label: 'Dispatch', icon: Radio },
+   143→   143→  { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
+   144→   144→  { tab: 'notifications', label: 'Notifications', icon: Bell },
+   145→   145→  { tab: 'invoices', label: 'Invoices', icon: Receipt },
+   146→   146→  { tab: 'quotations', label: 'Quotations', icon: FileText },
+   147→   147→  { tab: 'reports', label: 'Reports', icon: BarChart3 },
+   148→   148→];
+   149→   149→
+   150→   150→const driverNavItems: NavItem[] = [
+   151→   151→  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
+   152→   152→  { tab: 'deliveries', label: 'My Jobs', icon: ClipboardList },
+   153→   153→  { tab: 'fleet', label: 'My Vehicle', icon: Truck },
+   154→   154→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   155→   155→];
+   156→   156→
+   157→   157→const customerNavItems: NavItem[] = [
+   158→   158→  { tab: 'deliveries', label: 'My Shipments', icon: Package },
+   159→   159→  { tab: 'tracking', label: 'Track Parcel', icon: MapPin },
+   160→   160→  { tab: 'sourcing', label: 'Sourcing Requests', icon: ShoppingBag },
+   161→   161→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   162→   162→  { tab: 'invoices', label: 'Invoices', icon: Receipt },
+   163→   163→];
+   164→   164→
+   165→   165→function getNavItemsForRole(role: UserRole): NavItem[] {
+   166→   166→  const staffRoles: UserRole[] = [
+   167→   167→    'company_owner',
+   168→   168→    'operations_manager',
+   169→   169→    'dispatcher',
+   170→   170→    'fleet_manager',
+   171→   171→    'super_admin',
+   172→   172→  ];
+   173→   173→  if (staffRoles.includes(role)) {
+   174→   174→    return [...commonNavItems, ...staffNavItems];
+   175→   175→  }
+   176→   176→  if (role === 'driver') {
+   177→   177→    return driverNavItems;
+   178→   178→  }
+   179→   179→  if (role === 'customer') {
+   180→   180→    return customerNavItems;
+   181→   181→  }
+   182→   182→  return commonNavItems;
+   183→   183→}
+   184→   184→
+   185→   185→const tabTitles: Record<DashboardTab, string> = {
+   186→   186→  overview: 'Overview',
+   187→   187→  deliveries: 'Deliveries',
+   188→   188→  tracking: 'Tracking',
+   189→   189→  customers: 'Customers',
+   190→   190→  drivers: 'Drivers',
+   191→   191→  fleet: 'Fleet',
+   192→   192→  dispatch: 'Dispatch',
+   193→   193→  sourcing: 'Sourcing',
+   194→   194→  messages: 'Messages',
+   195→   195→  reports: 'Reports',
+   196→   196→  invoices: 'Invoices',
+   197→   197→  quotations: 'Quotations',
+   198→   198→  notifications: 'Notifications',
+   199→   199→  settings: 'Settings',
+   200→   200→};
+   201→   201→
+   202→   202→function getTabTitleForRole(tab: DashboardTab, role: UserRole): string {
+   203→   203→  if (role === 'customer') {
+   204→   204→    const map: Partial<Record<DashboardTab, string>> = {
+   205→   205→      deliveries: 'My Shipments',
+   206→   206→      tracking: 'Track Parcel',
+   207→   207→      sourcing: 'Sourcing Requests',
+   208→   208→      invoices: 'Invoices',
+   209→   209→    };
+   210→   210→    return map[tab] ?? tabTitles[tab];
+   211→   211→  }
+   212→   212→  if (role === 'driver') {
+   213→   213→    const map: Partial<Record<DashboardTab, string>> = {
+   214→   214→      deliveries: 'My Jobs',
+   215→   215→      fleet: 'My Vehicle',
+   216→   216→    };
+   217→   217→    return map[tab] ?? tabTitles[tab];
+   218→   218→  }
+   219→   219→  return tabTitles[tab];
+   220→   220→}
+   221→   221→
+   222→   222→// ============ SIDEBAR NAV CONTENT ============
+   223→   223→function SidebarNavContent({
+   224→   224→  onNavigate,
+   225→   225→}: {
+   226→   226→  onNavigate?: () => void;
+   227→   227→}) {
+   228→   228→  const { dashboardTab, setDashboardTab } = useNavStore();
+   229→   229→  const { currentUser, logout } = useAuthStore();
+   230→   230→  const { unreadCount } = useNotificationStore();
+   231→   231→
+   232→   232→  const role = currentUser?.role ?? 'customer';
+   233→   233→  const navItems = getNavItemsForRole(role);
+   234→   234→
+   235→   235→  const handleNavClick = useCallback(
+   236→   236→    (tab: DashboardTab) => {
+   237→   237→      setDashboardTab(tab);
+   238→   238→      onNavigate?.();
+   239→   239→    },
+   240→   240→    [setDashboardTab, onNavigate]
+   241→   241→  );
+   242→   242→
+   243→   243→  const handleSignOut = useCallback(() => {
+   244→   244→    logout();
+   245→   245→    useNavStore.getState().setView('marketing');
+   246→   246→    onNavigate?.();
+   247→   247→  }, [logout, onNavigate]);
+   248→   248→
+   249→   249→  const initials = currentUser ? getInitials(currentUser.name) : '??';
+   250→   250→  const displayName = currentUser?.name ?? 'Unknown User';
+   251→   251→  const displayRole = currentUser
+   252→   252→    ? roleLabels[currentUser.role] ?? currentUser.role
+   253→   253→    : 'User';
+   254→   254→
+   255→   255→  return (
+   256→   256→    <div className="flex h-full flex-col">
+   257→   257→      {/* Gradient top line */}
+   258→   258→      <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+   259→   259→      {/* Logo area */}
+   260→   260→      <div className="relative flex h-16 items-center gap-3 px-4 bg-white/60 dark:bg-black/20 backdrop-blur-sm">
+   261→   261→        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+   262→   262→          <Truck className="h-5 w-5" />
+   263→   263→        </div>
+   264→   264→        <div className="flex flex-col">
+   265→   265→          <span className="text-sm font-bold leading-tight">SwiftFreight</span>
+   266→   266→          {currentUser?.companyId && (
+   267→   267→            <span className="text-[11px] leading-tight text-muted-foreground">
+   268→   268→              {companies.find((c) => c.id === currentUser.companyId)?.name ?? 'My Company'}
+   269→   269→            </span>
+   270→   270→          )}
+   271→   271→        </div>
+   272→   272→      </div>
+   273→   273→
+   274→   274→      {/* Gradient border below logo */}
+   275→   275→      <div className="h-[3px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+   276→   276→      <ScrollArea className="flex-1 px-3 py-3">
+   277→   277→        <nav className="space-y-1" aria-label="Main navigation">
+   278→   278→          {navItems.map((item) => {
+   279→   279→            const Icon = item.icon;
+   280→   280→            const isActive = dashboardTab === item.tab;
+   281→   281→            const showBadge = item.tab === 'messages' && unreadCount > 0;
+   282→   282→
+   283→   283→            return (
+   284→   284→              <button
+   285→   285→                key={item.tab}
+   286→   286→                onClick={() => handleNavClick(item.tab)}
+   287→   287→                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+   288→   288→                  isActive
+   289→   289→                    ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
+   290→   290→                    : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
+   291→   291→                }`}
+   292→   292→                aria-current={isActive ? 'page' : undefined}
+   293→   293→              >
+   294→   294→                {isActive && (
+   295→   295→                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+   296→   296→                )}
+   297→   297→                <Icon
+   298→   298→                  className={`h-5 w-5 shrink-0 ${
+   299→   299→                    isActive
+   300→   300→                      ? 'text-primary'
+   301→   301→                      : 'text-muted-foreground group-hover:text-foreground'
+   302→   302→                  }`}
+   303→   303→                />
+   304→   304→                <span className="flex-1 text-left">{item.label}</span>
+   305→   305→                {showBadge && (
+   306→   306→                  <Badge
+   307→   307→                    variant="destructive"
+   308→   308→                    className="h-5 min-w-5 justify-center px-1.5 text-[10px]"
+   309→   309→                  >
+   310→   310→                    {unreadCount > 9 ? '9+' : unreadCount}
+   311→   311→                  </Badge>
+   312→   312→                )}
+   313→   313→              </button>
+   314→   314→            );
+   315→   315→          })}
+   316→   316→        </nav>
+   317→   317→      </ScrollArea>
+   318→   318→
+   319→   319→      {/* Bottom section */}
+   320→   320→      <div className="space-y-1 border-t px-3 py-3">
+   321→   321→        <button
+   322→   322→          onClick={() => handleNavClick('settings')}
+   323→   323→          className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+   324→   324→            dashboardTab === 'settings'
+   325→   325→              ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
+   326→   326→              : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
+   327→   327→          }`}
+   328→   328→        >
+   329→   329→          {dashboardTab === 'settings' && (
+   330→   330→            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+   331→   331→          )}
+   332→   332→          <Settings className={`h-5 w-5 shrink-0 ${dashboardTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+   333→   333→          <span className="flex-1 text-left">Settings</span>
+   334→   334→        </button>
+   335→   335→        <button
+   336→   336→          onClick={handleSignOut}
+   337→   337→          className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+   338→   338→        >
+   339→   339→          <LogOut className="h-5 w-5 shrink-0" />
+   340→   340→          <span className="flex-1 text-left">Sign Out</span>
+   341→   341→        </button>
+   342→   342→      </div>
+   343→   343→
+   344→   344→      {/* User info card */}
+   345→   345→      <div className="border-t px-3 py-3">
+   346→   346→        <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2.5">
+   347→   347→          <Avatar className="h-8 w-8">
+   348→   348→            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+   349→   349→              {initials}
+   350→   350→            </AvatarFallback>
+   351→   351→          </Avatar>
+   352→   352→          <div className="min-w-0 flex-1">
+   353→   353→            <p className="truncate text-sm font-medium leading-tight">
+   354→   354→              {displayName}
+   355→   355→            </p>
+   356→   356→            <Badge
+   357→   357→              variant="secondary"
+   358→   358→              className="mt-0.5 px-1.5 py-0 text-[10px]"
+   359→   359→            >
+   360→   360→              {displayRole}
+   361→   361→            </Badge>
+   362→   362→          </div>
+   363→   363→        </div>
+   364→   364→      </div>
+   365→   365→    </div>
+   366→   366→  );
+   367→   367→}
+   368→   368→
+   369→   369→// ============ NOTIFICATION DROPDOWN ============
+   370→   370→function NotificationDropdown() {
+   371→   371→  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+   372→   372→    useNotificationStore();
+   373→   373→  const { setDashboardTab } = useNavStore();
+   374→   374→  const isMobile = useIsMobile();
+   375→   375→
+   376→   376→  const recentNotifications = useMemo(
+   377→   377→    () => notifications.slice(0, 5),
+   378→   378→    [notifications]
+   379→   379→  );
+   380→   380→
+   381→   381→  const hasUnread = unreadCount > 0;
+   382→   382→
+   383→   383→  return (
+   384→   384→    <DropdownMenu>
+   385→   385→      <DropdownMenuTrigger asChild>
+   386→   386→        <Button
+   387→   387→          variant="ghost"
+   388→   388→          size="icon"
+   389→   389→          className="relative h-9 w-9"
+   390→   390→          aria-label={`Notifications${hasUnread ? ` (${unreadCount} unread)` : ''}`}
+   391→   391→        >
+   392→   392→          <Bell className="h-[18px] w-[18px]" />
+   393→   393→          {hasUnread && (
+   394→   394→            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
+   395→   395→              {unreadCount > 9 ? '9+' : unreadCount}
+   396→   396→            </span>
+   397→   397→          )}
+   398→   398→        </Button>
+   399→   399→      </DropdownMenuTrigger>
+   400→   400→      <DropdownMenuContent
+   401→   401→        align="end"
+   402→   402→        className="w-80 p-0"
+   403→   403→        sideOffset={8}
+   404→   404→      >
+   405→   405→        <div className="flex items-center justify-between border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-teal-500/5">
+   406→   406→          <DropdownMenuLabel className="p-0 text-sm font-semibold">
+   407→   407→            Notifications
+   408→   408→          </DropdownMenuLabel>
+   409→   409→          {hasUnread && (
+   410→   410→            <Button
+   411→   411→              variant="ghost"
+   412→   412→              size="sm"
+   413→   413→              className="h-auto px-2 py-1 text-xs text-primary hover:text-primary"
+   414→   414→              onClick={(e) => {
+   415→   415→                e.stopPropagation();
+   416→   416→                markAllAsRead();
+   417→   417→              }}
+   418→   418→            >
+   419→   419→              Mark all as read
+   420→   420→            </Button>
+   421→   421→          )}
+   422→   422→        </div>
+   423→   423→        <ScrollArea className="max-h-72">
+   424→   424→          {recentNotifications.length === 0 ? (
+   425→   425→            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+   426→   426→              <Bell className="mb-2 h-8 w-8 opacity-40" />
+   427→   427→              <p className="text-sm">No notifications</p>
+   428→   428→            </div>
+   429→   429→          ) : (
+   430→   430→            <div>
+   431→   431→              {recentNotifications.map((notification) => {
+   432→   432→                const IconComponent = getNotificationIcon(notification.type);
+   433→   433→                const iconColor = getNotificationIconColor(notification.type);
+   434→   434→                return (
+   435→   435→                  <DropdownMenuItem
+   436→   436→                    key={notification.id}
+   437→   437→                    className={`flex cursor-pointer items-start gap-3 px-4 py-3.5 border-l-2 ${
+   438→   438→                      notification.type === 'delivery_update' ? 'border-l-emerald-400' :
+   439→   439→                      notification.type === 'new_message' ? 'border-l-primary' :
+   440→   440→                      notification.type === 'payment' || notification.type === 'quote_received' ? 'border-l-teal-400' :
+   441→   441→                      notification.type === 'alert' ? 'border-l-amber-400' :
+   442→   442→                      'border-l-transparent'
+   443→   443→                    } ${!notification.isRead ? 'bg-primary/[0.02]' : ''}`}
+   444→   444→                    onClick={() => markAsRead(notification.id)}
+   445→   445→                  >
+   446→   446→                    <div
+   447→   447→                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted ${iconColor}`}
+   448→   448→                    >
+   449→   449→                      <IconComponent className="h-4 w-4" />
+   450→   450→                    </div>
+   451→   451→                    <div className="min-w-0 flex-1">
+   452→   452→                      <div className="flex items-center gap-2">
+   453→   453→                        <p className="truncate text-sm font-medium">
+   454→   454→                          {notification.title}
+   455→   455→                        </p>
+   456→   456→                        {!notification.isRead && (
+   457→   457→                          <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+   458→   458→                        )}
+   459→   459→                      </div>
+   460→   460→                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+   461→   461→                        {notification.message}
+   462→   462→                      </p>
+   463→   463→                      <p className="mt-1 text-[11px] text-muted-foreground/70">
+   464→   464→                        {getTimeAgo(notification.createdAt)}
+   465→   465→                      </p>
+   466→   466→                    </div>
+   467→   467→                  </DropdownMenuItem>
+   468→   468→                );
+   469→   469→              })}
+   470→   470→            </div>
+   471→   471→          )}
+   472→   472→        </ScrollArea>
+   473→   473→        {notifications.length > 0 && (
+   474→   474→          <>
+   475→   475→            <Separator />
+   476→   476→            <div className="px-2 py-2">
+   477→   477→              <Button
+   478→   478→                variant="ghost"
+   479→   479→                size="sm"
+   480→   480→                className="w-full justify-center text-xs text-primary hover:text-primary"
+   481→   481→                onClick={() => setDashboardTab('notifications')}
+   482→   482→              >
+   483→   483→                View All Notifications
+   484→   484→                <ChevronRight className="ml-1 h-3 w-3" />
+   485→   485→              </Button>
+   486→   486→            </div>
+   487→   487→          </>
+   488→   488→        )}
+   489→   489→      </DropdownMenuContent>
+   490→   490→    </DropdownMenu>
+   491→   491→  );
+   492→   492→}
+   493→   493→
+   494→   494→// ============ USER DROPDOWN ============
+   495→   495→function UserDropdown() {
+   496→   496→  const { currentUser, logout } = useAuthStore();
+   497→   497→  const { setDashboardTab } = useNavStore();
+   498→   498→
+   499→   499→  const initials = currentUser ? getInitials(currentUser.name) : '??';
+   500→   500→  const displayName = currentUser?.name ?? 'Unknown';
+   501→   501→  const displayRole = currentUser
+   502→   502→    ? roleLabels[currentUser.role] ?? currentUser.role
+   503→   503→    : 'User';
+   504→   504→
+   505→   505→  const handleSignOut = useCallback(() => {
+   506→   506→    logout();
+   507→   507→    useNavStore.getState().setView('marketing');
+   508→   508→  }, [logout]);
+   509→   509→
+   510→   510→  return (
+   511→   511→    <DropdownMenu>
+   512→   512→      <DropdownMenuTrigger asChild>
+   513→   513→        <Button
+   514→   514→          variant="ghost"
+   515→   515→          className="relative flex h-9 items-center gap-2 rounded-full px-2"
+   516→   516→        >
+   517→   517→          <div className="relative h-7 w-7 rounded-full p-[2px] bg-gradient-to-br from-primary to-teal-500">
+   518→   518→          <Avatar className="h-full w-full">
+   519→   519→            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+   520→   520→              {initials}
+   521→   521→            </AvatarFallback>
+   522→   522→          </Avatar>
+   523→   523→          </div>
+   524→   524→          <span className="hidden text-sm font-medium lg:inline-block">
+   525→   525→            {displayName}
+   526→   526→          </span>
+   527→   527→        </Button>
+   528→   528→      </DropdownMenuTrigger>
+   529→   529→      <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
+   530→   530→        <DropdownMenuLabel className="font-normal">
+   531→   531→          <div className="flex flex-col space-y-1">
+   532→   532→            <p className="text-sm font-medium leading-none">{displayName}</p>
+   533→   533→            <p className="text-xs leading-none text-muted-foreground">
+   534→   534→              {displayRole}
+   535→   535→            </p>
+   536→   536→          </div>
+   537→   537→        </DropdownMenuLabel>
+   538→   538→        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+   539→   539→        <DropdownMenuItem className="cursor-pointer">
+   540→   540→          <UserIcon className="mr-2 h-4 w-4" />
+   541→   541→          My Profile
+   542→   542→        </DropdownMenuItem>
+   543→   543→        <DropdownMenuItem
+   544→   544→          className="cursor-pointer"
+   545→   545→          onClick={() => setDashboardTab('settings')}
+   546→   546→        >
+   547→   547→          <Settings className="mr-2 h-4 w-4" />
+   548→   548→          Settings
+   549→   549→        </DropdownMenuItem>
+   550→   550→        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+   551→   551→        <DropdownMenuItem
+   552→   552→          className="cursor-pointer text-destructive focus:text-destructive"
+   553→   553→          onClick={handleSignOut}
+   554→   554→        >
+   555→   555→          <LogOut className="mr-2 h-4 w-4" />
+   556→   556→          Sign Out
+   557→   557→        </DropdownMenuItem>
+   558→   558→      </DropdownMenuContent>
+   559→   559→    </DropdownMenu>
+   560→   560→  );
+   561→   561→}
+   562→   562→
+   563→   563→// ============ DASHBOARD HEADER ============
+   564→   564→function DashboardHeader() {
+   565→   565→  const {
+   566→   566→    dashboardTab,
+   567→   567→    setDashboardTab,
+   568→   568→    setTrackingNumber,
+   569→   569→    trackingNumber,
+   570→   570→  } = useNavStore();
+   571→   571→  const { theme, setTheme } = useTheme();
+   572→   572→  const isMobile = useIsMobile();
+   573→   573→  const { setSidebarOpen } = useNavStore();
+   574→   574→
+   575→   575→  const { currentUser } = useAuthStore();
+   576→   576→  const role = currentUser?.role ?? 'customer';
+   577→   577→  const title = getTabTitleForRole(dashboardTab, role);
+   578→   578→
+   579→   579→  const handleQuickTrack = useCallback(
+   580→   580→    (e: React.FormEvent<HTMLFormElement>) => {
+   581→   581→      e.preventDefault();
+   582→   582→      const val = trackingNumber.trim();
+   583→   583→      if (val) {
+   584→   584→        setDashboardTab('tracking');
+   585→   585→      }
+   586→   586→    },
+   587→   587→    [trackingNumber, setDashboardTab]
+   588→   588→  );
+   589→   589→
+   590→   590→  return (
+   591→   591→    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-card px-4 md:px-6">
+   592→   592→      {/* Left: hamburger + breadcrumb / mobile title */}
+   593→   593→      <div className="flex min-w-0 items-center gap-3">
+   594→   594→        {isMobile && (
+   595→   595→          <Button
+   596→   596→            variant="ghost"
+   597→   597→            size="icon"
+   598→   598→            className="h-9 w-9 shrink-0"
+   599→   599→            onClick={() => setSidebarOpen(true)}
+   600→   600→            aria-label="Open menu"
+   601→   601→          >
+   602→   602→            <Menu className="h-5 w-5" />
+   603→   603→          </Button>
+   604→   604→        )}
+   605→   605→        <div className="hidden md:block">
+   606→   606→          <Breadcrumb>
+   607→   607→            <BreadcrumbList>
+   608→   608→              <BreadcrumbItem>
+   609→   609→                <BreadcrumbPage className="text-sm font-medium">
+   610→   610→                  {title}
+   611→   611→                </BreadcrumbPage>
+   612→   612→              </BreadcrumbItem>
+   613→   613→            </BreadcrumbList>
+   614→   614→          </Breadcrumb>
+   615→   615→        </div>
+   616→   616→        {isMobile && (
+   617→   617→          <h1 className="truncate text-sm font-semibold">{title}</h1>
+   618→   618→        )}
+   619→   619→      </div>
+   620→   620→
+   621→   621→      {/* Right: search, theme, notifications, user */}
+   622→   622→      <div className="ml-auto flex items-center gap-2">
+   623→   623→        {/* Tracking search — desktop only */}
+   624→   624→        <form onSubmit={handleQuickTrack} className="hidden md:block">
+   625→   625→          <div className="relative">
+   626→   626→            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+   627→   627→            <Input
+   628→   628→              type="text"
+   629→   629→              placeholder="Quick track..."
+   630→   630→              value={trackingNumber}
+   631→   631→              onChange={(e) => setTrackingNumber(e.target.value)}
+   632→   632→              className="h-9 w-48 bg-muted/50 pl-8 text-sm lg:w-64 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/30"
+   633→   633→            />
+   634→   634→          </div>
+   635→   635→        </form>
+   636→   636→
+   637→   637→        {/* Theme toggle */}
+   638→   638→        <Button
+   639→   639→          variant="ghost"
+   640→   640→          size="icon"
+   641→   641→          className="h-9 w-9"
+   642→   642→          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+   643→   643→          aria-label="Toggle theme"
+   644→   644→        >
+   645→   645→          <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+   646→   646→          <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+   647→   647→        </Button>
+   648→   648→
+   649→   649→        {/* Notifications */}
+   650→   650→        <NotificationDropdown />
+   651→   651→
+   652→   652→        {/* User avatar */}
+   653→   653→        <UserDropdown />
+   654→   654→      </div>
+   655→   655→    </header>
+   656→   656→  );
+   657→   657→}
+   658→   658→
+   659→   659→// ============ TAB RENDERER ============
+   660→   660→function TabRenderer({ tab }: { tab: DashboardTab }) {
+   661→   661→  const Component = tabComponentMap[tab];
+   662→   662→  if (!Component) {
+   663→   663→    return (
+   664→   664→      <div className="flex items-center justify-center py-20 text-muted-foreground">
+   665→   665→        Unknown tab
+   666→   666→      </div>
+   667→   667→    );
+   668→   668→  }
+   669→   669→  return <Component />;
+   670→   670→}
+   671→   671→
+   672→   672→// ============ MAIN DASHBOARD LAYOUT ============
+   673→   673→export function DashboardLayout() {
+   674→   674→  const isMobile = useIsMobile();
+   675→   675→  const { dashboardTab, sidebarOpen, setSidebarOpen, setDashboardTab } = useNavStore();
+   676→   676→  const { currentUser } = useAuthStore();
+   677→   677→  const { notifications } = useNotificationStore();
+   678→   678→
+   679→   679→  // Initialize notification store with mock data on first render
+   680→   680→  useEffect(() => {
+   681→   681→    if (notifications.length === 0 && currentUser) {
+   682→   682→      const userNotifs = mockNotifications.filter(
+   683→   683→        (n) => n.userId === currentUser.id
+   684→   684→      );
+   685→   685→      if (userNotifs.length > 0) {
+   686→   686→        const store = useNotificationStore.getState();
+   687→   687→        if (store.notifications.length === 0) {
+   688→   688→          const unread = userNotifs.filter((n) => !n.isRead).length;
+   689→   689→          useNotificationStore.setState({
+   690→   690→            notifications: userNotifs,
+   691→   691→            unreadCount: unread,
+   692→   692→          });
+   693→   693→        }
+   694→   694→      }
+   695→   695→    }
+   696→   696→  }, [currentUser, notifications.length]);
+   697→   697→
+   698→   698→  // Set default tab for role on login
+   699→   699→  useEffect(() => {
+   700→   700→    if (currentUser) {
+   701→   701→      const navItems = getNavItemsForRole(currentUser.role);
+   702→   702→      const currentTab = useNavStore.getState().dashboardTab;
+   703→   703→      const validTabs = navItems.map((n) => n.tab);
+   704→   704→      if (!validTabs.includes(currentTab)) {
+   705→   705→        setDashboardTab(navItems[0].tab);
+   706→   706→      }
+   707→   707→    }
+   708→   708→  }, [currentUser, setDashboardTab]);
+   709→   709→
+   710→   710→  // Close mobile sidebar on tab change
+   711→   711→  useEffect(() => {
+   712→   712→    if (isMobile) {
+   713→   713→      setSidebarOpen(false);
+   714→   714→    }
+   715→   715→  }, [dashboardTab, isMobile, setSidebarOpen]);
+   716→   716→
+   717→   717→  return (
+   718→   718→    <div className="flex h-screen overflow-hidden bg-background">
+   719→   719→      {/* Desktop sidebar */}
+   720→   720→      {!isMobile && (
+   721→   721→        <aside className="hidden w-64 shrink-0 border-r bg-card shadow-sm md:flex md:flex-col">
+   722→   722→          <SidebarNavContent />
+   723→   723→        </aside>
+   724→   724→      )}
+   725→   725→
+   726→   726→      {/* Mobile sidebar (Sheet) */}
+   727→   727→      {isMobile && (
+   728→   728→        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+   729→   729→          <SheetContent side="left" className="w-72 p-0">
+   730→   730→            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+   731→   731→            <SidebarNavContent onNavigate={() => setSidebarOpen(false)} />
+   732→   732→          </SheetContent>
+   733→   733→        </Sheet>
+   734→   734→      )}
+   735→   735→
+   736→   736→      {/* Main content area */}
+   737→   737→      <div className="flex flex-1 flex-col overflow-hidden">
+   738→   738→        <DashboardHeader />
+   739→   739→        {/* Gradient top-border accent */}
+   740→   740→        <div className="h-1 bg-gradient-to-r from-primary via-emerald to-teal shrink-0" />
+   741→   741→        <main className="flex-1 scroll-smooth overflow-y-auto p-4 md:p-6">
+   742→   742→          <TabRenderer tab={dashboardTab} />
+   743→   743→        </main>
+   744→   744→      </div>
+   745→   745→    </div>
+   746→   746→  );
+   747→   747→}
