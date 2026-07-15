@@ -51,6 +51,19 @@ const driverStatusConfig: Record<Driver['status'], { label: string; className: s
   suspended: { label: 'Suspended', className: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
 };
 
+const driverStatusDotColor: Record<Driver['status'], string> = {
+  available: 'bg-green-500',
+  on_trip: 'bg-amber-500',
+  off_duty: 'bg-red-500',
+  suspended: 'bg-red-500',
+};
+
+function isLicenseExpiringSoon(expiry?: string): boolean {
+  if (!expiry) return false;
+  const days = Math.ceil((new Date(expiry).getTime() - Date.now()) / 86400000);
+  return days >= 0 && days <= 30;
+}
+
 export function DriversTab() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -165,11 +178,11 @@ export function DriversTab() {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="on_trip">On Trip</SelectItem>
-            <SelectItem value="off_duty">Off Duty</SelectItem>
-            <SelectItem value="suspended">Suspended</SelectItem>
+            <SelectItem value="all">All Statuses ({drivers.length})</SelectItem>
+            <SelectItem value="available">Available ({drivers.filter(d => d.status === 'available').length})</SelectItem>
+            <SelectItem value="on_trip">On Trip ({drivers.filter(d => d.status === 'on_trip').length})</SelectItem>
+            <SelectItem value="off_duty">Off Duty ({drivers.filter(d => d.status === 'off_duty').length})</SelectItem>
+            <SelectItem value="suspended">Suspended ({drivers.filter(d => d.status === 'suspended').length})</SelectItem>
           </SelectContent>
         </Select>
         <Select value={companyFilter} onValueChange={(v) => { setCompanyFilter(v); setPage(1); }}>
@@ -283,11 +296,12 @@ export function DriversTab() {
                     return (
                       <TableRow
                         key={driver.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                        className={`cursor-pointer hover:bg-muted/50 transition-colors ${isLicenseExpiringSoon(driver.licenseExpiry) ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}
                         onClick={() => setSelectedDriver(driver)}
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
+                            <span className={`h-2 w-2 shrink-0 rounded-full ${driverStatusDotColor[driver.status]}`} />
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                               {driver.name.split(' ').map((n) => n[0]).join('')}
                             </div>
@@ -449,13 +463,25 @@ export function DriversTab() {
                     <Package className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
                     <p className="text-lg font-bold">{selectedDriver.totalDeliveries}</p>
                     <p className="text-xs text-muted-foreground">Deliveries</p>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+                        style={{ width: `${Math.min(100, (selectedDriver.successfulDeliveries / Math.max(selectedDriver.totalDeliveries, 1)) * 100)}%` }}
+                      />
+                    </div>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <TrendingUp className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
                     <p className={`text-lg font-bold ${successRate >= 95 ? 'text-green-600' : successRate >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
                       {successRate}%
                     </p>
-                    <p className="text-xs text-muted-foreground">Success Rate</p>
+                    <p className="text-xs text-muted-foreground">On-Time Rate</p>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full transition-all ${successRate >= 95 ? 'bg-green-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
+                        style={{ width: `${successRate}%` }}
+                      />
+                    </div>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <Star className="mx-auto mb-1 h-5 w-5 text-yellow-500" />

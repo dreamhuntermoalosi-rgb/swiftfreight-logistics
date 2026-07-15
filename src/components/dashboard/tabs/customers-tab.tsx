@@ -15,9 +15,29 @@ import type { Customer } from '@/lib/types';
 import {
   Users, Phone, Mail, Star, MapPin, Search, Plus,
   CreditCard, TrendingUp, ArrowUpRight, ChevronUp, ChevronDown, Package,
+  Download,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 20;
+
+const cityBorderColors = ['border-l-emerald-400', 'border-l-teal-400', 'border-l-amber-400', 'border-l-rose-400', 'border-l-violet-400'];
+function getCityBorderColor(city: string): string {
+  let hash = 0;
+  for (let i = 0; i < city.length; i++) hash = city.charCodeAt(i) + ((hash << 5) - hash);
+  return cityBorderColors[Math.abs(hash) % cityBorderColors.length];
+}
+
+function downloadCSV(data: string[][], filename: string) {
+  const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function formatCurrency(amount: number) {
   if (amount >= 1_000_000) return `M${(amount / 1_000_000).toFixed(1)}M`;
@@ -35,7 +55,7 @@ function RatingStars({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          className={`h-3.5 w-3.5 ${i <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700'}`}
+          className={`h-4 w-4 ${i <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.2)]' : 'fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700'}`}
         />
       ))}
       <span className="ml-1 text-xs text-muted-foreground">{rating.toFixed(1)}</span>
@@ -141,14 +161,37 @@ export function CustomersTab() {
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search name, email, phone..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="pl-9"
+            className="pl-10"
           />
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="shrink-0"
+          aria-label="Download customers CSV"
+          onClick={() => {
+            const header = ['Name', 'Email', 'Phone', 'City', 'Total Deliveries', 'Total Spent (M)', 'Rating', 'Joined Date'];
+            const rows = filtered.map((c) => [
+              c.name,
+              c.email,
+              c.phone,
+              c.city,
+              String(c.totalShipments),
+              String(c.totalSpent),
+              String(c.rating),
+              formatDate(c.joinedAt),
+            ]);
+            downloadCSV([header, ...rows], 'customers.csv');
+            toast.success(`Downloaded ${filtered.length} customers`);
+          }}
+        >
+          <Download className="h-4 w-4" />
+        </Button>
         <Select value={cityFilter} onValueChange={(v) => { setCityFilter(v); setPage(1); }}>
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="Filter by city" />
@@ -248,7 +291,7 @@ export function CustomersTab() {
                   paged.map((customer) => (
                     <TableRow
                       key={customer.id}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      className={`cursor-pointer hover:bg-muted/50 transition-colors border-l-2 ${getCityBorderColor(customer.city)}`}
                       onClick={() => setSelectedCustomer(customer)}
                     >
                       <TableCell className="font-medium">
@@ -352,6 +395,7 @@ export function CustomersTab() {
       {/* Customer Detail Dialog */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => { if (!open) setSelectedCustomer(null); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="h-1 -mx-6 -mt-6 mb-4 bg-gradient-to-r from-primary to-teal-500 rounded-t-lg" />
           {selectedCustomer && (
             <>
               <DialogHeader>
@@ -394,17 +438,23 @@ export function CustomersTab() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <Package className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-teal-500/20">
+                    <Package className="h-4 w-4 text-primary" />
+                  </div>
                   <p className="text-lg font-bold">{selectedCustomer.totalShipments}</p>
                   <p className="text-xs text-muted-foreground">Shipments</p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <CreditCard className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
+                    <CreditCard className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <p className="text-lg font-bold">{formatCurrency(selectedCustomer.totalSpent)}</p>
                   <p className="text-xs text-muted-foreground">Total Spent</p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <Star className="mx-auto mb-1 h-5 w-5 text-yellow-500" />
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20">
+                    <Star className="h-4 w-4 text-amber-500" />
+                  </div>
                   <p className="text-lg font-bold">{(selectedCustomer.rating as number).toFixed(1)}</p>
                   <p className="text-xs text-muted-foreground">Avg Rating</p>
                 </div>

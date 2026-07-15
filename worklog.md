@@ -613,3 +613,169 @@ SwiftFreight is a comprehensive, investor-ready multi-tenant SaaS Logistics Oper
 3. Add PDF invoice generation
 4. Improve the Dispatch tab with more interactivity (drag-and-drop assignment)
 5. Add a "Live Map" tab using Leaflet or similar
+
+---
+Task ID: 10
+Agent: Feature Developer
+Task: Live Activity Feed, CSV Export, Enhanced Role-Specific Overview Charts
+
+Work Log:
+- **Feature 1: Live Activity Feed** — Added to CompanyOverview (staff view) in overview-tab.tsx:
+  - 12 hardcoded real-time activity items with 5 activity types (delivery, alert, payment, system, driver)
+  - Each type has distinct color scheme (emerald, amber, teal, muted, primary) for icon circle and left border
+  - Pulsing green dot + "Live" badge in header
+  - LiveActivityIcon helper component maps icon names to Lucide icons
+  - Scrollable container (max-h-[420px]) with hover:bg-muted/30 effect
+- **Feature 2: CSV Export Buttons** — Added to both Deliveries and Customers tabs:
+  - Deliveries tab: "Download" button next to "New Delivery" button, exports filtered data with columns: Tracking#, Customer, Pickup City, Destination City, Weight, Status, Priority, Driver, Amount, Created Date
+  - Customers tab: Download icon button next to search input, exports filtered data with columns: Name, Email, Phone, City, Total Deliveries, Total Spent, Rating, Joined Date
+  - Both use client-side Blob download pattern with toast.success feedback
+- **Feature 3: Enhanced Role-Specific Charts** — Added to overview-tab.tsx:
+  - CustomerOverview: "Monthly Spending Trend" LineChart with teal/emerald gradient fill, dots on data points, Y axis formatted as M{amount}
+  - DriverOverview: "This Week's Earnings" BarChart with green gradient bars, tooltip showing M{earnings}, card header shows M3,430 total
+  - Added new chart configs (spendingTrendChartConfig, weeklyEarningsChartConfig) and data constants
+  - Added LineChart, Line imports from recharts; AlertTriangle, Info, FileText imports from lucide-react
+
+Stage Summary:
+- All 3 features implemented across 3 files (overview-tab.tsx, deliveries-tab.tsx, customers-tab.tsx)
+- Zero lint errors, all compilations successful
+- Existing functionality preserved — no breaking changes---
+Task ID: 11
+Agent: Frontend Styling Expert
+Task: Styling polish on 5 dashboard tabs (Settings, Customers, Invoices, Sourcing, Drivers)
+
+Work Log:
+- **Settings Tab** (settings-tab.tsx):
+  - Profile: Added gradient border ring (from-primary to-teal-500) around avatar using wrapper div with p-[2px] gradient background; changed avatar inner bg to bg-background for contrast; camera button now slides up on hover (translate-y-1 → translate-y-0) via group-hover/avatar
+  - Company: Added gradient left border (from-primary/40 to-teal-500/40, h-full w-1) to company info card; added colored dots before each label (primary, teal, emerald, amber, violet, rose)
+  - Notifications: Each toggle row now has border-b border-border/50 (except first) and hover:bg-muted/30; Switch gets data-[state=checked]:bg-primary when on for green color
+  - Appearance: Theme cards get hover:scale-[1.02] transition; active theme shows checkmark badge (absolute positioned circle with Check icon) in top-right corner
+  - Security: Added red/amber gradient accent line (h-1 from-red-500/50 to-amber-500/50) at top of security card; Delete Account button has hover:bg-red-600/10
+  - Imported Check icon from lucide-react
+
+- **Customers Tab** (customers-tab.tsx):
+  - Table rows: Added 2px left border color based on city hash (getCityBorderColor helper picks from emerald, teal, amber, rose, violet)
+  - Customer detail dialog: Added gradient header bar (h-1 from-primary to-teal-500) at top
+  - Stats: Each stat (Shipments, Total Spent, Avg Rating) now has icon inside gradient background container (from-primary/20 to-teal-500/20 etc.)
+  - Star ratings: Made stars larger (h-4 w-4) with subtle amber glow shadow on filled stars
+  - Search input: Added pointer-events-none to Search icon, adjusted pl to pl-10 for proper spacing
+
+- **Invoices Tab** (invoices-tab.tsx):
+  - Summary cards: Added gradient top border (h-1) — Total Billed=slate, Paid=emerald, Outstanding=amber; cards have overflow-hidden
+  - Table rows: Overdue invoices get border-l-2 border-l-red-400/60 and bg-red-50/50 dark:bg-red-900/10
+  - Status badges: Added shadow-sm to all badges for subtle vibrancy
+  - Pay Now button: Gradient background (from-primary to-emerald-600), white text, hover:brightness-110, border-0
+
+- **Sourcing Tab** (sourcing-tab.tsx):
+  - Active tab: Added gradient underline indicator (absolute bottom-0, h-0.5 from-primary to-teal-500) on active TabsTrigger; data-[state=active]:shadow-none to prevent default indicator
+  - Request cards: Added colored 3px left border based on status (pending=amber, quoted=blue, accepted/emerald, cancelled=red); cards use overflow-hidden
+  - Detail dialog: Replaced vertical timeline with horizontal gradient progress bar (h-2 bg-gradient-to-r from-primary to-teal-500) with dot markers for each status step
+  - Priority badges: Skipped (no priority field on SourcingRequest type)
+
+- **Drivers Tab** (drivers-tab.tsx):
+  - Table rows: Added 2px status dot (h-2 w-2 rounded-full) before driver name — green for available, amber for on_trip, red for off_duty/suspended
+  - License expiry: Drivers with license expiring within 30 days get bg-amber-50/50 dark:bg-amber-900/10 row highlight (isLicenseExpiringSoon helper)
+  - Performance stats: Added progress bars under Deliveries (gradient from-primary to-teal-500) and On-Time Rate (color-coded: green ≥95%, amber ≥90%, red <90%)
+  - Status filter: Added count badges to each filter option (e.g., "Available (24)", "On Trip (12)")
+
+Stage Summary:
+- 5 files modified: settings-tab.tsx, customers-tab.tsx, invoices-tab.tsx, sourcing-tab.tsx, drivers-tab.tsx
+- ESLint: zero errors verified
+- All changes use existing oklch theme variables and shadcn/ui components
+- Dark mode supported via dark: variants where needed
+- Subtle, professional styling — no breaking changes to functionality
+
+---
+Task ID: cron-r5
+Agent: Main Orchestrator + 2 subagents (frontend-styling-expert, full-stack-developer)
+Task: Comprehensive QA, bug fixes, styling improvements, and new feature development (Round 5)
+
+Work Log:
+
+**QA Testing (agent-browser):**
+- Marketing website: all sections render, zero console errors
+- Company Owner: all 14 nav tabs load correctly (Overview, Deliveries, Tracking, Messages, Customers, Drivers, Fleet, Warehouse, Dispatch, Sourcing, Notifications, Invoices, Quotations, Reports, Settings)
+- Operations Manager: login successful, all tabs accessible
+- Driver: personalized overview with "Welcome, Lebo!", correct 5-item sidebar (Overview, My Jobs, My Vehicle, Messages, Settings)
+- Customer: personalized dashboard with My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices
+- Dark mode: works correctly
+- Mobile viewport (375x812): hamburger menu, responsive header, all content accessible
+- Mobile navigation Sheet: all 14 nav items + Settings + Sign Out
+
+**Bugs Found & Fixed:**
+1. Customer missing Overview tab — CustomerOverview component existed but was unreachable because customerNavItems didn't include 'overview'. Added `{ tab: 'overview', label: 'Overview', icon: LayoutDashboard }` as first item in customerNavItems.
+2. Customer CSV download button inaccessible — Icon-only button lacked aria-label. Added `aria-label="Download customers CSV"`.
+
+**Styling Improvements (by frontend-styling-expert agent):**
+- Settings tab: gradient avatar border ring, hover-reveal camera button, gradient company card border, colored dots on labels, notification row hover/toggle styling, theme card checkmark badges, red/amber danger zone accent
+- Customers tab: city-hash-based left border colors on rows, gradient dialog header, stat icons in gradient containers, larger glowing star ratings, search icon positioning
+- Invoices tab: gradient top borders on summary cards (slate/emerald/amber), red-highlighted overdue rows, vibrant status badges, gradient Pay Now button
+- Sourcing tab: gradient active tab underline, 3px colored left borders on cards by status, horizontal gradient progress bar in detail dialog
+- Drivers tab: 2px status dots before driver names, amber-highlighted license expiry rows, performance progress bars, count badges on filter options
+
+**New Features (by full-stack-developer agent):**
+1. Live Activity Feed (staff overview): 12 activity items, 5 color-coded types, pulsing "Live" indicator, scrollable feed with hover effects
+2. CSV Export: Deliveries tab (514 deliveries downloaded) and Customers tab, client-side Blob download with toast feedback
+3. Customer Monthly Spending Trend: LineChart with teal/emerald gradient fill in CustomerOverview
+4. Driver Weekly Earnings: BarChart with green gradient bars in DriverOverview, total in card header
+
+**Verification Results:**
+- ESLint: zero errors after all changes
+- Dev server: compiles clean, no runtime errors
+- Browser QA: all new features verified
+  - Live Activity Feed: confirmed 12 items with correct text and colors
+  - CSV Export: "Downloaded 514 deliveries" toast confirmed
+  - Customer Overview: "Monthly Spending Trend" chart confirmed in DOM
+  - Driver Overview: "This Week's Earnings" chart confirmed
+  - Settings tab: all 6 sections render (Profile, Company, Notifications, Appearance, Security, Danger Zone)
+  - Invoices tab: Paid/Outstanding summary cards visible
+  - Sourcing tab: status tabs with counts visible
+  - Drivers tab: count badges "(60)" on status filter confirmed
+
+Stage Summary:
+- 2 bugs fixed (customer Overview tab missing, CSV button accessibility)
+- 5 tabs received detailed styling improvements (Settings, Customers, Invoices, Sourcing, Drivers)
+- 4 new features added (Live Activity Feed, CSV Export x2, Spending Trend chart, Weekly Earnings chart)
+- Customer sidebar now: 6 items (Overview, My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices)
+- Total dashboard tabs: 16 (unchanged)
+- ESLint: zero errors throughout
+
+---
+## HANDOVER DOCUMENT (Updated Round 5)
+
+### Current Project Status / Assessment
+SwiftFreight is a fully functional, investor-ready multi-tenant SaaS Logistics Operating System demo for Lesotho. The application has been through 5 rounds of continuous development with comprehensive QA testing at each round. The codebase is stable with zero ESLint errors, clean compilation, and no runtime errors.
+
+**Current Feature Set:**
+- Marketing website (11 sections + testimonials, polished with animations and gradients)
+- Auth pages (Login with 5 demo roles, Register with sliding tab indicator, Forgot Password)
+- 16 dashboard tabs across 5 demo roles:
+  - **Staff** (Company Owner, Ops Manager, Dispatcher, Fleet Manager): 14 nav items
+  - **Driver**: 5 nav items (Overview with personalized KPIs + weekly earnings chart, My Jobs, My Vehicle, Messages, Settings)
+  - **Customer**: 6 nav items (Overview with spending trend chart, My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices)
+- Key capabilities: delivery management, tracking, fleet management, warehouse management, dispatch center, sourcing, quotations, invoices, reports (8+ charts), notifications, messaging, CSV export, star rating, vehicle detail sheets
+- 9 API routes, Prisma schema with 13 models
+- 500+ demo deliveries, 60 drivers, 40 vehicles, 300 customers, 3 companies
+
+### Completed This Round
+- **Bugs fixed**: Customer missing Overview tab (now has personalized dashboard with spending trend), CSV download accessibility
+- **Styling**: 5 tabs polished (Settings avatar gradient ring + danger zone accents, Customers city-color borders + glowing stars, Invoices overdue row highlighting, Sourcing gradient tabs + progress bars, Drivers status dots + license warnings + performance bars)
+- **Features**: Live Activity Feed with 12 items, CSV export on Deliveries + Customers, Customer Monthly Spending Trend chart, Driver Weekly Earnings chart
+- **All verified** via agent-browser across 5 roles, dark mode, and mobile viewport
+
+### Unresolved Issues / Risks + Priority Recommendations
+1. **[Low] Dev server stability** — Server process occasionally dies between rounds; needs `setsid` or process manager for reliability
+2. **[Low] Sourcing tab priority pulse** — Requested but skipped because SourcingRequest type has no priority field
+3. **[Enhancement] Real-time data** — All data is static mock; WebSocket integration would make Live Activity Feed actually live
+4. **[Enhancement] Maps integration** — Dispatch still uses CSS/SVG placeholder; Leaflet would be a major upgrade
+5. **[Enhancement] PDF generation** — Invoice "Generate" and "Pay Now" still show toasts; PDFKit/jsPDF would add real value
+6. **[Enhancement] More roles** — Sourcing Agent, Trailer Owner, Warehouse Partner still use staff dashboard; role-specific views would differentiate the demo
+7. **[Enhancement] Data persistence** — All state is in-memory Zustand; changes (ratings, assignments) don't persist between sessions
+8. **[Enhancement] Table sorting/column visibility** — Tables have basic sort but no column toggle or advanced filtering
+
+**Priority recommendations for next phase:**
+1. Add real PDF invoice generation (high investor impact)
+2. Implement a real map tab with Leaflet (high visual impact)
+3. Add Sourcing Agent and Trailer Owner role-specific dashboards
+4. Add column visibility toggle and advanced table filters
+5. Persist state changes to localStorage for demo continuity

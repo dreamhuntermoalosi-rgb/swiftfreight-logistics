@@ -9,6 +9,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -25,6 +27,7 @@ import {
   Star,
   Bell,
   AlertCircle,
+  AlertTriangle,
   MessageSquare,
   CreditCard,
   Shield,
@@ -34,6 +37,8 @@ import {
   Phone,
   ClipboardCheck,
   CheckCircle2,
+  Info,
+  FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,6 +101,73 @@ const PIE_COLORS: Record<string, string> = {
 const spendingChartConfig: ChartConfig = {
   spent: { label: 'Spent (M)', color: '#16a34a' },
 };
+
+const spendingTrendChartConfig: ChartConfig = {
+  amount: { label: 'Amount (M)', color: '#14b8a6' },
+};
+
+const weeklyEarningsChartConfig: ChartConfig = {
+  earnings: { label: 'Earnings (M)', color: '#16a34a' },
+};
+
+// Live activity feed data
+const liveActivities = [
+  { id: 1, type: 'delivery' as const, message: 'SF2025000231LS picked up from Johannesburg warehouse', time: '2m ago', icon: 'Package' },
+  { id: 2, type: 'alert' as const, message: 'Driver Lebo Mosotho reported border delay at Maseru Bridge', time: '8m ago', icon: 'AlertTriangle' },
+  { id: 3, type: 'payment' as const, message: 'Payment of M2,450 received from Mamello Sekhoko', time: '15m ago', icon: 'CreditCard' },
+  { id: 4, type: 'delivery' as const, message: 'SF2025000187LS delivered successfully in Mafeteng', time: '22m ago', icon: 'CheckCircle2' },
+  { id: 5, type: 'system' as const, message: 'Fleet utilization reached 85% — consider scheduling maintenance', time: '35m ago', icon: 'Info' },
+  { id: 6, type: 'delivery' as const, message: 'SF2025000456LS cleared customs at Maputsoe border', time: '48m ago', icon: 'Package' },
+  { id: 7, type: 'driver' as const, message: 'Tsepang Makhaola started route: Bloemfontein → Quthing', time: '1h ago', icon: 'Truck' },
+  { id: 8, type: 'payment' as const, message: 'Invoice INV-0042 marked as paid by Mokhethi Makhetha', time: '1h ago', icon: 'CreditCard' },
+  { id: 9, type: 'alert' as const, message: 'Vehicle LP 558 ZG 171 overdue for service by 5 days', time: '2h ago', icon: 'AlertTriangle' },
+  { id: 10, type: 'delivery' as const, message: 'New delivery request from Palesa Moahloli — Samsung Galaxy S24', time: '2h ago', icon: 'Plus' },
+  { id: 11, type: 'system' as const, message: 'Daily performance report generated for Mountain Express', time: '3h ago', icon: 'FileText' },
+  { id: 12, type: 'driver' as const, message: 'Kabelo Mothabi completed 5 deliveries today — rating 4.8★', time: '3h ago', icon: 'Star' },
+];
+
+const customerSpendingTrend = [
+  { month: 'Feb', amount: 1200 },
+  { month: 'Mar', amount: 2800 },
+  { month: 'Apr', amount: 1900 },
+  { month: 'May', amount: 3400 },
+  { month: 'Jun', amount: 4200 },
+  { month: 'Jul', amount: 3800 },
+];
+
+const weeklyEarnings = [
+  { day: 'Mon', earnings: 450 },
+  { day: 'Tue', earnings: 620 },
+  { day: 'Wed', earnings: 380 },
+  { day: 'Thu', earnings: 750 },
+  { day: 'Fri', earnings: 890 },
+  { day: 'Sat', earnings: 340 },
+  { day: 'Sun', earnings: 0 },
+];
+
+const activityTypeColors: Record<string, { bg: string; text: string; border: string }> = {
+  delivery: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-l-emerald-500' },
+  alert: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-600 dark:text-amber-400', border: 'border-l-amber-500' },
+  payment: { bg: 'bg-teal-100 dark:bg-teal-900/40', text: 'text-teal-600 dark:text-teal-400', border: 'border-l-teal-500' },
+  system: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-l-muted-foreground/30' },
+  driver: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-l-primary' },
+};
+
+function LiveActivityIcon({ iconName, className }: { iconName: string; className?: string }) {
+  const props = { className: `h-4 w-4 ${className || ''}` };
+  switch (iconName) {
+    case 'Package': return <Package {...props} />;
+    case 'AlertTriangle': return <AlertTriangle {...props} />;
+    case 'CreditCard': return <CreditCard {...props} />;
+    case 'CheckCircle2': return <CheckCircle2 {...props} />;
+    case 'Info': return <Info {...props} />;
+    case 'Truck': return <Truck {...props} />;
+    case 'Plus': return <Plus {...props} />;
+    case 'FileText': return <FileText {...props} />;
+    case 'Star': return <Star {...props} />;
+    default: return <Bell {...props} />;
+  }
+}
 
 // ============ Helpers ============
 function formatCurrency(value: number) {
@@ -475,6 +547,51 @@ function CustomerOverview() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Monthly Spending Trend */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Monthly Spending Trend</CardTitle>
+          <CardDescription>Your spending over the last 6 months</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={spendingTrendChartConfig} className="h-[260px] w-full">
+            <LineChart data={customerSpendingTrend} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="fillSpendingTrend" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                className="text-xs"
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(v: number) => `M${v}`}
+                className="text-xs"
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line
+                type="monotone"
+                dataKey="amount"
+                stroke="#14b8a6"
+                strokeWidth={2}
+                dot={{ r: 4, fill: '#14b8a6', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                activeDot={{ r: 6, fill: '#14b8a6' }}
+                fill="url(#fillSpendingTrend)"
+              />
+            </LineChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -655,6 +772,57 @@ function DriverOverview() {
               </TableBody>
             </Table>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* This Week's Earnings */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base">This Week&apos;s Earnings</CardTitle>
+              <CardDescription>Daily breakdown for the current week</CardDescription>
+            </div>
+            <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+              M3,430 <span className="text-xs font-normal text-muted-foreground">total</span>
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={weeklyEarningsChartConfig} className="h-[240px] w-full">
+            <BarChart data={weeklyEarnings} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="fillEarnings" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#16a34a" stopOpacity={0.9} />
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                className="text-xs"
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(v: number) => `M${v}`}
+                className="text-xs"
+              />
+              <ChartTooltip
+                content={<ChartTooltipContent formatter={(value) => [`M${value}`, 'Earnings']} />}
+              />
+              <Bar
+                dataKey="earnings"
+                fill="url(#fillEarnings)"
+                radius={[4, 4, 0, 0]}
+                barSize={32}
+              />
+            </BarChart>
+          </ChartContainer>
         </CardContent>
       </Card>
     </div>
@@ -979,6 +1147,39 @@ function CompanyOverview() {
                 )}
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Live Activity Feed */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Live Activity Feed</CardTitle>
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
+              Live
+            </Badge>
+          </div>
+          <CardDescription>Real-time operations across all routes</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-[420px] overflow-y-auto space-y-1">
+            {liveActivities.map((activity) => {
+              const colors = activityTypeColors[activity.type] || activityTypeColors.system;
+              return (
+                <div
+                  key={activity.id}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 border-l-2 ${colors.border} transition-colors hover:bg-muted/30`}
+                >
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colors.bg}`}>
+                    <LiveActivityIcon iconName={activity.icon} className={colors.text} />
+                  </div>
+                  <p className="flex-1 text-sm leading-tight truncate min-w-0">{activity.message}</p>
+                  <span className="text-[11px] text-muted-foreground shrink-0">{activity.time}</span>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

@@ -224,7 +224,8 @@ export function InvoicesTab() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-slate-400 to-slate-500" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -237,7 +238,8 @@ export function InvoicesTab() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -250,7 +252,8 @@ export function InvoicesTab() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -339,7 +342,7 @@ export function InvoicesTab() {
                   const sc = statusConfig[inv.status];
                   const StatusIcon = sc.icon;
                   return (
-                    <TableRow key={inv.id}>
+                    <TableRow key={inv.id} className={`border-l-2 ${inv.status === 'overdue' ? 'border-l-red-400/60 bg-red-50/50 dark:bg-red-900/10' : 'border-l-transparent'}`}>
                       <TableCell className="font-mono text-xs font-medium">{inv.id}</TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         {getTrackingNumber(inv)}
@@ -351,7 +354,7 @@ export function InvoicesTab() {
                       )}
                       <TableCell className="text-xs font-medium">{formatCurrency(inv.amount)}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={`text-[10px] gap-1 ${sc.className}`}>
+                        <Badge variant="secondary" className={`text-[10px] gap-1 shadow-sm ${sc.className}`}>
                           <StatusIcon className="h-3 w-3" />
                           {sc.label}
                         </Badge>
@@ -513,7 +516,7 @@ export function InvoicesTab() {
 
             <DialogFooter className="gap-2 sm:gap-0">
               {selectedInvoice.status !== 'paid' && (
-                <Button onClick={handlePayNow} className="gap-2">
+                <Button onClick={handlePayNow} className="gap-2 bg-gradient-to-r from-primary to-emerald-600 text-white hover:brightness-110 border-0">
                   <CreditCard className="h-4 w-4" />
                   Pay Now
                 </Button>

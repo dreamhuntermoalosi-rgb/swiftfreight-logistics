@@ -157,6 +157,7 @@ const driverNavItems: NavItem[] = [
 ];
 
 const customerNavItems: NavItem[] = [
+  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
   { tab: 'deliveries', label: 'My Shipments', icon: Package },
   { tab: 'tracking', label: 'Track Parcel', icon: MapPin },
   { tab: 'sourcing', label: 'Sourcing Requests', icon: ShoppingBag },

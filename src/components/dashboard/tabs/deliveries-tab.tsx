@@ -44,6 +44,7 @@ import {
   Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
   FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
+  Download,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,6 +53,17 @@ const ITEMS_PER_PAGE = 15;
 type SortField = 'trackingNumber' | 'customerName' | 'status' | 'priority' | 'createdAt' | 'packageWeight';
 type SortDir = 'asc' | 'desc';
 type ViewMode = 'table' | 'cards';
+
+function downloadCSV(data: string[][], filename: string) {
+  const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // Status order for progress tracking
 const STATUS_ORDER: DeliveryStatus[] = [
@@ -746,6 +758,31 @@ export function DeliveriesTab() {
           </Badge>
         </div>
         <NewDeliveryForm onSuccess={addDelivery} />
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            const header = ['Tracking#', 'Customer', 'Pickup City', 'Destination City', 'Weight (kg)', 'Status', 'Priority', 'Driver', 'Amount (M)', 'Created Date'];
+            const rows = filtered.map((d) => [
+              d.trackingNumber,
+              d.customerName,
+              d.pickup.city,
+              d.destination.city,
+              String(d.packageWeight || 0),
+              statusLabels[d.status] || d.status,
+              d.priority ? d.priority.charAt(0).toUpperCase() + d.priority.slice(1) : '',
+              d.driverName || '',
+              d.quotedAmount ? String(d.quotedAmount) : '',
+              formatDate(d.createdAt),
+            ]);
+            downloadCSV([header, ...rows], 'deliveries.csv');
+            toast.success(`Downloaded ${filtered.length} deliveries`);
+          }}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Download
+        </Button>
       </div>
 
       {/* Gradient divider below header */}

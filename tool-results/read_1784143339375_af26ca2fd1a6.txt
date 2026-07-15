@@ -1,0 +1,594 @@
+     1→'use client';
+     2→
+     3→import { useState, useMemo } from 'react';
+     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+     5→import { Button } from '@/components/ui/button';
+     6→import { Badge } from '@/components/ui/badge';
+     7→import { Input } from '@/components/ui/input';
+     8→import { Label } from '@/components/ui/label';
+     9→import { Textarea } from '@/components/ui/textarea';
+    10→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    11→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+    12→import { ScrollArea } from '@/components/ui/scroll-area';
+    13→import { Separator } from '@/components/ui/separator';
+    14→import { toast } from 'sonner';
+    15→import { useAuthStore } from '@/lib/store';
+    16→import { sourcingRequests } from '@/lib/mock-data';
+    17→import type { SourcingStatus, SourcingRequest } from '@/lib/types';
+    18→import {
+    19→  ShoppingBag, Plus, Search, ChevronRight, DollarSign,
+    20→  MapPin, Calendar, Clock, User, Link as LinkIcon, Globe,
+    21→  CheckCircle, XCircle, Eye, AlertTriangle, Package
+    22→} from 'lucide-react';
+    23→import { motion, AnimatePresence } from 'framer-motion';
+    24→
+    25→// ── Helpers ──────────────────────────────────────────────────
+    26→const sourcingStatusColors: Record<SourcingStatus, string> = {
+    27→  pending: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    28→  quoted: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    29→  accepted: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    30→  purchased: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    31→  delivered: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    32→  cancelled: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    33→};
+    34→
+    35→const sourcingStatusLabels: Record<SourcingStatus, string> = {
+    36→  pending: 'Pending',
+    37→  quoted: 'Quoted',
+    38→  accepted: 'Accepted',
+    39→  purchased: 'Purchased',
+    40→  delivered: 'Delivered',
+    41→  cancelled: 'Cancelled',
+    42→};
+    43→
+    44→function formatDate(dateStr: string): string {
+    45→  return new Date(dateStr).toLocaleDateString('en-US', {
+    46→    month: 'short', day: 'numeric', year: 'numeric',
+    47→  });
+    48→}
+    49→
+    50→function daysUntil(dateStr: string): number {
+    51→  const diff = new Date(dateStr).getTime() - Date.now();
+    52→  return Math.ceil(diff / 86400000);
+    53→}
+    54→
+    55→function timeAgo(dateStr: string): string {
+    56→  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    57→  if (seconds < 60) return 'just now';
+    58→  const minutes = Math.floor(seconds / 60);
+    59→  if (minutes < 60) return `${minutes}m ago`;
+    60→  const hours = Math.floor(minutes / 60);
+    61→  if (hours < 24) return `${hours}h ago`;
+    62→  const days = Math.floor(hours / 24);
+    63→  return `${days}d ago`;
+    64→}
+    65→
+    66→const statusFlow: SourcingStatus[] = ['pending', 'quoted', 'accepted', 'purchased', 'delivered'];
+    67→
+    68→// ── Main Component ──────────────────────────────────────────
+    69→export function SourcingTab() {
+    70→  const { currentUser } = useAuthStore();
+    71→  const [tab, setTab] = useState('all');
+    72→  const [search, setSearch] = useState('');
+    73→  const [localRequests, setLocalRequests] = useState(sourcingRequests);
+    74→  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+    75→  const [selectedRequest, setSelectedRequest] = useState<SourcingRequest | null>(null);
+    76→  const [newDialogOpen, setNewDialogOpen] = useState(false);
+    77→  const [newForm, setNewForm] = useState({
+    78→    productName: '', description: '', storeName: '', productLink: '', budget: '', deadline: '', location: '',
+    79→  });
+    80→
+    81→  const filtered = useMemo(() => {
+    82→    let items = localRequests;
+    83→    if (tab !== 'all') {
+    84→      items = items.filter(r => r.status === tab);
+    85→    }
+    86→    if (search) {
+    87→      const q = search.toLowerCase();
+    88→      items = items.filter(r =>
+    89→        r.productName.toLowerCase().includes(q) ||
+    90→        r.customerName.toLowerCase().includes(q) ||
+    91→        r.location.toLowerCase().includes(q)
+    92→      );
+    93→    }
+    94→    return items;
+    95→  }, [localRequests, tab, search]);
+    96→
+    97→  const counts = useMemo(() => {
+    98→    const c: Record<string, number> = { all: localRequests.length };
+    99→    for (const r of localRequests) {
+   100→      c[r.status] = (c[r.status] || 0) + 1;
+   101→    }
+   102→    return c;
+   103→  }, [localRequests]);
+   104→
+   105→  function openDetail(req: SourcingRequest) {
+   106→    setSelectedRequest(req);
+   107→    setDetailDialogOpen(true);
+   108→  }
+   109→
+   110→  function handleNewSubmit() {
+   111→    if (!newForm.productName || !newForm.budget) {
+   112→      toast.error('Please fill in product name and budget');
+   113→      return;
+   114→    }
+   115→    const newReq: SourcingRequest = {
+   116→      id: `src-${String(localRequests.length + 1).padStart(3, '0')}`,
+   117→      customerId: currentUser?.id || 'cust-new',
+   118→      customerName: currentUser?.name || 'Current User',
+   119→      productName: newForm.productName,
+   120→      description: newForm.description || undefined,
+   121→      storeName: newForm.storeName || undefined,
+   122→      productLink: newForm.productLink || undefined,
+   123→      budget: parseFloat(newForm.budget) || undefined,
+   124→      deadline: newForm.deadline || undefined,
+   125→      location: newForm.location || 'Maseru',
+   126→      status: 'pending',
+   127→      createdAt: new Date().toISOString(),
+   128→      updatedAt: new Date().toISOString(),
+   129→    };
+   130→    setLocalRequests(prev => [newReq, ...prev]);
+   131→    toast.success('Sourcing Request Created', { description: `${newForm.productName} has been submitted` });
+   132→    setNewDialogOpen(false);
+   133→    setNewForm({ productName: '', description: '', storeName: '', productLink: '', budget: '', deadline: '', location: '' });
+   134→  }
+   135→
+   136→  function handleAcceptQuote(reqId: string) {
+   137→    setLocalRequests(prev => prev.map(r =>
+   138→      r.id === reqId ? { ...r, status: 'accepted' as SourcingStatus, updatedAt: new Date().toISOString() } : r
+   139→    ));
+   140→    toast.success('Quote Accepted', { description: 'The sourcing request has been accepted' });
+   141→    setDetailDialogOpen(false);
+   142→  }
+   143→
+   144→  function handleRejectQuote(reqId: string) {
+   145→    setLocalRequests(prev => prev.map(r =>
+   146→      r.id === reqId ? { ...r, status: 'pending' as SourcingStatus, quotedPrice: undefined, agentId: undefined, agentName: undefined, updatedAt: new Date().toISOString() } : r
+   147→    ));
+   148→    toast.info('Quote Rejected', { description: 'The quote has been rejected and request returned to pending' });
+   149→    setDetailDialogOpen(false);
+   150→  }
+   151→
+   152→  return (
+   153→    <div className="space-y-4">
+   154→      {/* Header */}
+   155→      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   156→        <div className="flex items-center gap-3">
+   157→          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+   158→            <ShoppingBag className="h-5 w-5 text-primary" />
+   159→          </div>
+   160→          <div>
+   161→            <h2 className="text-xl font-bold">
+   162→              Sourcing Requests
+   163→              <Badge variant="secondary" className="ml-2">{counts.all}</Badge>
+   164→            </h2>
+   165→            <p className="text-sm text-muted-foreground">Manage product sourcing requests</p>
+   166→          </div>
+   167→        </div>
+   168→        <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
+   169→          <DialogTrigger asChild>
+   170→            <Button className="gap-2">
+   171→              <Plus className="h-4 w-4" />
+   172→              New Request
+   173→            </Button>
+   174→          </DialogTrigger>
+   175→          <DialogContent className="sm:max-w-lg">
+   176→            <DialogHeader>
+   177→              <DialogTitle>New Sourcing Request</DialogTitle>
+   178→              <DialogDescription>Describe the product you need sourced</DialogDescription>
+   179→            </DialogHeader>
+   180→            <div className="space-y-4 py-2">
+   181→              <div className="grid grid-cols-2 gap-4">
+   182→                <div className="col-span-2 space-y-2">
+   183→                  <Label>Product Name *</Label>
+   184→                  <Input
+   185→                    placeholder="e.g. Samsung Galaxy S24"
+   186→                    value={newForm.productName}
+   187→                    onChange={e => setNewForm(f => ({ ...f, productName: e.target.value }))}
+   188→                  />
+   189→                </div>
+   190→                <div className="col-span-2 space-y-2">
+   191→                  <Label>Description</Label>
+   192→                  <Textarea
+   193→                    placeholder="Specifications, color, size, etc."
+   194→                    rows={3}
+   195→                    value={newForm.description}
+   196→                    onChange={e => setNewForm(f => ({ ...f, description: e.target.value }))}
+   197→                  />
+   198→                </div>
+   199→                <div className="space-y-2">
+   200→                  <Label>Store Name</Label>
+   201→                  <Input
+   202→                    placeholder="e.g. Takealot"
+   203→                    value={newForm.storeName}
+   204→                    onChange={e => setNewForm(f => ({ ...f, storeName: e.target.value }))}
+   205→                  />
+   206→                </div>
+   207→                <div className="space-y-2">
+   208→                  <Label>Budget (M) *</Label>
+   209→                  <Input
+   210→                    type="number"
+   211→                    placeholder="e.g. 5000"
+   212→                    value={newForm.budget}
+   213→                    onChange={e => setNewForm(f => ({ ...f, budget: e.target.value }))}
+   214→                  />
+   215→                </div>
+   216→                <div className="space-y-2">
+   217→                  <Label>Product Link</Label>
+   218→                  <Input
+   219→                    placeholder="https://..."
+   220→                    value={newForm.productLink}
+   221→                    onChange={e => setNewForm(f => ({ ...f, productLink: e.target.value }))}
+   222→                  />
+   223→                </div>
+   224→                <div className="space-y-2">
+   225→                  <Label>Deadline</Label>
+   226→                  <Input
+   227→                    type="date"
+   228→                    value={newForm.deadline}
+   229→                    onChange={e => setNewForm(f => ({ ...f, deadline: e.target.value }))}
+   230→                  />
+   231→                </div>
+   232→                <div className="col-span-2 space-y-2">
+   233→                  <Label>Location</Label>
+   234→                  <Input
+   235→                    placeholder="e.g. Maseru"
+   236→                    value={newForm.location}
+   237→                    onChange={e => setNewForm(f => ({ ...f, location: e.target.value }))}
+   238→                  />
+   239→                </div>
+   240→              </div>
+   241→            </div>
+   242→            <DialogFooter>
+   243→              <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Cancel</Button>
+   244→              <Button onClick={handleNewSubmit} className="gap-2">
+   245→                <Plus className="h-4 w-4" />
+   246→                Submit Request
+   247→              </Button>
+   248→            </DialogFooter>
+   249→          </DialogContent>
+   250→        </Dialog>
+   251→      </div>
+   252→
+   253→      {/* Search */}
+   254→      <div className="relative max-w-sm">
+   255→        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+   256→        <Input
+   257→          placeholder="Search by product, customer, or location..."
+   258→          className="pl-8"
+   259→          value={search}
+   260→          onChange={e => setSearch(e.target.value)}
+   261→        />
+   262→      </div>
+   263→
+   264→      {/* Tabs */}
+   265→      <Tabs value={tab} onValueChange={setTab}>
+   266→        <TabsList className="w-full overflow-x-auto">
+   267→          {['all', 'pending', 'quoted', 'accepted', 'purchased', 'delivered'].map(t => (
+   268→            <TabsTrigger key={t} value={t} className="capitalize">
+   269→              {t}
+   270→              {counts[t] !== undefined && (
+   271→                <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">
+   272→                  {counts[t]}
+   273→                </Badge>
+   274→              )}
+   275→            </TabsTrigger>
+   276→          ))}
+   277→        </TabsList>
+   278→
+   279→        <TabsContent value={tab} className="mt-4">
+   280→          <ScrollArea className="max-h-[600px]">
+   281→            <div className="space-y-3">
+   282→              {filtered.length === 0 && (
+   283→                <Card>
+   284→                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+   285→                    <Package className="mb-3 h-10 w-10 text-muted-foreground/50" />
+   286→                    <p className="text-sm text-muted-foreground">No sourcing requests found</p>
+   287→                  </CardContent>
+   288→                </Card>
+   289→              )}
+   290→              {filtered.map((req, i) => {
+   291→                const deadlineWarning = req.deadline ? daysUntil(req.deadline) <= 3 && daysUntil(req.deadline) > 0 : false;
+   292→                const deadlineOverdue = req.deadline ? daysUntil(req.deadline) <= 0 : false;
+   293→                return (
+   294→                  <motion.div
+   295→                    key={req.id}
+   296→                    initial={{ opacity: 0, y: 10 }}
+   297→                    animate={{ opacity: 1, y: 0 }}
+   298→                    transition={{ delay: i * 0.03 }}
+   299→                  >
+   300→                    <Card className="transition-shadow hover:shadow-md">
+   301→                      <CardContent className="p-4">
+   302→                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+   303→                          {/* Left info */}
+   304→                          <div className="min-w-0 flex-1 space-y-2">
+   305→                            <div className="flex items-center gap-2 flex-wrap">
+   306→                              <h3 className="font-semibold">{req.productName}</h3>
+   307→                              <Badge className={sourcingStatusColors[req.status]}>
+   308→                                {sourcingStatusLabels[req.status]}
+   309→                              </Badge>
+   310→                              {deadlineWarning && (
+   311→                                <Badge variant="outline" className="border-amber-300 text-amber-600 dark:border-amber-600 dark:text-amber-400">
+   312→                                  <AlertTriangle className="mr-1 h-3 w-3" />
+   313→                                  Deadline soon
+   314→                                </Badge>
+   315→                              )}
+   316→                              {deadlineOverdue && req.status !== 'delivered' && req.status !== 'cancelled' && (
+   317→                                <Badge variant="outline" className="border-red-300 text-red-600 dark:border-red-600 dark:text-red-400">
+   318→                                  <AlertTriangle className="mr-1 h-3 w-3" />
+   319→                                  Overdue
+   320→                                </Badge>
+   321→                              )}
+   322→                            </div>
+   323→                            {req.description && (
+   324→                              <p className="text-sm text-muted-foreground">{req.description}</p>
+   325→                            )}
+   326→                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+   327→                              <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{req.customerName}</span>
+   328→                              <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{req.location}</span>
+   329→                              {req.storeName && (
+   330→                                <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5" />{req.storeName}</span>
+   331→                              )}
+   332→                              {req.deadline && (
+   333→                                <span className="flex items-center gap-1">
+   334→                                  <Calendar className="h-3.5 w-3.5" />
+   335→                                  {formatDate(req.deadline)}
+   336→                                </span>
+   337→                              )}
+   338→                            </div>
+   339→                          </div>
+   340→
+   341→                          {/* Right: price + actions */}
+   342→                          <div className="flex shrink-0 flex-col items-end gap-2">
+   343→                            <div className="text-right">
+   344→                              {req.budget && (
+   345→                                <div className="text-xs text-muted-foreground">Budget</div>
+   346→                              )}
+   347→                              {req.budget && (
+   348→                                <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+   349→                                  M{req.budget.toLocaleString()}
+   350→                                </p>
+   351→                              )}
+   352→                              {req.quotedPrice !== undefined && (
+   353→                                <div className="mt-1">
+   354→                                  <div className="text-xs text-muted-foreground">Quoted</div>
+   355→                                  <p className="text-sm font-bold text-primary">
+   356→                                    M{req.quotedPrice.toLocaleString()}
+   357→                                  </p>
+   358→                                  {req.budget && (
+   359→                                    <p className={`text-xs ${req.quotedPrice <= req.budget ? 'text-green-600' : 'text-red-600'}`}>
+   360→                                      {req.quotedPrice <= req.budget ? 'Under budget' : 'Over budget'}
+   361→                                    </p>
+   362→                                  )}
+   363→                                </div>
+   364→                              )}
+   365→                            </div>
+   366→                            <div className="flex gap-2">
+   367→                              {req.status === 'quoted' && (
+   368→                                <>
+   369→                                  <Button size="sm" variant="outline" className="gap-1 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={() => handleAcceptQuote(req.id)}>
+   370→                                    <CheckCircle className="h-3.5 w-3.5" />
+   371→                                    Accept
+   372→                                  </Button>
+   373→                                  <Button size="sm" variant="ghost" className="gap-1 text-red-500 hover:text-red-600" onClick={() => handleRejectQuote(req.id)}>
+   374→                                    <XCircle className="h-3.5 w-3.5" />
+   375→                                    Reject
+   376→                                  </Button>
+   377→                                </>
+   378→                              )}
+   379→                              <Button size="sm" variant="outline" className="gap-1" onClick={() => openDetail(req)}>
+   380→                                <Eye className="h-3.5 w-3.5" />
+   381→                                Details
+   382→                              </Button>
+   383→                            </div>
+   384→                          </div>
+   385→                        </div>
+   386→
+   387→                        {/* Agent info bar */}
+   388→                        {req.agentName && (
+   389→                          <Separator className="my-2" />
+   390→                        )}
+   391→                        {req.agentName && (
+   392→                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+   393→                            <User className="h-3.5 w-3.5" />
+   394→                            <span>Agent: <span className="font-medium text-foreground">{req.agentName}</span></span>
+   395→                            <span className="mx-1">•</span>
+   396→                            <Clock className="h-3.5 w-3.5" />
+   397→                            <span>Updated {timeAgo(req.updatedAt)}</span>
+   398→                          </div>
+   399→                        )}
+   400→                      </CardContent>
+   401→                    </Card>
+   402→                  </motion.div>
+   403→                );
+   404→              })}
+   405→            </div>
+   406→          </ScrollArea>
+   407→        </TabsContent>
+   408→      </Tabs>
+   409→
+   410→      {/* Detail Dialog */}
+   411→      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+   412→        <DialogContent className="sm:max-w-lg">
+   413→          <DialogHeader>
+   414→            <DialogTitle className="flex items-center gap-2">
+   415→              <ShoppingBag className="h-5 w-5 text-primary" />
+   416→              Sourcing Request Details
+   417→            </DialogTitle>
+   418→          </DialogHeader>
+   419→          {selectedRequest && (
+   420→            <ScrollArea className="max-h-[60vh]">
+   421→              <div className="space-y-4 pr-3">
+   422→                {/* Product Header */}
+   423→                <div className="flex items-start justify-between">
+   424→                  <div>
+   425→                    <h3 className="text-lg font-bold">{selectedRequest.productName}</h3>
+   426→                    {selectedRequest.description && (
+   427→                      <p className="text-sm text-muted-foreground mt-1">{selectedRequest.description}</p>
+   428→                    )}
+   429→                  </div>
+   430→                  <Badge className={sourcingStatusColors[selectedRequest.status]}>
+   431→                    {sourcingStatusLabels[selectedRequest.status]}
+   432→                  </Badge>
+   433→                </div>
+   434→
+   435→                <Separator />
+   436→
+   437→                {/* Customer & Location */}
+   438→                <div className="grid grid-cols-2 gap-4">
+   439→                  <div>
+   440→                    <p className="text-xs font-medium text-muted-foreground">Customer</p>
+   441→                    <p className="text-sm font-medium">{selectedRequest.customerName}</p>
+   442→                  </div>
+   443→                  <div>
+   444→                    <p className="text-xs font-medium text-muted-foreground">Location</p>
+   445→                    <p className="text-sm font-medium flex items-center gap-1">
+   446→                      <MapPin className="h-3.5 w-3.5" />{selectedRequest.location}
+   447→                    </p>
+   448→                  </div>
+   449→                </div>
+   450→
+   451→                {/* Budget vs Quoted */}
+   452→                <div className="grid grid-cols-2 gap-4">
+   453→                  <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
+   454→                    <p className="text-xs text-amber-600 dark:text-amber-400">Budget</p>
+   455→                    <p className="text-xl font-bold text-amber-700 dark:text-amber-300">
+   456→                      M{selectedRequest.budget?.toLocaleString() || '—'}
+   457→                    </p>
+   458→                  </div>
+   459→                  <div className="rounded-lg bg-primary/5 p-3">
+   460→                    <p className="text-xs text-primary">Quoted Price</p>
+   461→                    <p className="text-xl font-bold text-primary">
+   462→                      {selectedRequest.quotedPrice !== undefined
+   463→                        ? `M${selectedRequest.quotedPrice.toLocaleString()}`
+   464→                        : 'Pending'}
+   465→                    </p>
+   466→                  </div>
+   467→                </div>
+   468→
+   469→                {/* Store & Link */}
+   470→                {selectedRequest.storeName && (
+   471→                  <div className="space-y-2">
+   472→                    <p className="text-xs font-medium text-muted-foreground">Store</p>
+   473→                    <p className="text-sm font-medium flex items-center gap-1">
+   474→                      <Globe className="h-3.5 w-3.5" />{selectedRequest.storeName}
+   475→                    </p>
+   476→                  </div>
+   477→                )}
+   478→                {selectedRequest.productLink && (
+   479→                  <div className="space-y-2">
+   480→                    <p className="text-xs font-medium text-muted-foreground">Product Link</p>
+   481→                    <a
+   482→                      href={selectedRequest.productLink}
+   483→                      target="_blank"
+   484→                      rel="noopener noreferrer"
+   485→                      className="flex items-center gap-1 text-sm text-primary hover:underline"
+   486→                    >
+   487→                      <LinkIcon className="h-3.5 w-3.5" />
+   488→                      {selectedRequest.productLink}
+   489→                    </a>
+   490→                  </div>
+   491→                )}
+   492→
+   493→                {/* Deadline */}
+   494→                {selectedRequest.deadline && (
+   495→                  <div className="space-y-2">
+   496→                    <p className="text-xs font-medium text-muted-foreground">Deadline</p>
+   497→                    <p className="text-sm font-medium flex items-center gap-1">
+   498→                      <Calendar className="h-3.5 w-3.5" />
+   499→                      {formatDate(selectedRequest.deadline)}
+   500→                      {(() => {
+   501→                        const d = daysUntil(selectedRequest.deadline);
+   502→                        if (d <= 0 && selectedRequest.status !== 'delivered') {
+   503→                          return <Badge variant="destructive" className="ml-2 text-xs">Overdue</Badge>;
+   504→                        }
+   505→                        if (d <= 3) {
+   506→                          return <Badge variant="outline" className="ml-2 border-amber-300 text-amber-600 text-xs">Soon</Badge>;
+   507→                        }
+   508→                        return null;
+   509→                      })()}
+   510→                    </p>
+   511→                  </div>
+   512→                )}
+   513→
+   514→                {/* Agent */}
+   515→                <div className="space-y-2">
+   516→                  <p className="text-xs font-medium text-muted-foreground">Assigned Agent</p>
+   517→                  {selectedRequest.agentName ? (
+   518→                    <div className="flex items-center gap-2 rounded-lg border p-2.5">
+   519→                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+   520→                        {selectedRequest.agentName.split(' ').map(n => n[0]).join('')}
+   521→                      </div>
+   522→                      <span className="text-sm font-medium">{selectedRequest.agentName}</span>
+   523→                    </div>
+   524→                  ) : (
+   525→                    <p className="text-sm text-muted-foreground">No agent assigned yet</p>
+   526→                  )}
+   527→                </div>
+   528→
+   529→                {/* Timeline */}
+   530→                <Separator />
+   531→                <div className="space-y-3">
+   532→                  <p className="text-xs font-medium text-muted-foreground">Status Timeline</p>
+   533→                  <div className="space-y-2">
+   534→                    {statusFlow.map((status, idx) => {
+   535→                      const currentIdx = statusFlow.indexOf(selectedRequest.status);
+   536→                      const isActive = idx <= currentIdx;
+   537→                      const isCurrent = status === selectedRequest.status;
+   538→                      return (
+   539→                        <div key={status} className="flex items-center gap-3">
+   540→                          <div className="flex flex-col items-center">
+   541→                            <div className={`h-3 w-3 rounded-full ${isActive ? 'bg-green-500' : 'bg-muted-foreground/30'}`} />
+   542→                            {idx < statusFlow.length - 1 && (
+   543→                              <div className={`h-6 w-0.5 ${isActive && idx < currentIdx ? 'bg-green-500' : 'bg-muted-foreground/20'}`} />
+   544→                            )}
+   545→                          </div>
+   546→                          <div className="flex items-center gap-2">
+   547→                            <span className={`text-sm ${isActive ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+   548→                              {sourcingStatusLabels[status]}
+   549→                            </span>
+   550→                            {isCurrent && (
+   551→                              <Badge variant="outline" className="text-xs">Current</Badge>
+   552→                            )}
+   553→                          </div>
+   554→                        </div>
+   555→                      );
+   556→                    })}
+   557→                  </div>
+   558→                </div>
+   559→
+   560→                {/* Timestamps */}
+   561→                <Separator />
+   562→                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+   563→                  <div>
+   564→                    <span className="font-medium">Created:</span> {formatDate(selectedRequest.createdAt)}
+   565→                  </div>
+   566→                  <div>
+   567→                    <span className="font-medium">Updated:</span> {formatDate(selectedRequest.updatedAt)}
+   568→                  </div>
+   569→                </div>
+   570→              </div>
+   571→            </ScrollArea>
+   572→          )}
+   573→          <DialogFooter>
+   574→            {selectedRequest?.status === 'quoted' && (
+   575→              <div className="flex w-full gap-2">
+   576→                <Button variant="outline" className="flex-1 gap-1 text-red-500" onClick={() => selectedRequest && handleRejectQuote(selectedRequest.id)}>
+   577→                  <XCircle className="h-4 w-4" />
+   578→                  Reject Quote
+   579→                </Button>
+   580→                <Button className="flex-1 gap-1" onClick={() => selectedRequest && handleAcceptQuote(selectedRequest.id)}>
+   581→                  <CheckCircle className="h-4 w-4" />
+   582→                  Accept Quote
+   583→                </Button>
+   584→              </div>
+   585→            )}
+   586→            {(!selectedRequest || selectedRequest.status !== 'quoted') && (
+   587→              <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>Close</Button>
+   588→            )}
+   589→          </DialogFooter>
+   590→        </DialogContent>
+   591→      </Dialog>
+   592→    </div>
+   593→  );
+   594→}

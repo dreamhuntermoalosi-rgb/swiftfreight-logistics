@@ -65,6 +65,15 @@ function timeAgo(dateStr: string): string {
 
 const statusFlow: SourcingStatus[] = ['pending', 'quoted', 'accepted', 'purchased', 'delivered'];
 
+const statusLeftBorder: Partial<Record<SourcingStatus, string>> = {
+  pending: 'border-l-amber-400',
+  quoted: 'border-l-blue-400',
+  accepted: 'border-l-emerald-400',
+  purchased: 'border-l-emerald-400',
+  delivered: 'border-l-emerald-400',
+  cancelled: 'border-l-red-400',
+};
+
 // ── Main Component ──────────────────────────────────────────
 export function SourcingTab() {
   const { currentUser } = useAuthStore();
@@ -265,7 +274,8 @@ export function SourcingTab() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="w-full overflow-x-auto">
           {['all', 'pending', 'quoted', 'accepted', 'purchased', 'delivered'].map(t => (
-            <TabsTrigger key={t} value={t} className="capitalize">
+            <TabsTrigger key={t} value={t} className="capitalize relative data-[state=active]:shadow-none">
+              {t === tab && <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-primary to-teal-500 rounded-full" />}
               {t}
               {counts[t] !== undefined && (
                 <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">
@@ -297,7 +307,7 @@ export function SourcingTab() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
                   >
-                    <Card className="transition-shadow hover:shadow-md">
+                    <Card className={`transition-shadow hover:shadow-md overflow-hidden border-l-[3px] ${statusLeftBorder[req.status] || ''}`}>
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           {/* Left info */}
@@ -530,27 +540,32 @@ export function SourcingTab() {
                 <Separator />
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-muted-foreground">Status Timeline</p>
-                  <div className="space-y-2">
+                  {/* Horizontal gradient progress bar */}
+                  <div className="relative mb-2">
+                    <div className="h-2 w-full rounded-full bg-muted" />
+                    {(() => {
+                      const currentIdx = statusFlow.indexOf(selectedRequest.status);
+                      if (currentIdx < 0) return null;
+                      const progress = (currentIdx / (statusFlow.length - 1)) * 100;
+                      return (
+                        <div
+                          className="absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all duration-500"
+                          style={{ width: `${progress}%` }}
+                        />
+                      );
+                    })()}
+                  </div>
+                  <div className="flex justify-between">
                     {statusFlow.map((status, idx) => {
                       const currentIdx = statusFlow.indexOf(selectedRequest.status);
                       const isActive = idx <= currentIdx;
                       const isCurrent = status === selectedRequest.status;
                       return (
-                        <div key={status} className="flex items-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <div className={`h-3 w-3 rounded-full ${isActive ? 'bg-green-500' : 'bg-muted-foreground/30'}`} />
-                            {idx < statusFlow.length - 1 && (
-                              <div className={`h-6 w-0.5 ${isActive && idx < currentIdx ? 'bg-green-500' : 'bg-muted-foreground/20'}`} />
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm ${isActive ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                              {sourcingStatusLabels[status]}
-                            </span>
-                            {isCurrent && (
-                              <Badge variant="outline" className="text-xs">Current</Badge>
-                            )}
-                          </div>
+                        <div key={status} className="flex flex-col items-center gap-1">
+                          <div className={`h-2.5 w-2.5 rounded-full border-2 transition-colors ${isCurrent ? 'border-primary bg-primary' : isActive ? 'border-teal-500 bg-teal-500' : 'border-muted-foreground/30 bg-background'}`} />
+                          <span className={`text-[10px] ${isCurrent ? 'font-semibold text-primary' : isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {sourcingStatusLabels[status]}
+                          </span>
                         </div>
                       );
                     })}

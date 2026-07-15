@@ -18,7 +18,7 @@ import { useTheme } from 'next-themes';
 import {
   Settings, Bell, Shield, Palette, User, Building2, Mail,
   Phone, MessageSquare, Lock, Trash2, Zap, Sun, Moon, Monitor,
-  AlertTriangle, ShieldCheck, Camera, Globe, MapPin
+  AlertTriangle, ShieldCheck, Camera, Globe, MapPin, Check
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -183,15 +183,17 @@ export function SettingsTab() {
                 <CardContent className="space-y-6">
                   <div className="flex items-center gap-4">
                     <div className="relative group/avatar">
-                      <Avatar className="h-20 w-20">
-                        <AvatarFallback className="bg-primary/10 text-xl font-bold text-primary">
-                          {getInitials(profileForm.name || 'U')}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="rounded-full bg-gradient-to-br from-primary to-teal-500 p-[2px]">
+                        <Avatar className="h-20 w-20">
+                          <AvatarFallback className="bg-background text-xl font-bold text-primary">
+                            {getInitials(profileForm.name || 'U')}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
                       <Button
                         size="icon"
                         variant="outline"
-                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full opacity-0 transition-opacity duration-200 group-hover/avatar:opacity-100"
+                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full opacity-0 translate-y-1 transition-all duration-200 group-hover/avatar:opacity-100 group-hover/avatar:translate-y-0"
                         onClick={() => toast.info('Avatar upload coming soon')}
                       >
                         <Camera className="h-3.5 w-3.5" />
@@ -268,14 +270,15 @@ export function SettingsTab() {
 
             {/* ── Company Section ── */}
             {activeSection === 'company' && userCompany && (
-              <Card>
+              <Card className="overflow-hidden">
                 <CardHeader>
                   <CardTitle className="text-base">Company Settings</CardTitle>
                   <CardDescription>Manage your company information</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="relative flex items-center justify-between rounded-lg border p-4">
+                    <div className="absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-primary/40 to-teal-500/40" />
+                    <div className="flex items-center gap-3 pl-2">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                         <Building2 className="h-6 w-6 text-primary" />
                       </div>
@@ -300,14 +303,14 @@ export function SettingsTab() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Company Name</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Company Name</Label>
                       <Input
                         value={companyForm.name}
                         onChange={e => setCompanyForm(f => ({ ...f, name: e.target.value }))}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Business Email</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-teal-500" />Business Email</Label>
                       <Input
                         type="email"
                         value={companyForm.email}
@@ -315,7 +318,7 @@ export function SettingsTab() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Phone</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Phone</Label>
                       <Input
                         type="tel"
                         value={companyForm.phone}
@@ -323,21 +326,21 @@ export function SettingsTab() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Address</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />Address</Label>
                       <Input
                         value={companyForm.address}
                         onChange={e => setCompanyForm(f => ({ ...f, address: e.target.value }))}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>City</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-violet-500" />City</Label>
                       <Input
                         value={companyForm.city}
                         onChange={e => setCompanyForm(f => ({ ...f, city: e.target.value }))}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Country</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Country</Label>
                       <Input
                         value={companyForm.country}
                         onChange={e => setCompanyForm(f => ({ ...f, country: e.target.value }))}
@@ -373,8 +376,10 @@ export function SettingsTab() {
                     { key: 'newMessages' as const, label: 'New Messages', desc: 'Get notified when you receive new messages', icon: MessageSquare },
                     { key: 'marketing' as const, label: 'Marketing Emails', desc: 'Receive promotional emails and offers', icon: Zap },
                   ].map((item, i) => (
-                    <div key={item.key}>
-                      {i > 0 && <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />}
+                    <div
+                      key={item.key}
+                      className={`-mx-2 px-2 py-3 -my-1 rounded-md transition-colors duration-150 hover:bg-muted/30 ${i > 0 ? 'border-b border-border/50' : ''}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
@@ -388,6 +393,7 @@ export function SettingsTab() {
                         <Switch
                           checked={notifications[item.key]}
                           onCheckedChange={() => handleToggleNotification(item.key)}
+                          className={notifications[item.key] ? 'data-[state=checked]:bg-primary data-[state=checked]:border-primary' : ''}
                         />
                       </div>
                     </div>
@@ -423,12 +429,17 @@ export function SettingsTab() {
                               setTheme(t.value);
                               toast.success('Theme Updated', { description: `${t.label} theme applied` });
                             }}
-                            className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
+                            className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all duration-200 ${
                               theme === t.value
-                                ? 'border-primary bg-primary/5'
-                                : 'border-muted hover:border-muted-foreground/30'
+                                ? 'border-primary bg-primary/5 hover:scale-[1.02]'
+                                : 'border-muted hover:border-muted-foreground/30 hover:scale-[1.02]'
                             }`}
                           >
+                            {theme === t.value && (
+                              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                <Check className="h-3 w-3" />
+                              </span>
+                            )}
                             <t.icon className={`h-6 w-6 ${theme === t.value ? 'text-primary' : 'text-muted-foreground'}`} />
                             <span className={`text-sm font-medium ${theme === t.value ? 'text-primary' : ''}`}>
                               {t.label}
@@ -444,7 +455,8 @@ export function SettingsTab() {
 
             {/* ── Security Section ── */}
             {activeSection === 'security' && (
-              <Card>
+              <Card className="overflow-hidden">
+                <div className="h-1 bg-gradient-to-r from-red-500/50 to-amber-500/50" />
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Shield className="h-4 w-4" />
@@ -539,7 +551,7 @@ export function SettingsTab() {
                         Permanently delete your account and all associated data. This action cannot be undone.
                       </p>
                     </div>
-                    <Button variant="destructive" className="gap-2 shrink-0 transition-all duration-200 hover:bg-destructive/90" onClick={() => setDeleteDialogOpen(true)}>
+                    <Button variant="destructive" className="gap-2 shrink-0 transition-all duration-200 hover:bg-red-600/10 hover:text-red-600" onClick={() => setDeleteDialogOpen(true)}>
                       <Trash2 className="h-4 w-4" />
                       Delete Account
                     </Button>
