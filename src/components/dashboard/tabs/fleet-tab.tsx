@@ -69,6 +69,20 @@ const fuelLabels: Record<Vehicle['fuelType'], string> = {
   hybrid: 'Hybrid',
 };
 
+const fuelColorMap: Record<Vehicle['fuelType'], string> = {
+  diesel: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+  petrol: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+  electric: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+  hybrid: 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 border-teal-200 dark:border-teal-800',
+};
+
+const statusGradientBg: Record<Vehicle['status'], string> = {
+  available: 'bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-900/10 dark:to-transparent',
+  in_use: 'bg-gradient-to-br from-primary/5 to-transparent dark:from-primary/10 dark:to-transparent',
+  maintenance: 'bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-900/10 dark:to-transparent',
+  out_of_service: 'bg-gradient-to-br from-red-50/30 to-transparent dark:from-red-900/10 dark:to-transparent',
+};
+
 const maintenanceHistory = [
   { date: '2025-07-10', type: 'Oil Change', cost: 850, technician: 'T. Moletsane', notes: 'Full synthetic oil' },
   { date: '2025-06-15', type: 'Brake Service', cost: 2400, technician: 'M. Thabo', notes: 'Front and rear brake pads replaced' },
@@ -268,12 +282,12 @@ export function FleetTab() {
               const licDays = vehicle.licenseExpiry ? getDaysUntil(vehicle.licenseExpiry) : null;
 
               return (
-                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${accentColors.border} cursor-pointer`} onClick={() => setSelectedVehicle(vehicle)}>
+                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:shadow-inner hover:shadow-emerald-500/5 hover:-translate-y-0.5 border-l-4 ${accentColors.border} cursor-pointer ${statusGradientBg[vehicle.status] || ''}`} onClick={() => setSelectedVehicle(vehicle)}>
                   <CardContent className="p-4 space-y-3">
                     {/* Header: Type icon + Plate + Status */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="relative rounded-lg bg-primary/10 p-2 text-primary">
+                        <div className="relative rounded-lg bg-gradient-to-br from-primary/15 to-teal-500/15 p-2 text-primary">
                           {vehicleTypeIcons[vehicle.type]}
                           <span className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${statusDot}`} />
                         </div>
@@ -285,7 +299,8 @@ export function FleetTab() {
                         </div>
                       </div>
                       <Badge variant="secondary" className={`${statusCfg.className} gap-1.5`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
+                        {vehicle.status === 'in_use' && <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />}
+                        {vehicle.status !== 'in_use' && <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />}
                         {statusCfg.label}
                       </Badge>
                     </div>
@@ -295,10 +310,10 @@ export function FleetTab() {
                       <Badge variant="outline" className="text-xs">
                         {vehicleTypeLabels[vehicle.type]}
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        <Fuel className="mr-1 h-3 w-3" />
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${fuelColorMap[vehicle.fuelType] || ''}`}>
+                        {vehicle.fuelType === 'electric' ? '⚡' : <Fuel className="h-3 w-3" />}
                         {fuelLabels[vehicle.fuelType]}
-                      </Badge>
+                      </span>
                       <Badge variant="outline" className="text-xs">
                         {vehicle.capacity >= 1000 ? `${(vehicle.capacity / 1000).toFixed(1)}t` : `${vehicle.capacity}kg`}
                       </Badge>
@@ -307,7 +322,7 @@ export function FleetTab() {
                     <Separator />
 
                     {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div className="grid grid-cols-2 divide-x divide-border/50 gap-x-4 gap-y-2 text-sm">
                       <div>
                         <p className="text-muted-foreground text-xs">Mileage</p>
                         <p className="font-medium">{vehicle.currentMileage.toLocaleString()} km</p>
@@ -342,9 +357,11 @@ export function FleetTab() {
                     </div>
 
                     {vehicle.nextServiceDate && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Wrench className="h-3.5 w-3.5" />
-                        <span>Next service: {formatDate(vehicle.nextServiceDate)}</span>
+                      <div className="flex items-center divide-x divide-border/50 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-2 pr-3">
+                          <Wrench className="h-3.5 w-3.5" />
+                          Next service: {formatDate(vehicle.nextServiceDate)}
+                        </span>
                         {getDaysUntil(vehicle.nextServiceDate) <= 7 && (
                           <Badge variant="secondary" className="ml-auto bg-amber-50 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400 animate-pulse">
                             Due soon

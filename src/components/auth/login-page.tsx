@@ -200,16 +200,7 @@ export function LoginPage() {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <button
-                      type="button"
-                      onClick={() => setView('forgot-password')}
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
+                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -232,22 +223,32 @@ export function LoginPage() {
                   </div>
                 </div>
 
-                {/* Remember me */}
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  />
-                  <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
-                    Remember me for 30 days
-                  </Label>
+                {/* Remember me + Forgot Password */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked === true)}
+                    />
+                    <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
+                      Remember me
+                    </Label>
+                  </div>
+                  <Separator orientation="vertical" className="h-4" />
+                  <button
+                    type="button"
+                    onClick={() => setView('forgot-password')}
+                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
                 </div>
 
                 {/* Submit */}
                 <Button
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium btn-shimmer"
                   disabled={isLoading}
                 >
                   {isLoading ? (

@@ -12,6 +12,12 @@ import {
   Cell,
   LineChart,
   Line,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -98,6 +104,18 @@ const PIE_COLORS: Record<string, string> = {
   Cancelled: '#ef4444',
   Returned: '#f43f5e',
 };
+
+const performanceRadarConfig: ChartConfig = {
+  performance: { label: 'Score', color: '#14b8a6' },
+};
+
+const performanceRadarData = [
+  { metric: 'Speed', value: 85 },
+  { metric: 'Reliability', value: 94 },
+  { metric: 'Satisfaction', value: 88 },
+  { metric: 'Volume', value: 78 },
+  { metric: 'Growth', value: 92 },
+];
 
 const spendingChartConfig: ChartConfig = {
   spent: { label: 'Spent (M)', color: '#16a34a' },
@@ -889,10 +907,99 @@ function CompanyOverview() {
         />
       </div>
 
+      {/* Delivery Status Distribution Bar */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Delivery Status Distribution</CardTitle>
+          <CardDescription>Current shipment status breakdown</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="h-3 w-full overflow-hidden rounded-full bg-muted flex">
+            {(() => {
+              const statusCounts: Record<string, number> = {};
+              deliveries.forEach((d) => {
+                statusCounts[d.status] = (statusCounts[d.status] || 0) + 1;
+              });
+              const total = deliveries.length;
+              const colorMap: Record<string, string> = {
+                delivered: '#22c55e',
+                in_transit: '#06b6d4',
+                at_border: '#f59e0b',
+                collected: '#14b8a6',
+              };
+              const labelMap: Record<string, string> = {
+                delivered: 'Delivered',
+                in_transit: 'In Transit',
+                at_border: 'At Border',
+                collected: 'Collected',
+              };
+              const orderedStatuses = ['delivered', 'in_transit', 'at_border', 'collected'];
+              const segments = orderedStatuses.map((s) => ({
+                status: s,
+                label: labelMap[s],
+                count: statusCounts[s] || 0,
+                color: colorMap[s],
+                pct: total > 0 ? ((statusCounts[s] || 0) / total) * 100 : 0,
+              }));
+              const otherCount = total - segments.reduce((sum, seg) => sum + seg.count, 0);
+              const otherPct = total > 0 ? (otherCount / total) * 100 : 0;
+              return (
+                <>
+                  {segments.map((seg) => (
+                    <div
+                      key={seg.status}
+                      className="h-full transition-all"
+                      style={{ width: `${seg.pct}%`, backgroundColor: seg.color }}
+                    />
+                  ))}
+                  {otherPct > 0 && (
+                    <div
+                      className="h-full transition-all"
+                      style={{ width: `${otherPct}%`, backgroundColor: '#94a3b8' }}
+                    />
+                  )}
+                </>
+              );
+            })()}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {(() => {
+              const statusCounts: Record<string, number> = {};
+              deliveries.forEach((d) => {
+                statusCounts[d.status] = (statusCounts[d.status] || 0) + 1;
+              });
+              const total = deliveries.length;
+              const entries = [
+                { label: 'Delivered', count: statusCounts['delivered'] || 0, color: '#22c55e' },
+                { label: 'In Transit', count: statusCounts['in_transit'] || 0, color: '#06b6d4' },
+                { label: 'At Border', count: statusCounts['at_border'] || 0, color: '#f59e0b' },
+                { label: 'Collected', count: statusCounts['collected'] || 0, color: '#14b8a6' },
+              ];
+              const otherCount = total - entries.reduce((sum, e) => sum + e.count, 0);
+              return (
+                <>
+                  {entries.map((e) => (
+                    <span key={e.label} className="flex items-center gap-1.5">
+                      <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: e.color }} />
+                      {e.label} {total > 0 ? Math.round((e.count / total) * 100) : 0}%
+                    </span>
+                  ))}
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full bg-slate-400" />
+                    Other {total > 0 ? Math.round((otherCount / total) * 100) : 0}%
+                  </span>
+                </>
+              );
+            })()}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Middle Row: Revenue Chart + Status Pie */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue & Deliveries Combo Chart */}
-        <Card>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Revenue & Deliveries</CardTitle>
             <CardDescription>Monthly performance over the last 12 months</CardDescription>
@@ -953,7 +1060,8 @@ function CompanyOverview() {
         </Card>
 
         {/* Delivery Status Breakdown */}
-        <Card>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Delivery Status Breakdown</CardTitle>
             <CardDescription>Current deliveries by status</CardDescription>
@@ -1012,7 +1120,7 @@ function CompanyOverview() {
                   {recentDeliveries.map((d) => (
                     <TableRow
                       key={d.id}
-                      className="cursor-pointer"
+                      className={`cursor-pointer border-l-2 ${d.status === 'delivered' ? 'border-l-green-500' : d.status === 'in_transit' ? 'border-l-emerald-500' : d.status === 'cancelled' ? 'border-l-red-500' : d.status === 'returned' ? 'border-l-rose-400' : d.status === 'at_border' ? 'border-l-orange-400' : 'border-l-blue-400'}`}
                       onClick={() => handleDeliveryClick(d)}
                     >
                       <TableCell className="max-w-[110px] truncate font-mono text-xs">
@@ -1065,7 +1173,7 @@ function CompanyOverview() {
                     <div className="flex items-center gap-3">
                       <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                         <div
-                          className="h-full rounded-full bg-emerald-500 transition-all"
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -1088,7 +1196,7 @@ function CompanyOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-5">
-              {analyticsData.fleetUtilization.map((fleet) => {
+                {analyticsData.fleetUtilization.map((fleet) => {
                 const pct = Math.round((fleet.inUse / fleet.total) * 100);
                 return (
                   <div key={fleet.type} className="space-y-2">
@@ -1097,13 +1205,13 @@ function CompanyOverview() {
                         <Truck className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">{fleet.type}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {fleet.inUse}/{fleet.total} in use
+                      <span className="text-sm font-semibold tabular-nums text-primary shadow-[0_0_8px_oklch(0.42_0.14_155/0.25)] rounded-sm px-1.5 py-0.5">
+                        {pct}%
                       </span>
                     </div>
                     <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-emerald-500 transition-all"
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
                         style={{ width: `${pct}%` }}
                       />
                       <div
@@ -1135,6 +1243,41 @@ function CompanyOverview() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Performance Radar */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Performance Radar</CardTitle>
+          <CardDescription>Key metrics at a glance</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={performanceRadarConfig} className="mx-auto h-[280px] w-full">
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={performanceRadarData}>
+              <PolarGrid className="stroke-muted" />
+              <PolarAngleAxis
+                dataKey="metric"
+                className="text-xs"
+                tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={[0, 100]}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                className="text-xs"
+              />
+              <Radar
+                name="Performance"
+                dataKey="value"
+                stroke="#14b8a6"
+                fill="#14b8a6"
+                fillOpacity={0.2}
+                strokeWidth={2}
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+            </RadarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
       {/* Activity Feed */}
       <Card>
@@ -1185,9 +1328,12 @@ function CompanyOverview() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {pipelineData.map((item) => (
-              <div
+            {pipelineData.map((item, idx) => (
+              <motion.div
                 key={item.status}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: idx * 0.07, ease: 'easeOut' }}
                 className="flex-shrink-0 w-[140px] rounded-lg border p-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -1203,7 +1349,7 @@ function CompanyOverview() {
                     style={{ width: `${item.count / pipelineTotal * 100}%` }}
                   />
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </CardContent>

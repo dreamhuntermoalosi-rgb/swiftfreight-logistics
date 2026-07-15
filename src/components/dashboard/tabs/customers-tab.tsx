@@ -208,6 +208,22 @@ export function CustomersTab() {
         </Select>
       </div>
 
+      {/* Quick Stats Pills */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
+          <Users className="h-3.5 w-3.5" />
+          Total Customers: {filtered.length}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <CreditCard className="h-3.5 w-3.5" />
+          Total Revenue: {formatCurrency(filtered.reduce((sum, c) => sum + c.totalSpent, 0))}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+          <Star className="h-3.5 w-3.5" />
+          Avg Rating: {filtered.length > 0 ? (filtered.reduce((sum, c) => sum + (c.rating as number), 0) / filtered.length).toFixed(1) : '0.0'}
+        </span>
+      </div>
+
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">

@@ -18,7 +18,7 @@ import { useTheme } from 'next-themes';
 import {
   Settings, Bell, Shield, Palette, User, Building2, Mail,
   Phone, MessageSquare, Lock, Trash2, Zap, Sun, Moon, Monitor,
-  AlertTriangle, ShieldCheck, Camera, Globe, MapPin, Check
+  AlertTriangle, ShieldCheck, Camera, Globe, MapPin, Check, Keyboard
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -129,6 +129,7 @@ export function SettingsTab() {
     ...(isOwnerOrManager ? [{ id: 'company', label: 'Company', icon: Building2, badge: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' }] : []),
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
     { id: 'appearance', label: 'Appearance', icon: Palette, badge: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' },
+    { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard, badge: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400' },
     { id: 'security', label: 'Security', icon: Shield, badge: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle, badge: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
   ];
@@ -453,6 +454,43 @@ export function SettingsTab() {
                         ))}
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* ── Keyboard Shortcuts Section ── */}
+            {activeSection === 'shortcuts' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Keyboard className="h-4 w-4" />
+                    Keyboard Shortcuts
+                  </CardTitle>
+                  <CardDescription>Speed up your workflow with these shortcuts</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {[
+                      { keys: 'Ctrl + K', label: 'Quick Search' },
+                      { keys: 'Ctrl + N', label: 'New Delivery' },
+                      { keys: 'Ctrl + D', label: 'Go to Deliveries' },
+                      { keys: 'Ctrl + T', label: 'Go to Tracking' },
+                      { keys: 'Ctrl + M', label: 'Toggle Messages' },
+                      { keys: 'Ctrl + /', label: 'Go to Settings' },
+                      { keys: 'Esc', label: 'Close Dialog/Panel' },
+                      { keys: '?', label: 'Show Shortcuts' },
+                    ].map((shortcut) => (
+                      <div
+                        key={shortcut.keys}
+                        className="flex items-center justify-between rounded-lg border p-3 transition-colors duration-150 hover:bg-muted/50"
+                      >
+                        <span className="text-sm text-muted-foreground">{shortcut.label}</span>
+                        <kbd className="border border-border bg-muted rounded px-2 py-1 text-xs font-mono text-muted-foreground">
+                          {shortcut.keys}
+                        </kbd>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

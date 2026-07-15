@@ -1,0 +1,629 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useMemo } from 'react';
+     4→     4→import { Card, CardContent } from '@/components/ui/card';
+     5→     5→import { Button } from '@/components/ui/button';
+     6→     6→import { Badge } from '@/components/ui/badge';
+     7→     7→import { Input } from '@/components/ui/input';
+     8→     8→import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+     9→     9→import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+    10→    10→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    11→    11→import { Separator } from '@/components/ui/separator';
+    12→    12→import { drivers, companies, deliveries } from '@/lib/mock-data';
+    13→    13→import type { Driver } from '@/lib/types';
+    14→    14→import {
+    15→    15→  Users, Phone, Mail, Star, MapPin, Search, Plus, Truck,
+    16→    16→  AlertTriangle, Clock, UserCheck, Shield, ChevronUp, ChevronDown,
+    17→    17→  Package, TrendingUp, ArrowUpRight, Download,
+    18→    18→} from 'lucide-react';
+    19→    19→import { toast } from 'sonner';
+    20→    20→
+    21→    21→const ITEMS_PER_PAGE = 15;
+    22→    22→
+    23→    23→function exportCSV(data: Record<string, unknown>[], filename: string) {
+    24→    24→  if (data.length === 0) return;
+    25→    25→  const headers = Object.keys(data[0]);
+    26→    26→  const csv = [
+    27→    27→    headers.join(','),
+    28→    28→    ...data.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g, '""')}"`).join(','))
+    29→    29→  ].join('\n');
+    30→    30→  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    31→    31→  const url = URL.createObjectURL(blob);
+    32→    32→  const a = document.createElement('a');
+    33→    33→  a.href = url;
+    34→    34→  a.download = filename;
+    35→    35→  a.click();
+    36→    36→  URL.revokeObjectURL(url);
+    37→    37→  toast.success(`Exported ${data.length} records to ${filename}`);
+    38→    38→}
+    39→    39→
+    40→    40→function formatDate(iso: string) {
+    41→    41→  return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+    42→    42→}
+    43→    43→
+    44→    44→function RatingStars({ rating }: { rating: number }) {
+    45→    45→  return (
+    46→    46→    <div className="flex items-center gap-0.5">
+    47→    47→      {[1, 2, 3, 4, 5].map((i) => (
+    48→    48→        <Star
+    49→    49→          key={i}
+    50→    50→          className={`h-3.5 w-3.5 ${i <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700'}`}
+    51→    51→        />
+    52→    52→      ))}
+    53→    53→      <span className="ml-1 text-xs text-muted-foreground">{rating.toFixed(1)}</span>
+    54→    54→    </div>
+    55→    55→  );
+    56→    56→}
+    57→    57→
+    58→    58→function SortIcon({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
+    59→    59→  if (!active) return <ChevronUp className="ml-1 h-3 w-3 text-muted-foreground/30" />;
+    60→    60→  return direction === 'asc'
+    61→    61→    ? <ChevronUp className="ml-1 h-3 w-3 text-primary" />
+    62→    62→    : <ChevronDown className="ml-1 h-3 w-3 text-primary" />;
+    63→    63→}
+    64→    64→
+    65→    65→const driverStatusConfig: Record<Driver['status'], { label: string; className: string }> = {
+    66→    66→  available: { label: 'Available', className: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+    67→    67→  on_trip: { label: 'On Trip', className: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+    68→    68→  off_duty: { label: 'Off Duty', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+    69→    69→  suspended: { label: 'Suspended', className: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+    70→    70→};
+    71→    71→
+    72→    72→const driverStatusDotColor: Record<Driver['status'], string> = {
+    73→    73→  available: 'bg-green-500',
+    74→    74→  on_trip: 'bg-amber-500',
+    75→    75→  off_duty: 'bg-red-500',
+    76→    76→  suspended: 'bg-red-500',
+    77→    77→};
+    78→    78→
+    79→    79→const driverStatusBorderColor: Record<Driver['status'], string> = {
+    80→    80→  available: 'border-l-[3px] border-l-green-500',
+    81→    81→  on_trip: 'border-l-[3px] border-l-amber-500',
+    82→    82→  off_duty: 'border-l-[3px] border-l-gray-300 dark:border-l-gray-600',
+    83→    83→  suspended: 'border-l-[3px] border-l-red-500',
+    84→    84→};
+    85→    85→
+    86→    86→function isLicenseExpiringSoon(expiry?: string): boolean {
+    87→    87→  if (!expiry) return false;
+    88→    88→  const days = Math.ceil((new Date(expiry).getTime() - Date.now()) / 86400000);
+    89→    89→  return days >= 0 && days <= 30;
+    90→    90→}
+    91→    91→
+    92→    92→export function DriversTab() {
+    93→    93→  const [search, setSearch] = useState('');
+    94→    94→  const [statusFilter, setStatusFilter] = useState('all');
+    95→    95→  const [companyFilter, setCompanyFilter] = useState('all');
+    96→    96→  const [sortField, setSortField] = useState<keyof Driver>('totalDeliveries');
+    97→    97→  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+    98→    98→  const [page, setPage] = useState(1);
+    99→    99→  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+   100→   100→
+   101→   101→  const filtered = useMemo(() => {
+   102→   102→    let list = [...drivers];
+   103→   103→    if (search) {
+   104→   104→      const q = search.toLowerCase();
+   105→   105→      list = list.filter(
+   106→   106→        (d) => d.name.toLowerCase().includes(q) || d.phone.includes(q)
+   107→   107→      );
+   108→   108→    }
+   109→   109→    if (statusFilter !== 'all') {
+   110→   110→      list = list.filter((d) => d.status === statusFilter);
+   111→   111→    }
+   112→   112→    if (companyFilter !== 'all') {
+   113→   113→      list = list.filter((d) => d.companyId === companyFilter);
+   114→   114→    }
+   115→   115→    list.sort((a, b) => {
+   116→   116→      const aVal = a[sortField] ?? '';
+   117→   117→      const bVal = b[sortField] ?? '';
+   118→   118→      if (typeof aVal === 'number' && typeof bVal === 'number') {
+   119→   119→        return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+   120→   120→      }
+   121→   121→      return sortDir === 'asc'
+   122→   122→        ? String(aVal).localeCompare(String(bVal))
+   123→   123→        : String(bVal).localeCompare(String(aVal));
+   124→   124→    });
+   125→   125→    return list;
+   126→   126→  }, [search, statusFilter, companyFilter, sortField, sortDir]);
+   127→   127→
+   128→   128→  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+   129→   129→  const paged = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+   130→   130→
+   131→   131→  const activeDrivers = drivers.filter((d) => d.status !== 'off_duty' && d.status !== 'suspended').length;
+   132→   132→  const onTripDrivers = drivers.filter((d) => d.status === 'on_trip').length;
+   133→   133→  const availableDrivers = drivers.filter((d) => d.status === 'available').length;
+   134→   134→  const avgRating = drivers.reduce((sum, d) => sum + (d.rating as number), 0) / drivers.length;
+   135→   135→
+   136→   136→  function handleSort(field: keyof Driver) {
+   137→   137→    if (sortField === field) {
+   138→   138→      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+   139→   139→    } else {
+   140→   140→      setSortField(field);
+   141→   141→      setSortDir('desc');
+   142→   142→    }
+   143→   143→  }
+   144→   144→
+   145→   145→  function handlePageChange(newPage: number) {
+   146→   146→    setPage(newPage);
+   147→   147→    setSelectedDriver(null);
+   148→   148→  }
+   149→   149→
+   150→   150→  // Driver's recent deliveries
+   151→   151→  const driverDeliveries = useMemo(() => {
+   152→   152→    if (!selectedDriver) return [];
+   153→   153→    return deliveries
+   154→   154→      .filter((d) => d.driverId === selectedDriver.id)
+   155→   155→      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+   156→   156→      .slice(0, 5);
+   157→   157→  }, [selectedDriver]);
+   158→   158→
+   159→   159→  // License expiry warning
+   160→   160→  function getLicenseWarning(expiry?: string) {
+   161→   161→    if (!expiry) return null;
+   162→   162→    const days = Math.ceil((new Date(expiry).getTime() - Date.now()) / 86400000);
+   163→   163→    if (days < 0) return { text: `Expired ${Math.abs(days)} days ago`, color: 'text-red-600' };
+   164→   164→    if (days <= 30) return { text: `Expires in ${days} days`, color: 'text-amber-600' };
+   165→   165→    return null;
+   166→   166→  }
+   167→   167→
+   168→   168→  return (
+   169→   169→    <div className="space-y-6">
+   170→   170→      {/* Header */}
+   171→   171→      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   172→   172→        <div className="flex items-center gap-3">
+   173→   173→          <div className="rounded-full bg-primary/10 p-2.5">
+   174→   174→            <Users className="h-5 w-5 text-primary" />
+   175→   175→          </div>
+   176→   176→          <div>
+   177→   177→            <h2 className="text-2xl font-bold tracking-tight">Drivers</h2>
+   178→   178→            <p className="text-sm text-muted-foreground">
+   179→   179→              <Badge variant="secondary" className="font-mono">{filtered.length}</Badge>{' '}
+   180→   180→              {filtered.length === drivers.length ? 'total' : 'of'} {drivers.length} drivers
+   181→   181→            </p>
+   182→   182→          </div>
+   183→   183→        </div>
+   184→   184→        <Button className="bg-green-600 text-white hover:bg-green-700">
+   185→   185→          <Plus className="mr-2 h-4 w-4" />
+   186→   186→          Add Driver
+   187→   187→        </Button>
+   188→   188→      </div>
+   189→   189→
+   190→   190→      {/* Filters */}
+   191→   191→      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+   192→   192→        <div className="relative flex-1 sm:max-w-xs">
+   193→   193→          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   194→   194→          <Input
+   195→   195→            placeholder="Search name, phone..."
+   196→   196→            value={search}
+   197→   197→            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+   198→   198→            className="pl-9"
+   199→   199→          />
+   200→   200→        </div>
+   201→   201→        <Button
+   202→   202→          variant="outline"
+   203→   203→          className="shrink-0 gap-2"
+   204→   204→          aria-label="Export drivers CSV"
+   205→   205→          onClick={() => {
+   206→   206→            const data = filtered.map((d) => ({
+   207→   207→              Name: d.name,
+   208→   208→              Phone: d.phone,
+   209→   209→              'License #': d.licenseNumber,
+   210→   210→              Status: d.status,
+   211→   211→              Rating: d.rating,
+   212→   212→              'Total Deliveries': d.totalDeliveries,
+   213→   213→              Successful: d.successfulDeliveries,
+   214→   214→              Vehicle: d.currentVehiclePlate || 'None',
+   215→   215→              Joined: formatDate(d.joinedAt),
+   216→   216→            }));
+   217→   217→            exportCSV(data, 'drivers.csv');
+   218→   218→          }}
+   219→   219→        >
+   220→   220→          <Download className="h-4 w-4" />
+   221→   221→          Export CSV
+   222→   222→        </Button>
+   223→   223→        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+   224→   224→          <SelectTrigger className="w-full sm:w-44">
+   225→   225→            <SelectValue placeholder="Filter by status" />
+   226→   226→          </SelectTrigger>
+   227→   227→          <SelectContent>
+   228→   228→            <SelectItem value="all">All Statuses ({drivers.length})</SelectItem>
+   229→   229→            <SelectItem value="available">Available ({drivers.filter(d => d.status === 'available').length})</SelectItem>
+   230→   230→            <SelectItem value="on_trip">On Trip ({drivers.filter(d => d.status === 'on_trip').length})</SelectItem>
+   231→   231→            <SelectItem value="off_duty">Off Duty ({drivers.filter(d => d.status === 'off_duty').length})</SelectItem>
+   232→   232→            <SelectItem value="suspended">Suspended ({drivers.filter(d => d.status === 'suspended').length})</SelectItem>
+   233→   233→          </SelectContent>
+   234→   234→        </Select>
+   235→   235→        <Select value={companyFilter} onValueChange={(v) => { setCompanyFilter(v); setPage(1); }}>
+   236→   236→          <SelectTrigger className="w-full sm:w-52">
+   237→   237→            <SelectValue placeholder="Filter by company" />
+   238→   238→          </SelectTrigger>
+   239→   239→          <SelectContent>
+   240→   240→            <SelectItem value="all">All Companies</SelectItem>
+   241→   241→            {companies.map((c) => (
+   242→   242→              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+   243→   243→            ))}
+   244→   244→          </SelectContent>
+   245→   245→        </Select>
+   246→   246→      </div>
+   247→   247→
+   248→   248→      {/* Stats Row */}
+   249→   249→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   250→   250→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   251→   251→          <CardContent className="flex items-center gap-4 p-4">
+   252→   252→            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
+   253→   253→              <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+   254→   254→            </div>
+   255→   255→            <div>
+   256→   256→              <p className="text-sm text-muted-foreground">Active Drivers</p>
+   257→   257→              <p className="text-xl font-bold">{activeDrivers}</p>
+   258→   258→              <p className="text-xs text-green-600 flex items-center">
+   259→   259→                <TrendingUp className="mr-1 h-3 w-3" />
+   260→   260→                <span className="font-semibold">+3</span> this week
+   261→   261→              </p>
+   262→   262→            </div>
+   263→   263→          </CardContent>
+   264→   264→        </Card>
+   265→   265→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   266→   266→          <CardContent className="flex items-center gap-4 p-4">
+   267→   267→            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+   268→   268→              <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+   269→   269→            </div>
+   270→   270→            <div>
+   271→   271→              <p className="text-sm text-muted-foreground">On Trip</p>
+   272→   272→              <p className="text-xl font-bold">{onTripDrivers}</p>
+   273→   273→              <p className="text-xs text-blue-600">{Math.round((onTripDrivers / drivers.length) * 100)}% of fleet</p>
+   274→   274→            </div>
+   275→   275→          </CardContent>
+   276→   276→        </Card>
+   277→   277→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   278→   278→          <CardContent className="flex items-center gap-4 p-4">
+   279→   279→            <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
+   280→   280→              <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+   281→   281→            </div>
+   282→   282→            <div>
+   283→   283→              <p className="text-sm text-muted-foreground">Available</p>
+   284→   284→              <p className="text-xl font-bold">{availableDrivers}</p>
+   285→   285→              <p className="text-xs text-emerald-600">Ready for dispatch</p>
+   286→   286→            </div>
+   287→   287→          </CardContent>
+   288→   288→        </Card>
+   289→   289→        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+   290→   290→          <CardContent className="flex items-center gap-4 p-4">
+   291→   291→            <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30">
+   292→   292→              <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+   293→   293→            </div>
+   294→   294→            <div>
+   295→   295→              <p className="text-sm text-muted-foreground">Avg Rating</p>
+   296→   296→              <p className="text-xl font-bold">{avgRating.toFixed(1)}</p>
+   297→   297→              <RatingStars rating={avgRating} />
+   298→   298→            </div>
+   299→   299→          </CardContent>
+   300→   300→        </Card>
+   301→   301→      </div>
+   302→   302→
+   303→   303→      {/* Table */}
+   304→   304→      <Card>
+   305→   305→        <CardContent className="p-0">
+   306→   306→          <div className="overflow-x-auto">
+   307→   307→            <Table>
+   308→   308→              <TableHeader>
+   309→   309→                <TableRow>
+   310→   310→                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>
+   311→   311→                    <span className="flex items-center">Name <SortIcon active={sortField === 'name'} direction={sortDir} /></span>
+   312→   312→                  </TableHead>
+   313→   313→                  <TableHead className="hidden md:table-cell">Phone</TableHead>
+   314→   314→                  <TableHead className="hidden lg:table-cell">License #</TableHead>
+   315→   315→                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('status')}>
+   316→   316→                    <span className="flex items-center">Status <SortIcon active={sortField === 'status'} direction={sortDir} /></span>
+   317→   317→                  </TableHead>
+   318→   318→                  <TableHead className="hidden sm:table-cell">Vehicle</TableHead>
+   319→   319→                  <TableHead className="hidden lg:table-cell">Location</TableHead>
+   320→   320→                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('rating')}>
+   321→   321→                    <span className="flex items-center">Rating <SortIcon active={sortField === 'rating'} direction={sortDir} /></span>
+   322→   322→                  </TableHead>
+   323→   323→                  <TableHead className="hidden md:table-cell text-right cursor-pointer select-none" onClick={() => handleSort('totalDeliveries')}>
+   324→   324→                    <span className="flex items-center justify-end">Deliveries <SortIcon active={sortField === 'totalDeliveries'} direction={sortDir} /></span>
+   325→   325→                  </TableHead>
+   326→   326→                  <TableHead className="hidden xl:table-cell text-right">Success Rate</TableHead>
+   327→   327→                  <TableHead className="w-12"></TableHead>
+   328→   328→                </TableRow>
+   329→   329→              </TableHeader>
+   330→   330→              <TableBody>
+   331→   331→                {paged.length === 0 ? (
+   332→   332→                  <TableRow>
+   333→   333→                    <TableCell colSpan={10} className="py-12 text-center text-muted-foreground">
+   334→   334→                      No drivers found matching your filters.
+   335→   335→                    </TableCell>
+   336→   336→                  </TableRow>
+   337→   337→                ) : (
+   338→   338→                  paged.map((driver) => {
+   339→   339→                    const statusCfg = driverStatusConfig[driver.status];
+   340→   340→                    const successRate = driver.totalDeliveries > 0
+   341→   341→                      ? Math.round((driver.successfulDeliveries / driver.totalDeliveries) * 100)
+   342→   342→                      : 0;
+   343→   343→                    return (
+   344→   344→                      <TableRow
+   345→   345→                        key={driver.id}
+   346→   346→                        className={`cursor-pointer hover:bg-muted/50 transition-all duration-150 ${isLicenseExpiringSoon(driver.licenseExpiry) ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''} ${driverStatusBorderColor[driver.status]}`}
+   347→   347→                        onClick={() => setSelectedDriver(driver)}
+   348→   348→                      >
+   349→   349→                        <TableCell>
+   350→   350→                          <div className="flex items-center gap-3">
+   351→   351→                            <span className={`h-2 w-2 shrink-0 rounded-full ${driverStatusDotColor[driver.status]}`} />
+   352→   352→                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+   353→   353→                              {driver.name.split(' ').map((n) => n[0]).join('')}
+   354→   354→                            </div>
+   355→   355→                            <span className="font-medium truncate max-w-[140px]">{driver.name}</span>
+   356→   356→                          </div>
+   357→   357→                        </TableCell>
+   358→   358→                        <TableCell className="hidden md:table-cell font-mono text-xs text-muted-foreground">
+   359→   359→                          {driver.phone}
+   360→   360→                        </TableCell>
+   361→   361→                        <TableCell className="hidden lg:table-cell font-mono text-xs">
+   362→   362→                          {driver.licenseNumber}
+   363→   363→                        </TableCell>
+   364→   364→                        <TableCell>
+   365→   365→                          <Badge variant="secondary" className={statusCfg.className}>
+   366→   366→                            {statusCfg.label}
+   367→   367→                          </Badge>
+   368→   368→                        </TableCell>
+   369→   369→                        <TableCell className="hidden sm:table-cell font-mono text-xs text-muted-foreground">
+   370→   370→                          {driver.currentVehiclePlate || '—'}
+   371→   371→                        </TableCell>
+   372→   372→                        <TableCell className="hidden lg:table-cell text-sm">
+   373→   373→                          {driver.location ? (
+   374→   374→                            <span className="flex items-center gap-1">
+   375→   375→                              <MapPin className="h-3 w-3 text-muted-foreground" />
+   376→   376→                              {driver.location}
+   377→   377→                            </span>
+   378→   378→                          ) : (
+   379→   379→                            <span className="text-muted-foreground">—</span>
+   380→   380→                          )}
+   381→   381→                        </TableCell>
+   382→   382→                        <TableCell>
+   383→   383→                          <RatingStars rating={driver.rating as number} />
+   384→   384→                        </TableCell>
+   385→   385→                        <TableCell className="hidden md:table-cell text-right font-medium">
+   386→   386→                          {driver.totalDeliveries}
+   387→   387→                        </TableCell>
+   388→   388→                        <TableCell className="hidden xl:table-cell text-right">
+   389→   389→                          <span className={`text-sm font-medium ${successRate >= 95 ? 'text-green-600' : successRate >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
+   390→   390→                            {successRate}%
+   391→   391→                          </span>
+   392→   392→                        </TableCell>
+   393→   393→                        <TableCell>
+   394→   394→                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setSelectedDriver(driver); }}>
+   395→   395→                            <ArrowUpRight className="h-4 w-4" />
+   396→   396→                          </Button>
+   397→   397→                        </TableCell>
+   398→   398→                      </TableRow>
+   399→   399→                    );
+   400→   400→                  })
+   401→   401→                )}
+   402→   402→              </TableBody>
+   403→   403→            </Table>
+   404→   404→          </div>
+   405→   405→
+   406→   406→          {/* Pagination */}
+   407→   407→          {totalPages > 1 && (
+   408→   408→            <div className="border-t px-4 py-3">
+   409→   409→              <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+   410→   410→                <span>
+   411→   411→                  Showing {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+   412→   412→                </span>
+   413→   413→              </div>
+   414→   414→              <div className="flex items-center gap-2">
+   415→   415→                <Button
+   416→   416→                  variant="outline"
+   417→   417→                  size="sm"
+   418→   418→                  onClick={() => handlePageChange(page - 1)}
+   419→   419→                  disabled={page === 1}
+   420→   420→                >
+   421→   421→                  Previous
+   422→   422→                </Button>
+   423→   423→                {Array.from({ length: totalPages }, (_, i) => i + 1)
+   424→   424→                  .filter((p) => p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1))
+   425→   425→                  .reduce<(number | 'ellipsis')[]>((acc, p, i, arr) => {
+   426→   426→                    if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('ellipsis');
+   427→   427→                    acc.push(p);
+   428→   428→                    return acc;
+   429→   429→                  }, [])
+   430→   430→                  .map((item, idx) =>
+   431→   431→                    item === 'ellipsis' ? (
+   432→   432→                      <span key={`e-${idx}`} className="px-2 text-muted-foreground">…</span>
+   433→   433→                    ) : (
+   434→   434→                      <Button
+   435→   435→                        key={item}
+   436→   436→                        variant={page === item ? 'default' : 'outline'}
+   437→   437→                        size="sm"
+   438→   438→                        className="w-9"
+   439→   439→                        onClick={() => handlePageChange(item as number)}
+   440→   440→                      >
+   441→   441→                        {item}
+   442→   442→                      </Button>
+   443→   443→                    )
+   444→   444→                  )}
+   445→   445→                <Button
+   446→   446→                  variant="outline"
+   447→   447→                  size="sm"
+   448→   448→                  onClick={() => handlePageChange(page + 1)}
+   449→   449→                  disabled={page === totalPages}
+   450→   450→                >
+   451→   451→                  Next
+   452→   452→                </Button>
+   453→   453→              </div>
+   454→   454→            </div>
+   455→   455→          )}
+   456→   456→        </CardContent>
+   457→   457→      </Card>
+   458→   458→
+   459→   459→      {/* Driver Detail Dialog */}
+   460→   460→      <Dialog open={!!selectedDriver} onOpenChange={(open) => { if (!open) setSelectedDriver(null); }}>
+   461→   461→        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+   462→   462→          {selectedDriver && (() => {
+   463→   463→            const statusCfg = driverStatusConfig[selectedDriver.status];
+   464→   464→            const successRate = selectedDriver.totalDeliveries > 0
+   465→   465→              ? Math.round((selectedDriver.successfulDeliveries / selectedDriver.totalDeliveries) * 100)
+   466→   466→              : 0;
+   467→   467→            const licenseWarning = getLicenseWarning(selectedDriver.licenseExpiry);
+   468→   468→            const company = companies.find((c) => c.id === selectedDriver.companyId);
+   469→   469→
+   470→   470→            return (
+   471→   471→              <>
+   472→   472→                <DialogHeader>
+   473→   473→                  <div className="flex items-center gap-4">
+   474→   474→                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
+   475→   475→                      {selectedDriver.name.split(' ').map((n) => n[0]).join('')}
+   476→   476→                    </div>
+   477→   477→                    <div className="flex-1">
+   478→   478→                      <DialogTitle className="text-xl">{selectedDriver.name}</DialogTitle>
+   479→   479→                      <div className="flex items-center gap-2 mt-1">
+   480→   480→                        <Badge variant="secondary" className={statusCfg.className}>
+   481→   481→                          {statusCfg.label}
+   482→   482→                        </Badge>
+   483→   483→                        {company && (
+   484→   484→                          <span className="text-xs text-muted-foreground">{company.name}</span>
+   485→   485→                        )}
+   486→   486→                      </div>
+   487→   487→                    </div>
+   488→   488→                  </div>
+   489→   489→                </DialogHeader>
+   490→   490→
+   491→   491→                <Separator />
+   492→   492→
+   493→   493→                {/* Contact Info */}
+   494→   494→                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+   495→   495→                  <div className="flex items-center gap-2 text-sm">
+   496→   496→                    <Phone className="h-4 w-4 text-muted-foreground" />
+   497→   497→                    <span className="font-mono">{selectedDriver.phone}</span>
+   498→   498→                  </div>
+   499→   499→                  <div className="flex items-center gap-2 text-sm">
+   500→   500→                    <Mail className="h-4 w-4 text-muted-foreground" />
+   501→   501→                    <span className="truncate">{selectedDriver.email}</span>
+   502→   502→                  </div>
+   503→   503→                </div>
+   504→   504→
+   505→   505→                <Separator />
+   506→   506→
+   507→   507→                {/* Performance Stats */}
+   508→   508→                <div className="grid grid-cols-3 gap-4">
+   509→   509→                  <div className="rounded-lg bg-muted/50 p-3 text-center">
+   510→   510→                    <Package className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
+   511→   511→                    <p className="text-lg font-bold">{selectedDriver.totalDeliveries}</p>
+   512→   512→                    <p className="text-xs text-muted-foreground">Deliveries</p>
+   513→   513→                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+   514→   514→                      <div
+   515→   515→                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+   516→   516→                        style={{ width: `${Math.min(100, (selectedDriver.successfulDeliveries / Math.max(selectedDriver.totalDeliveries, 1)) * 100)}%` }}
+   517→   517→                      />
+   518→   518→                    </div>
+   519→   519→                  </div>
+   520→   520→                  <div className="rounded-lg bg-muted/50 p-3 text-center">
+   521→   521→                    <TrendingUp className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
+   522→   522→                    <p className={`text-lg font-bold ${successRate >= 95 ? 'text-green-600' : successRate >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
+   523→   523→                      {successRate}%
+   524→   524→                    </p>
+   525→   525→                    <p className="text-xs text-muted-foreground">On-Time Rate</p>
+   526→   526→                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+   527→   527→                      <div
+   528→   528→                        className={`h-full rounded-full transition-all ${successRate >= 95 ? 'bg-green-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
+   529→   529→                        style={{ width: `${successRate}%` }}
+   530→   530→                      />
+   531→   531→                    </div>
+   532→   532→                  </div>
+   533→   533→                  <div className="rounded-lg bg-muted/50 p-3 text-center">
+   534→   534→                    <Star className="mx-auto mb-1 h-5 w-5 text-yellow-500" />
+   535→   535→                    <p className="text-lg font-bold">{(selectedDriver.rating as number).toFixed(1)}</p>
+   536→   536→                    <p className="text-xs text-muted-foreground">Rating</p>
+   537→   537→                  </div>
+   538→   538→                </div>
+   539→   539→
+   540→   540→                <div className="flex justify-center">
+   541→   541→                  <RatingStars rating={selectedDriver.rating as number} />
+   542→   542→                </div>
+   543→   543→
+   544→   544→                <Separator />
+   545→   545→
+   546→   546→                {/* Current Assignment */}
+   547→   547→                <div>
+   548→   548→                  <h4 className="mb-2 text-sm font-semibold">Current Assignment</h4>
+   549→   549→                  {selectedDriver.status === 'on_trip' ? (
+   550→   550→                    <div className="rounded-lg border p-3 space-y-2">
+   551→   551→                      <div className="flex items-center justify-between text-sm">
+   552→   552→                        <span className="text-muted-foreground">Vehicle</span>
+   553→   553→                        <span className="font-mono font-medium">{selectedDriver.currentVehiclePlate || '—'}</span>
+   554→   554→                      </div>
+   555→   555→                      <div className="flex items-center justify-between text-sm">
+   556→   556→                        <span className="text-muted-foreground">Location</span>
+   557→   557→                        <span className="flex items-center gap-1 font-medium">
+   558→   558→                          <MapPin className="h-3.5 w-3.5 text-primary" />
+   559→   559→                          {selectedDriver.location || 'Unknown'}
+   560→   560→                        </span>
+   561→   561→                      </div>
+   562→   562→                    </div>
+   563→   563→                  ) : (
+   564→   564→                    <p className="text-sm text-muted-foreground">No active assignment</p>
+   565→   565→                  )}
+   566→   566→                </div>
+   567→   567→
+   568→   568→                <Separator />
+   569→   569→
+   570→   570→                {/* License Info */}
+   571→   571→                <div>
+   572→   572→                  <h4 className="mb-2 text-sm font-semibold">License Information</h4>
+   573→   573→                  <div className="rounded-lg border p-3 space-y-2">
+   574→   574→                    <div className="flex items-center justify-between text-sm">
+   575→   575→                      <span className="flex items-center gap-2 text-muted-foreground">
+   576→   576→                        <Shield className="h-4 w-4" />
+   577→   577→                        License Number
+   578→   578→                      </span>
+   579→   579→                      <span className="font-mono">{selectedDriver.licenseNumber}</span>
+   580→   580→                    </div>
+   581→   581→                    <div className="flex items-center justify-between text-sm">
+   582→   582→                      <span className="text-muted-foreground">Expiry Date</span>
+   583→   583→                      <span className={licenseWarning ? licenseWarning.color : ''}>
+   584→   584→                        {selectedDriver.licenseExpiry
+   585→   585→                          ? formatDate(selectedDriver.licenseExpiry)
+   586→   586→                          : 'N/A'}
+   587→   587→                      </span>
+   588→   588→                    </div>
+   589→   589→                    {licenseWarning && (
+   590→   590→                      <div className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+   591→   591→                        <AlertTriangle className="h-4 w-4 shrink-0" />
+   592→   592→                        {licenseWarning.text}
+   593→   593→                      </div>
+   594→   594→                    )}
+   595→   595→                  </div>
+   596→   596→                </div>
+   597→   597→
+   598→   598→                <Separator />
+   599→   599→
+   600→   600→                {/* Recent Deliveries */}
+   601→   601→                <div>
+   602→   602→                  <h4 className="mb-3 text-sm font-semibold">Recent Deliveries</h4>
+   603→   603→                  {driverDeliveries.length === 0 ? (
+   604→   604→                    <p className="text-sm text-muted-foreground">No deliveries yet.</p>
+   605→   605→                  ) : (
+   606→   606→                    <div className="space-y-2 max-h-48 overflow-y-auto">
+   607→   607→                      {driverDeliveries.map((d) => (
+   608→   608→                        <div key={d.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+   609→   609→                          <div>
+   610→   610→                            <p className="font-mono text-xs font-medium text-primary">{d.trackingNumber}</p>
+   611→   611→                            <p className="text-xs text-muted-foreground">{d.pickup.city} → {d.destination.city}</p>
+   612→   612→                          </div>
+   613→   613→                          <div className="text-right">
+   614→   614→                            <p className="text-xs font-medium">{d.quotedAmount ? `M${d.quotedAmount}` : '—'}</p>
+   615→   615→                            <p className="text-xs text-muted-foreground">{formatDate(d.createdAt)}</p>
+   616→   616→                          </div>
+   617→   617→                        </div>
+   618→   618→                      ))}
+   619→   619→                    </div>
+   620→   620→                  )}
+   621→   621→                </div>
+   622→   622→              </>
+   623→   623→            );
+   624→   624→          })()}
+   625→   625→        </DialogContent>
+   626→   626→      </Dialog>
+   627→   627→    </div>
+   628→   628→  );
+   629→   629→}

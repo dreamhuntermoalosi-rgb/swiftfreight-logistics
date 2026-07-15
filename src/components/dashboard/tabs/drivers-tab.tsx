@@ -349,7 +349,7 @@ export function DriversTab() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <span className={`h-2 w-2 shrink-0 rounded-full ${driverStatusDotColor[driver.status]}`} />
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-teal-500/20 text-xs font-semibold text-primary">
                               {driver.name.split(' ').map((n) => n[0]).join('')}
                             </div>
                             <span className="font-medium truncate max-w-[140px]">{driver.name}</span>
@@ -359,7 +359,12 @@ export function DriversTab() {
                           {driver.phone}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell font-mono text-xs">
-                          {driver.licenseNumber}
+                          <span className="flex items-center gap-1.5">
+                            {isLicenseExpiringSoon(driver.licenseExpiry) && (
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                            )}
+                            {driver.licenseNumber}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className={statusCfg.className}>
@@ -386,8 +391,11 @@ export function DriversTab() {
                           {driver.totalDeliveries}
                         </TableCell>
                         <TableCell className="hidden xl:table-cell text-right">
-                          <span className={`text-sm font-medium ${successRate >= 95 ? 'text-green-600' : successRate >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
-                            {successRate}%
+                          <span className="flex items-center justify-end gap-1">
+                            {successRate >= 95 && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />}
+                            <span className={`text-sm font-medium ${successRate >= 95 ? 'text-green-600' : successRate >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
+                              {successRate}%
+                            </span>
                           </span>
                         </TableCell>
                         <TableCell>
@@ -471,7 +479,7 @@ export function DriversTab() {
               <>
                 <DialogHeader>
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-teal-500/20 text-xl font-bold text-primary">
                       {selectedDriver.name.split(' ').map((n) => n[0]).join('')}
                     </div>
                     <div className="flex-1">
@@ -510,9 +518,9 @@ export function DriversTab() {
                     <Package className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
                     <p className="text-lg font-bold">{selectedDriver.totalDeliveries}</p>
                     <p className="text-xs text-muted-foreground">Deliveries</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted hover:brightness-110 transition-all">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all hover:brightness-110"
                         style={{ width: `${Math.min(100, (selectedDriver.successfulDeliveries / Math.max(selectedDriver.totalDeliveries, 1)) * 100)}%` }}
                       />
                     </div>
@@ -523,9 +531,9 @@ export function DriversTab() {
                       {successRate}%
                     </p>
                     <p className="text-xs text-muted-foreground">On-Time Rate</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted hover:brightness-110 transition-all">
                       <div
-                        className={`h-full rounded-full transition-all ${successRate >= 95 ? 'bg-green-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
+                        className={`h-full rounded-full transition-all hover:brightness-110 ${successRate >= 95 ? 'bg-green-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
                         style={{ width: `${successRate}%` }}
                       />
                     </div>

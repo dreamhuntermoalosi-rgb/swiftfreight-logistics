@@ -20,6 +20,7 @@ import type { Delivery, DeliveryStatus } from '@/lib/types';
 import {
   Package, Search, MapPin, ArrowRight, Clock, Truck, CheckCircle2, Circle,
   PackageSearch, User, Phone, Building2, Calendar, Zap, AlertCircle,
+  Copy, Scale, AlertTriangle as AlertTriangleIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -304,7 +305,7 @@ export function TrackingTab() {
                           </div>
                           <span className={`mt-2 text-[10px] sm:text-xs text-center leading-tight ${
                             isCurrent
-                              ? 'font-semibold text-green-700 dark:text-green-400'
+                              ? 'font-bold text-green-700 dark:text-green-400 drop-shadow-[0_0_6px_oklch(0.55_0.15_155/0.5)]'
                               : isCompleted
                                 ? 'text-green-600 dark:text-green-400'
                                 : 'text-muted-foreground'
@@ -381,11 +382,11 @@ export function TrackingTab() {
                 </CardHeader>
                 <CardContent className="text-sm space-y-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Description</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Package className="h-3.5 w-3.5" /> Description</p>
                     <p className="font-medium">{delivery.packageDescription}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Weight</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Scale className="h-3.5 w-3.5" /> Weight</p>
                     <p>{delivery.packageWeight} kg</p>
                   </div>
                   {delivery.packageDimensions && (
@@ -455,16 +456,31 @@ export function TrackingTab() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm space-y-2">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Tracking #</span>
-                      <span className="font-mono font-medium">{delivery.trackingNumber}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-medium">{delivery.trackingNumber}</span>
+                        <button
+                          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          onClick={() => {
+                            navigator.clipboard.writeText(delivery.trackingNumber);
+                            toast.success('Tracking number copied!');
+                          }}
+                          aria-label="Copy tracking number"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Created</span>
                       <span>{formatDate(delivery.createdAt)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Priority</span>
+                      <span className="text-muted-foreground flex items-center gap-1.5">
+                        {delivery.priority === 'urgent' ? <AlertTriangleIcon className="h-3.5 w-3.5 text-red-500" /> : delivery.priority === 'express' ? <Clock className="h-3.5 w-3.5 text-amber-500" /> : <Package className="h-3.5 w-3.5" />}
+                        Priority
+                      </span>
                       <Badge className={`${priorityColors[delivery.priority] || ''} capitalize`} variant="secondary">
                         {delivery.priority}
                       </Badge>

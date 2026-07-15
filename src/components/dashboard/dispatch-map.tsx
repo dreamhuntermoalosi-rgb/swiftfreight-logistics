@@ -279,10 +279,16 @@ export function DispatchMap() {
             }}
           >
             <Popup>
-              <div style={{ fontFamily: 'system-ui, sans-serif', fontSize: '13px' }}>
+              <div style={{
+                fontFamily: 'system-ui, sans-serif',
+                fontSize: '13px',
+                background: isDark ? 'rgba(15,23,42,0.95)' : 'white',
+                borderRadius: '8px',
+                padding: '2px',
+              }}>
                 <strong style={{ color: '#059669' }}>📦 {loc.name}</strong>
                 <br />
-                <span style={{ color: '#6b7280' }}>{loc.city}, Lesotho</span>
+                <span style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>{loc.city}, Lesotho</span>
               </div>
             </Popup>
           </CircleMarker>
@@ -300,10 +306,16 @@ export function DispatchMap() {
           }}
         >
           <Popup>
-            <div style={{ fontFamily: 'system-ui, sans-serif', fontSize: '13px' }}>
+            <div style={{
+              fontFamily: 'system-ui, sans-serif',
+              fontSize: '13px',
+              background: isDark ? 'rgba(15,23,42,0.95)' : 'white',
+              borderRadius: '8px',
+              padding: '2px',
+            }}>
               <strong style={{ color: '#dc2626' }}>🛂 {borderPost.name}</strong>
               <br />
-              <span style={{ color: '#6b7280' }}>Lesotho–South Africa Border</span>
+              <span style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>Lesotho–South Africa Border</span>
             </div>
           </Popup>
         </CircleMarker>
@@ -319,7 +331,7 @@ export function DispatchMap() {
                 pathOptions={{
                   color,
                   weight: 1.5,
-                  opacity: 0.5,
+                  opacity: isDark ? 0.35 : 0.5,
                   dashArray: '6 4',
                 }}
               />
@@ -335,15 +347,22 @@ export function DispatchMap() {
                 }}
               >
                 <Popup>
-                  <div style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', minWidth: '180px' }}>
+                  <div style={{
+                    fontFamily: 'system-ui, sans-serif',
+                    fontSize: '12px',
+                    minWidth: '180px',
+                    background: isDark ? 'rgba(15,23,42,0.95)' : 'white',
+                    borderRadius: '8px',
+                    padding: '4px 6px',
+                  }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '13px' }}>{delivery.trackingNumber}</strong>
+                      <strong style={{ fontSize: '13px', color: isDark ? '#e2e8f0' : '#374151' }}>{delivery.trackingNumber}</strong>
                       <span
                         style={{
                           fontSize: '10px',
                           padding: '2px 6px',
                           borderRadius: '9999px',
-                          background: color + '20',
+                          background: color + (isDark ? '26' : '20'),
                           color: color,
                           fontWeight: 600,
                         }}
@@ -351,7 +370,7 @@ export function DispatchMap() {
                         {statusLabels[delivery.status]}
                       </span>
                     </div>
-                    <div style={{ color: '#6b7280', lineHeight: 1.5 }}>
+                    <div style={{ color: isDark ? '#94a3b8' : '#6b7280', lineHeight: 1.5 }}>
                       <div><strong>Customer:</strong> {delivery.customerName}</div>
                       <div><strong>Route:</strong> {delivery.pickup.city} → {delivery.destination.city}</div>
                       <div><strong>Driver:</strong> {delivery.driverName || 'Unassigned'}</div>
@@ -372,15 +391,22 @@ export function DispatchMap() {
                 }}
               >
                 <Popup>
-                  <div style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', minWidth: '180px' }}>
+                  <div style={{
+                    fontFamily: 'system-ui, sans-serif',
+                    fontSize: '12px',
+                    minWidth: '180px',
+                    background: isDark ? 'rgba(15,23,42,0.95)' : 'white',
+                    borderRadius: '8px',
+                    padding: '4px 6px',
+                  }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '13px' }}>{delivery.trackingNumber}</strong>
+                      <strong style={{ fontSize: '13px', color: isDark ? '#e2e8f0' : '#374151' }}>{delivery.trackingNumber}</strong>
                       <span
                         style={{
                           fontSize: '10px',
                           padding: '2px 6px',
                           borderRadius: '9999px',
-                          background: color + '20',
+                          background: color + (isDark ? '26' : '20'),
                           color: color,
                           fontWeight: 600,
                         }}
@@ -388,7 +414,7 @@ export function DispatchMap() {
                         {statusLabels[delivery.status]}
                       </span>
                     </div>
-                    <div style={{ color: '#6b7280', lineHeight: 1.5 }}>
+                    <div style={{ color: isDark ? '#94a3b8' : '#6b7280', lineHeight: 1.5 }}>
                       <div><strong>Customer:</strong> {delivery.customerName}</div>
                       <div><strong>Destination:</strong> {delivery.destination.city}, {delivery.destination.country}</div>
                       <div><strong>ETA:</strong> {delivery.estimatedDelivery}</div>

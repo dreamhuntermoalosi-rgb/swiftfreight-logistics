@@ -1374,3 +1374,124 @@ SwiftFreight is a highly polished, investor-ready multi-tenant SaaS Logistics Op
 4. Implement batch PDF invoice download
 5. Add data export to Excel (.xlsx) format via xlsx skill
 
+---
+Task ID: r9-features-2
+Agent: Main Agent
+Task: Add radar chart, status distribution bar, quick stats pills, and keyboard shortcuts panel
+
+Work Log:
+- **Task 1 — Performance Radar Chart**: Added `RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer` imports from recharts. Created `performanceRadarConfig` ChartConfig and `performanceRadarData` static array with 5 metrics (Speed 85, Reliability 94, Satisfaction 88, Volume 78, Growth 92). Added a Card with "Performance Radar" title and "Key metrics at a glance" description after the 3-column bottom row in CompanyOverview, using emerald/teal (#14b8a6) color with 0.2 fill opacity.
+- **Task 2 — Quick Stats Pills**: Added stat pill rows in Deliveries and Customers tabs. Deliveries tab: 4 pills (Total/primary, Active/emerald, Completed/teal, Avg Amount/amber) placed after filters and before table. Customers tab: 3 pills (Total Customers, Total Revenue, Avg Rating) placed after filters and before existing stats cards. All pills use rounded-full badge style with icons.
+- **Task 3 — Keyboard Shortcuts Panel**: Added `Keyboard` icon import from lucide-react. Added 'shortcuts' entry to settingsNav with cyan badge. Created new "Keyboard Shortcuts" section with 8 shortcuts in a 2-column grid (sm:grid-cols-2), each showing kbd-styled key combo and description.
+- **Task 4 — Delivery Status Distribution Bar**: Added a Card with horizontal stacked bar (h-3 rounded-full) in CompanyOverview, placed after KPI cards and before Revenue & Deliveries chart. Computed status counts from deliveries mock data with color mapping (delivered=#22c55e, in_transit=#06b6d4, at_border=#f59e0b, collected=#14b8a6, others=#94a3b8). Added legend row with colored dots and percentage labels.
+
+Stage Summary:
+- All 4 features implemented successfully with zero lint errors
+- All components remain 'use client' compatible
+- No existing functionality broken
+- Files modified: overview-tab.tsx, deliveries-tab.tsx, customers-tab.tsx, settings-tab.tsx
+
+---
+Task ID: r9-features-1
+Agent: Main Agent
+Task: Dark Mode Map Popups, Column Visibility Toggles, Batch PDF Download
+
+Work Log:
+- **Task 1 — Dark Mode Leaflet Popup Styling**: Updated all 4 popup types in dispatch-map.tsx (company warehouse, border post, delivery pickup, delivery destination) to use inline styles conditioned on `isDark` from `useIsDarkMode()` hook. Popup background: dark → `rgba(15,23,42,0.95)`, light → `white`. Text color: dark → `#e2e8f0`, light → `#374151`. Label color: dark → `#94a3b8`, light → `#6b7280`. Status badge background alpha: dark → `26` (0.15), light → `20` (0.1). Updated Polyline opacity: dark → 0.35, light → 0.5.
+- **Task 2 — Column Visibility Toggles**: Added `Columns3` icon import from lucide-react. Added `visibleColumns` state as `Set<string>` initialized with all 8 column keys. Added `toggleColumn` callback using `useCallback`. Added `DropdownMenu` with `Columns3` icon button next to the Download button in the deliveries tab header. Dropdown shows "Toggle Columns" label with Separator, then 8 column items with `Checkbox` components. Table `<thead>` and `<tbody>` cells conditionally render based on `visibleColumns`. Actions column (w-12) always visible. Empty state `colSpan` dynamically calculated as `2 + visibleColumns.size`.
+- **Task 3 — Batch PDF Invoice Download**: Changed "Download All" button in invoices-tab.tsx from downloading only the first invoice to looping through all `filteredInvoices` with a 200ms delay between each. Added toast message: `"Downloading {count} invoices..."`. Uses `getCompanyForInvoice()` for correct company lookup per invoice.
+
+Stage Summary:
+- All 3 features implemented successfully with zero lint errors
+- No existing functionality broken
+- Files modified: dispatch-map.tsx, deliveries-tab.tsx, invoices-tab.tsx
+
+---
+Task ID: r9-styling
+Agent: frontend-styling-expert
+Task: Styling polish Round 9 — detailed visual enhancements across 6 components
+
+Work Log:
+- **globals.css**: Added `@keyframes bounce-dot` with 3 staggered animation classes for typing indicator; added `.btn-shimmer` with `::after` pseudo-element for hover shimmer sweep effect (light/dark variants)
+- **fleet-tab.tsx**: Added status-based gradient backgrounds on vehicle cards (available=emerald, in_use=primary, maintenance=amber, out_of_service=red); added `hover:shadow-inner hover:shadow-emerald-500/5`; changed vehicle type icon container to `bg-gradient-to-br from-primary/15 to-teal-500/15`; replaced static dot with `animate-pulse` dot for in_use status badges; replaced fuel type outline badge with colored pill badges (diesel=amber, petrol=blue, electric=emerald, hybrid=teal); added `divide-x divide-border/50` on details grid and next-service row
+- **drivers-tab.tsx**: Changed table row avatar to gradient bg `from-primary/20 to-teal-500/20`; changed dialog avatar to same gradient; added `hover:brightness-110 transition-all` on progress bars (Deliveries and On-Time Rate); added amber `AlertTriangle` icon next to license numbers for expiring-soon drivers; added filled `Star` icon for drivers with 95%+ on-time rate
+- **overview-tab.tsx**: Verified gradient top borders on Revenue & Deliveries and Delivery Status chart cards; changed Top Routes percentage bars from solid emerald to `bg-gradient-to-r from-primary to-teal-500`; verified Recent Deliveries rows already have status-colored left borders; added gradient glow effect (`shadow-[0_0_8px...]`) on Fleet Utilization percentage numbers; verified Delivery Pipeline cards already have staggered framer-motion entrance animations
+- **messages-tab.tsx**: Verified message timestamps already exist; verified Paperclip button already exists; added 3-dot bouncing typing indicator (staggered CSS animation) in empty chat state
+- **tracking-tab.tsx**: Added Package icon to Description label, Scale icon to Weight label; added contextual priority icons (AlertTriangle for urgent, Clock for express, Package for standard); added drop-shadow glow on active progress step label; added Copy Tracking Number button with clipboard API and toast notification
+- **login-page.tsx**: Restructured Remember Me and Forgot Password into single row with vertical Separator divider; added `btn-shimmer` class to Sign In button for hover shimmer sweep effect
+
+Stage Summary:
+- 7 files modified with zero lint errors
+- All changes support dark mode via `dark:` variants
+- Subtle, professional polish across fleet cards, driver table/dialog, overview charts, messages, tracking, and login
+- New CSS animations: bounce-dot (typing indicator), btn-shimmer (hover sweep)
+
+---
+Task ID: r9-orchestrator
+Agent: Main Orchestrator
+Task: Round 9 — QA, feature development, styling polish, handover
+
+Work Log:
+- Read worklog.md for full project context (8 previous rounds documented)
+- Ran ESLint: zero errors (pre-development)
+- Ran TypeScript check: only 4 pre-existing mock-data.ts readonly errors, zero new src/ errors
+- Dev server: compiles clean, serves 200 responses
+- QA via agent-browser: blocked by Caddy proxy serving Z.ai shell (proxy not forwarding to Next.js). Verified code integrity via ESLint + TypeScript + dev server compilation logs instead.
+- Launched 3 parallel subagents for Round 9 development:
+  1. full-stack-developer: Dark mode map popups, column visibility toggles, batch PDF download
+  2. frontend-styling-expert: Styling polish on 7 files (fleet, drivers, overview, messages, tracking, login, globals.css)
+  3. full-stack-developer: Performance radar chart, quick stats pills, keyboard shortcuts panel, delivery status distribution bar
+- Post-subagent verification: ESLint zero errors, TypeScript zero new src/ errors, dev server compiles clean
+
+Stage Summary:
+- 7 new features delivered via parallel subagents
+- 7 files received detailed styling improvements
+- Zero new TypeScript errors introduced
+- App remains stable with zero ESLint errors
+
+---
+## HANDOVER DOCUMENT (Updated Round 9)
+
+### Current Project Status / Assessment
+SwiftFreight is a comprehensive, investor-ready multi-tenant SaaS Logistics Operating System demo for Lesotho. After 9 rounds of continuous development, the application has 16+ dashboard tabs, an interactive Leaflet map with full dark mode support (tiles + popups + legend), real PDF invoice generation (single + batch), professional POD document generation, global search with keyboard navigation, column visibility toggles, performance radar chart, delivery status distribution bar, localStorage state persistence, rich analytics (10+ charts), and extensive micro-interaction polish across every component. The codebase is completely stable — zero ESLint errors, zero new TypeScript errors, clean compilation.
+
+**Current Feature Set:**
+- Marketing website (12+ sections with shimmer animations, parallax effects, logo scroll, "MOST POPULAR" badge, FAQ gradient backgrounds)
+- Auth pages (Login with shimmer button + input icons + gradient overlay, Register with animated plan cards + gradient borders, Forgot Password with split layout + gradient ring)
+- 16 dashboard tabs:
+  - **Staff** (14 nav items): Overview (pipeline + activity feed + **status distribution bar** + **performance radar** + colored borders + framer-motion), Deliveries (**column visibility toggles** + priority borders + pulsing dots + star rating + POD generation), Tracking (9-step gradient + **copy tracking #** + priority icons), Messages (**typing indicator** + gradient bubbles + timestamps), Customers (**quick stats pills** + CSV export + city-color borders), Drivers (**gradient avatars** + license warning icons + **95%+ star badges** + progress bar hover), Fleet (**status gradient backgrounds** + **fuel type pills** + pulse dots + vehicle detail Sheet), Warehouse (gradient KPI bars + activity feed borders + avatar rings), Dispatch (**full dark mode map** + dark popups + sparkline stats + tooltips + print manifest), Sourcing (gradient tabs, progress bars), Invoices (**batch PDF download** + single PDF), Quotations (status-colored rows + gradient cards), Reports (10+ charts with gradient headers), Notifications (type-colored borders + enhanced empty state), Settings (**keyboard shortcuts panel** + color-coded nav badges + danger zone)
+  - **Driver** (5 nav items): Overview, My Jobs, My Vehicle, Messages, Settings
+  - **Customer** (6 nav items): Overview, My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices
+  - **Sourcing Agent**: Personalized overview with KPIs, quick actions, requests table
+  - **Trailer Owner**: KPIs, trailers table, 6-month revenue chart
+  - **Warehouse Partner**: KPIs, quick actions, activity feed
+- **Global Quick Search**: Real-time across deliveries/customers/drivers, keyboard nav, glass dropdown
+- **Dark Mode Map**: CartoDB dark matter tiles + dark popups + dark legend
+- **POD Document**: Professional printout with branding
+- **State Persistence**: localStorage via Zustand persist
+- 9 API routes, Prisma schema with 13 models
+- 500+ demo deliveries, 60 drivers, 40 vehicles, 300 customers, 3 companies
+
+### Completed This Round
+- **Features** (7): Dark mode Leaflet popups, Column visibility toggles (Deliveries), Batch PDF invoice download, Performance Radar chart (Overview), Quick stats pills (Deliveries + Customers), Keyboard Shortcuts panel (Settings), Delivery Status Distribution bar (Overview)
+- **Styling** (7 files): Fleet (status gradient backgrounds, fuel pills, pulse dots, divide-x), Drivers (gradient avatars, license warning icons, 95%+ star badges, progress bar hover), Overview (gradient route bars, fleet utilization glow), Messages (3-dot typing indicator), Tracking (contextual icons, copy tracking #, active step glow), Login (btn-shimmer, restructured remember-me/forgot-password row), CSS (bounce-dot keyframes, btn-shimmer utility)
+- **Verification**: ESLint zero errors, TypeScript zero new src/ errors, dev server compiles clean
+
+### Unresolved Issues / Risks + Priority Recommendations
+1. **[Low] Pre-existing mock-data.ts TS errors** — 4 readonly tuple array errors (no runtime impact, documented since Round 5)
+2. **[Low] Caddy proxy not forwarding** — Agent-browser QA blocked by Z.ai shell page on port 81; code verified via lint/tsc/compilation instead
+3. **[Enhancement] Real-time WebSocket** — Live Activity Feed is static; WebSocket mini-service would make it truly real-time
+4. **[Enhancement] Data export to Excel** — CSV export exists; .xlsx would be more professional
+5. **[Enhancement] Advanced table features** — Multi-sort, saved filters, column reordering on more tables
+6. **[Enhancement] Map interactivity** — Click-to-assign delivery from map, draggable markers
+7. **[Enhancement] Mobile map optimization** — Leaflet performance on low-end devices
+8. **[Enhancement] Notification real-time** — WebSocket push for new notifications
+9. **[Enhancement] Delivery filters persistence** — Save/load custom filter combinations
+
+**Priority recommendations for next phase:**
+1. Add WebSocket mini-service for real-time activity feed and notifications
+2. Implement data export to Excel (.xlsx) format on key tables
+3. Add multi-sort and saved filter combinations on Deliveries table
+4. Enhance dispatch map with click-to-assign from map markers
+5. Add more empty state illustrations and onboarding guidance for new users
+

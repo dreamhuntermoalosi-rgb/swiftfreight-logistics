@@ -226,13 +226,19 @@ export function InvoicesTab() {
             {isCustomer ? 'View and manage your invoices' : 'Manage all customer invoices'}
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => {
-          if (filteredInvoices.length > 0) {
-            const first = filteredInvoices[0];
-            downloadInvoicePdf(first, getCompanyForInvoice(first));
-            toast.info('Generating PDFs... First invoice downloaded. Full batch download available in production.');
-          } else {
+        <Button variant="outline" size="sm" className="gap-2" onClick={async () => {
+          if (filteredInvoices.length === 0) {
             toast.error('No invoices to download.');
+            return;
+          }
+          toast.info(`Downloading ${filteredInvoices.length} invoices...`);
+          for (let i = 0; i < filteredInvoices.length; i++) {
+            const inv = filteredInvoices[i];
+            const company = getCompanyForInvoice(inv);
+            downloadInvoicePdf(inv, company);
+            if (i < filteredInvoices.length - 1) {
+              await new Promise((r) => setTimeout(r, 200));
+            }
           }
         }}>
           <Download className="h-4 w-4" />

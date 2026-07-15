@@ -406,6 +406,13 @@ export function MessagesTab() {
                   Coordinate with drivers and warehouse teams
                 </li>
               </ul>
+              {/* Bouncing dots typing indicator */}
+              <div className="mt-8 flex items-center justify-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-primary/40 animate-bounce-dot-1" />
+                <span className="h-2 w-2 rounded-full bg-primary/40 animate-bounce-dot-2" />
+                <span className="h-2 w-2 rounded-full bg-primary/40 animate-bounce-dot-3" />
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground/70">Select a conversation to start messaging</p>
             </motion.div>
           )}
         </div>

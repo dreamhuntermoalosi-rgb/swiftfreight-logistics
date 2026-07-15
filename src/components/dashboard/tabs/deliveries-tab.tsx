@@ -44,7 +44,7 @@ import {
   Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
   FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
-  Download, CheckCircle, Printer,
+  Download, CheckCircle, Printer, CreditCard, Columns3,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -814,6 +814,22 @@ export function DeliveriesTab() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  // Column visibility
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
+    new Set(['tracking', 'customer', 'route', 'weight', 'status', 'priority', 'driver', 'date'])
+  );
+  const toggleColumn = useCallback((key: string) => {
+    setVisibleColumns((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+
   // Detail panel
   const detailDelivery = useMemo(
     () => localDeliveries.find((d) => d.id === selectedDeliveryId) ?? null,
@@ -942,6 +958,44 @@ export function DeliveriesTab() {
           <Download className="mr-2 h-4 w-4" />
           Download
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="shrink-0 gap-2">
+              <Columns3 className="h-4 w-4" />
+              Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Toggle Columns</div>
+            <DropdownMenuSeparator />
+            {[
+              { key: 'tracking', label: 'Tracking #' },
+              { key: 'customer', label: 'Customer' },
+              { key: 'route', label: 'Route' },
+              { key: 'weight', label: 'Weight' },
+              { key: 'status', label: 'Status' },
+              { key: 'priority', label: 'Priority' },
+              { key: 'driver', label: 'Driver' },
+              { key: 'date', label: 'Date' },
+            ].map((col) => (
+              <DropdownMenuItem
+                key={col.key}
+                className="flex items-center gap-2 py-1.5"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  toggleColumn(col.key);
+                }}
+              >
+                <Checkbox
+                  checked={visibleColumns.has(col.key)}
+                  onCheckedChange={() => toggleColumn(col.key)}
+                  className="pointer-events-none"
+                />
+                <span className="text-sm">{col.label}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Gradient divider below header */}
@@ -996,6 +1050,26 @@ export function DeliveriesTab() {
         </div>
       </div>
 
+      {/* Quick Stats Pills */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
+          <Package className="h-3.5 w-3.5" />
+          Total: {filtered.length}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <Truck className="h-3.5 w-3.5" />
+          Active: {filtered.filter((d) => ['collected', 'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery'].includes(d.status)).length}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-400">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          Completed: {filtered.filter((d) => d.status === 'delivered').length}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+          <CreditCard className="h-3.5 w-3.5" />
+          Avg. Amount: M{filtered.length > 0 ? Math.round(filtered.filter((d) => d.paidAmount != null).reduce((sum, d) => sum + (d.paidAmount || 0), 0) / Math.max(filtered.filter((d) => d.paidAmount != null).length, 1)).toLocaleString() : 0}
+        </span>
+      </div>
+
       {/* Table View */}
       {viewMode === 'table' && (
         <div className="rounded-lg border overflow-hidden">
@@ -1009,33 +1083,45 @@ export function DeliveriesTab() {
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('trackingNumber')}>
-                    <span className="flex items-center">Tracking #<SortIcon field="trackingNumber" sortField={sortField} sortDir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('customerName')}>
-                    <span className="flex items-center">Customer<SortIcon field="customerName" sortField={sortField} sortDir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead>Route</TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('packageWeight')}>
-                    <span className="flex items-center">Weight<SortIcon field="packageWeight" sortField={sortField} sortDir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('status')}>
-                    <span className="flex items-center">Status<SortIcon field="status" sortField={sortField} sortDir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('priority')}>
-                    <span className="flex items-center">Priority<SortIcon field="priority" sortField={sortField} sortDir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('createdAt')}>
-                    <span className="flex items-center">Date<SortIcon field="createdAt" sortField={sortField} sortDir={sortDir} /></span>
-                  </TableHead>
+                  {visibleColumns.has('tracking') && (
+                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('trackingNumber')}>
+                      <span className="flex items-center">Tracking #<SortIcon field="trackingNumber" sortField={sortField} sortDir={sortDir} /></span>
+                    </TableHead>
+                  )}
+                  {visibleColumns.has('customer') && (
+                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('customerName')}>
+                      <span className="flex items-center">Customer<SortIcon field="customerName" sortField={sortField} sortDir={sortDir} /></span>
+                    </TableHead>
+                  )}
+                  {visibleColumns.has('route') && <TableHead>Route</TableHead>}
+                  {visibleColumns.has('weight') && (
+                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('packageWeight')}>
+                      <span className="flex items-center">Weight<SortIcon field="packageWeight" sortField={sortField} sortDir={sortDir} /></span>
+                    </TableHead>
+                  )}
+                  {visibleColumns.has('status') && (
+                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('status')}>
+                      <span className="flex items-center">Status<SortIcon field="status" sortField={sortField} sortDir={sortDir} /></span>
+                    </TableHead>
+                  )}
+                  {visibleColumns.has('priority') && (
+                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('priority')}>
+                      <span className="flex items-center">Priority<SortIcon field="priority" sortField={sortField} sortDir={sortDir} /></span>
+                    </TableHead>
+                  )}
+                  {visibleColumns.has('driver') && <TableHead>Driver</TableHead>}
+                  {visibleColumns.has('date') && (
+                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('createdAt')}>
+                      <span className="flex items-center">Date<SortIcon field="createdAt" sortField={sortField} sortDir={sortDir} /></span>
+                    </TableHead>
+                  )}
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12">
+                    <TableCell colSpan={2 + visibleColumns.size} className="text-center py-12">
                       <div className="flex flex-col items-center py-4 mx-auto max-w-xs border-2 border-dashed border-muted-foreground/20 rounded-xl">
                         <Package className="h-12 w-12 mb-3 opacity-30 text-primary/40" />
                         <p className="text-lg font-medium text-muted-foreground">No deliveries found</p>
@@ -1055,36 +1141,52 @@ export function DeliveriesTab() {
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox checked={selected.has(d.id)} onCheckedChange={() => toggleSelect(d.id)} />
                       </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-sm font-medium text-green-700 dark:text-green-400 hover:underline">
-                          {d.trackingNumber}
-                        </span>
-                      </TableCell>
-                      <TableCell className="font-medium">{d.customerName}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-[140px]">
-                          <MapPin className="h-3 w-3 shrink-0 text-green-600" />
-                          <span className="truncate">{d.pickup.city}</span>
-                          <ArrowRight className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{d.destination.city}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">{d.packageWeight} kg</TableCell>
-                      <TableCell>
-                        <Badge className={`${statusColors[d.status] || ''} gap-1.5`} variant="secondary">
-                          <span className={`h-1.5 w-1.5 rounded-full bg-current ${(d.status === 'in_transit' || d.status === 'out_for_delivery') ? 'animate-pulse' : ''}`} />
-                          {statusLabels[d.status] || d.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${priorityColors[d.priority] || ''} capitalize`} variant="secondary">
-                          {d.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {d.driverName || <span className="text-muted-foreground">Unassigned</span>}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{formatDate(d.createdAt)}</TableCell>
+                      {visibleColumns.has('tracking') && (
+                        <TableCell>
+                          <span className="font-mono text-sm font-medium text-green-700 dark:text-green-400 hover:underline">
+                            {d.trackingNumber}
+                          </span>
+                        </TableCell>
+                      )}
+                      {visibleColumns.has('customer') && (
+                        <TableCell className="font-medium">{d.customerName}</TableCell>
+                      )}
+                      {visibleColumns.has('route') && (
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-[140px]">
+                            <MapPin className="h-3 w-3 shrink-0 text-green-600" />
+                            <span className="truncate">{d.pickup.city}</span>
+                            <ArrowRight className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{d.destination.city}</span>
+                          </div>
+                        </TableCell>
+                      )}
+                      {visibleColumns.has('weight') && (
+                        <TableCell className="text-sm">{d.packageWeight} kg</TableCell>
+                      )}
+                      {visibleColumns.has('status') && (
+                        <TableCell>
+                          <Badge className={`${statusColors[d.status] || ''} gap-1.5`} variant="secondary">
+                            <span className={`h-1.5 w-1.5 rounded-full bg-current ${(d.status === 'in_transit' || d.status === 'out_for_delivery') ? 'animate-pulse' : ''}`} />
+                            {statusLabels[d.status] || d.status}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {visibleColumns.has('priority') && (
+                        <TableCell>
+                          <Badge className={`${priorityColors[d.priority] || ''} capitalize`} variant="secondary">
+                            {d.priority}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {visibleColumns.has('driver') && (
+                        <TableCell className="text-sm">
+                          {d.driverName || <span className="text-muted-foreground">Unassigned</span>}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has('date') && (
+                        <TableCell className="text-sm text-muted-foreground">{formatDate(d.createdAt)}</TableCell>
+                      )}
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
