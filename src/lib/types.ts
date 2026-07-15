@@ -273,6 +273,7 @@ export type DashboardTab =
   | 'messages'
   | 'reports'
   | 'invoices'
+  | 'quotations'
   | 'settings';
 
 export interface Quotation {

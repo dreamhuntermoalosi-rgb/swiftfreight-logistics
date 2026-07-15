@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   Info,
   User as UserIcon,
+  FileText,
 } from 'lucide-react';
 import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -141,6 +142,7 @@ const staffNavItems: NavItem[] = [
   { tab: 'dispatch', label: 'Dispatch', icon: Radio },
   { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
   { tab: 'invoices', label: 'Invoices', icon: Receipt },
+  { tab: 'quotations', label: 'Quotations', icon: FileText },
   { tab: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
@@ -190,6 +192,7 @@ const tabTitles: Record<DashboardTab, string> = {
   messages: 'Messages',
   reports: 'Reports',
   invoices: 'Invoices',
+  quotations: 'Quotations',
   settings: 'Settings',
 };
 

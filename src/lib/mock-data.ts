@@ -337,16 +337,40 @@ export const invoices: Invoice[] = deliveries.filter(d => d.paidAmount).slice(0,
 }));
 
 // ============ QUOTATIONS ============
-export const quotations: Quotation[] = deliveries.filter(d => ['awaiting_quote', 'quote_accepted'].includes(d.status)).slice(0, 20).map((d, i) => ({
-  id: `quo-${String(i + 1).padStart(4, '0')}`,
-  deliveryId: d.id,
-  amount: d.quotedAmount || 0,
-  currency: 'M',
-  estimatedDays: d.priority === 'urgent' ? 2 : d.priority === 'express' ? 4 : 7,
-  validUntil: futureDate(3),
-  status: d.status === 'quote_accepted' ? 'accepted' : 'pending',
-  createdAt: d.createdAt,
-}));
+export const quotations: Quotation[] = [
+  ...deliveries.filter(d => ['awaiting_quote', 'quote_accepted'].includes(d.status)).slice(0, 16).map((d, i) => ({
+    id: `quo-${String(i + 1).padStart(4, '0')}`,
+    deliveryId: d.id,
+    amount: d.quotedAmount || 0,
+    currency: 'M',
+    estimatedDays: d.priority === 'urgent' ? 2 : d.priority === 'express' ? 4 : 7,
+    validUntil: futureDate(3),
+    status: d.status === 'quote_accepted' ? 'accepted' as const : 'pending' as const,
+    createdAt: d.createdAt,
+  })),
+  // Rejected quotations
+  ...deliveries.filter(d => d.status === 'cancelled').slice(0, 2).map((d, i) => ({
+    id: `quo-${String(17 + i).padStart(4, '0')}`,
+    deliveryId: d.id,
+    amount: d.quotedAmount || 0,
+    currency: 'M',
+    estimatedDays: d.priority === 'urgent' ? 2 : d.priority === 'express' ? 4 : 7,
+    validUntil: pastDate(2),
+    status: 'rejected' as const,
+    createdAt: d.createdAt,
+  })),
+  // Expired quotations
+  ...deliveries.filter(d => ['awaiting_quote'].includes(d.status)).slice(4, 7).map((d, i) => ({
+    id: `quo-${String(19 + i).padStart(4, '0')}`,
+    deliveryId: d.id,
+    amount: d.quotedAmount || 0,
+    currency: 'M',
+    estimatedDays: d.priority === 'urgent' ? 2 : d.priority === 'express' ? 4 : 7,
+    validUntil: pastDate(5),
+    status: 'expired' as const,
+    createdAt: d.createdAt,
+  })),
+];
 
 // ============ ANALYTICS ============
 export const analyticsData: AnalyticsData = {

@@ -251,7 +251,55 @@ Current Goals:
 - Continue polishing and adding features in next development rounds
 - Potential next features: Proof of Delivery section, rating system, map placeholder, customer delivery filtering
 
+---
+Task ID: r2-feat1
+Agent: full-stack-developer
+Task: Add Proof of Delivery and Star Rating UI to delivery detail Sheet
+
+Work Log:
+- Added `Star`, `Camera`, `User` to lucide-react imports in deliveries-tab.tsx
+- Added Star Rating display (amber star + rating number) after status badge in DeliveryDetailPanel, shown only for delivered deliveries with a rating value
+- Added "Rate Delivery" button in Actions section (before Generate Invoice), shown only for delivered deliveries without a rating; triggers toast on click
+- Added Proof of Delivery section after Actions section, shown for `delivered` or `returned` status; includes:
+  - "Received by" with recipient name and avatar circle
+  - Digital Signature area with dashed border, cursive name, and signed date
+  - Delivery Photos grid (3 placeholder slots: Package at doorstep, Recipient with package, Delivery location) with camera icons
+
+Stage Summary:
+- 3 new UI sections added to the delivery detail Sheet panel
+- Uses existing icons (CheckCircle2, Star, Camera, User) and helper (formatDate)
+- Conditional rendering based on delivery status and rating fields
+- ESLint: zero errors after all changes
+
+---
 Unresolved Issues / Risks:
 - Customer "My Shipments" shows all 500 deliveries (not filtered to customer's own) - functional improvement needed
 - No real authentication (demo mode only - acceptable for investor demo)
 - Driver overview "Monthly Earnings" and "Today's Jobs" data not personalized from mock data
+
+---
+Task ID: r2-feat3 + r2-feat4
+Agent: full-stack-developer
+Task: MapPlaceholder Component + Quotation Management
+
+Work Log:
+- Created `/src/components/dashboard/map-placeholder.tsx`: reusable map placeholder with grid pattern, SVG road lines, animated Navigation icon, location badge (Maseru, Lesotho), and colored dot markers (pickup/destination/driver/warehouse/border)
+- Integrated MapPlaceholder into dispatch-tab.tsx: placed between Quick Actions and the two-column delivery queue, with 6 markers (2 warehouses, 1 border post, 2 drivers, 1 delivery destination)
+- Created `/src/components/dashboard/tabs/quotations-tab.tsx` (~310 lines):
+  - Header with title, count, search input (tracking #, customer name), status filter pill buttons (All/Pending/Accepted/Rejected/Expired)
+  - 3 summary cards: Pending (count + total value), Accepted (count + total value), Rejected (count)
+  - Desktop table with 8 columns (Quote #, Delivery, Customer, Amount, Est. Days, Valid Until, Status, Actions) + mobile card layout
+  - Status badges with color coding: Pending=amber, Accepted=green, Rejected=red, Expired=gray
+  - Pagination (15 per page) with page numbers
+  - Detail dialog with: quote info grid (6 fields), status timeline (2-3 steps based on status), contextual action buttons (Pending: Accept/Reject, Accepted: Generate Invoice)
+- Updated mock-data.ts: expanded quotations array to include 16 pending/accepted + 2 rejected + 3 expired entries
+- Updated types.ts: added 'quotations' to DashboardTab union type
+- Updated tabs/index.tsx: imported and exported QuotationsTab, added to tabComponentMap
+- Updated dashboard-layout.tsx: added FileText import, Quotations nav item after Invoices in staff nav, added quotations to tabTitles
+
+Stage Summary:
+- MapPlaceholder is a reusable, animated component with grid/road SVG backgrounds and typed marker system
+- Dispatch tab now shows a live operations map placeholder with 6 route markers
+- Quotations tab provides full CRUD-style quotation management with search, filter, pagination, and detail dialog
+- ESLint: zero errors
+- Dev server: compiles and serves with 200 responses

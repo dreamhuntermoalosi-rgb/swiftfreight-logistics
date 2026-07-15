@@ -1,0 +1,889 @@
+     1→'use client';
+     2→
+     3→import { useState, useMemo, useCallback } from 'react';
+     4→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     5→import { Button } from '@/components/ui/button';
+     6→import { Badge } from '@/components/ui/badge';
+     7→import { Input } from '@/components/ui/input';
+     8→import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+     9→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+    10→import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+    11→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    12→import { Label } from '@/components/ui/label';
+    13→import { Textarea } from '@/components/ui/textarea';
+    14→import { Checkbox } from '@/components/ui/checkbox';
+    15→import { Separator } from '@/components/ui/separator';
+    16→import { ScrollArea } from '@/components/ui/scroll-area';
+    17→import {
+    18→  DropdownMenu,
+    19→  DropdownMenuContent,
+    20→  DropdownMenuItem,
+    21→  DropdownMenuTrigger,
+    22→  DropdownMenuSeparator,
+    23→} from '@/components/ui/dropdown-menu';
+    24→import {
+    25→  Pagination,
+    26→  PaginationContent,
+    27→  PaginationItem,
+    28→  PaginationLink,
+    29→  PaginationNext,
+    30→  PaginationPrevious,
+    31→} from '@/components/ui/pagination';
+    32→import { toast } from 'sonner';
+    33→import { useNavStore, useAuthStore } from '@/lib/store';
+    34→import {
+    35→  deliveries as initialDeliveries,
+    36→  statusLabels,
+    37→  statusColors,
+    38→  priorityColors,
+    39→  getDeliveryTimeline,
+    40→  customers,
+    41→} from '@/lib/mock-data';
+    42→import type { Delivery, DeliveryStatus, DeliveryPriority } from '@/lib/types';
+    43→import {
+    44→  Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
+    45→  Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
+    46→  FileText, UserPlus, Calendar, Phone, Building2, Weight,
+    47→} from 'lucide-react';
+    48→import { motion, AnimatePresence } from 'framer-motion';
+    49→
+    50→const ITEMS_PER_PAGE = 15;
+    51→
+    52→type SortField = 'trackingNumber' | 'customerName' | 'status' | 'priority' | 'createdAt' | 'packageWeight';
+    53→type SortDir = 'asc' | 'desc';
+    54→type ViewMode = 'table' | 'cards';
+    55→
+    56→// Status order for progress tracking
+    57→const STATUS_ORDER: DeliveryStatus[] = [
+    58→  'request_received', 'awaiting_quote', 'quote_accepted', 'collected',
+    59→  'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery', 'delivered',
+    60→];
+    61→
+    62→function formatDate(iso: string) {
+    63→  return new Date(iso).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+    64→}
+    65→
+    66→function formatDateTime(iso: string) {
+    67→  return new Date(iso).toLocaleString('en-ZA', {
+    68→    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    69→  });
+    70→}
+    71→
+    72→function timeAgo(iso: string) {
+    73→  const diff = Date.now() - new Date(iso).getTime();
+    74→  const mins = Math.floor(diff / 60000);
+    75→  if (mins < 60) return `${mins}m ago`;
+    76→  const hrs = Math.floor(mins / 60);
+    77→  if (hrs < 24) return `${hrs}h ago`;
+    78→  const days = Math.floor(hrs / 24);
+    79→  return `${days}d ago`;
+    80→}
+    81→
+    82→// Sort icon outside render
+    83→function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField; sortDir: SortDir }) {
+    84→  if (field !== sortField) return <ChevronDown className="ml-1 h-3 w-3 opacity-30" />;
+    85→  return sortDir === 'asc'
+    86→    ? <ChevronUp className="ml-1 h-3 w-3 text-primary" />
+    87→    : <ChevronDown className="ml-1 h-3 w-3 text-primary" />;
+    88→}
+    89→
+    90→// New Delivery Form
+    91→function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
+    92→  const [open, setOpen] = useState(false);
+    93→  const [customerName, setCustomerName] = useState('');
+    94→  const [pickupName, setPickupName] = useState('');
+    95→  const [pickupPhone, setPickupPhone] = useState('');
+    96→  const [pickupAddress, setPickupAddress] = useState('');
+    97→  const [pickupCity, setPickupCity] = useState('');
+    98→  const [pickupCountry, setPickupCountry] = useState('South Africa');
+    99→  const [destName, setDestName] = useState('');
+   100→  const [destPhone, setDestPhone] = useState('');
+   101→  const [destAddress, setDestAddress] = useState('');
+   102→  const [destCity, setDestCity] = useState('');
+   103→  const [destCountry, setDestCountry] = useState('Lesotho');
+   104→  const [pkgDesc, setPkgDesc] = useState('');
+   105→  const [pkgWeight, setPkgWeight] = useState('');
+   106→  const [pkgDimensions, setPkgDimensions] = useState('');
+   107→  const [priority, setPriority] = useState<DeliveryPriority>('standard');
+   108→  const [estDelivery, setEstDelivery] = useState('');
+   109→  const [notes, setNotes] = useState('');
+   110→
+   111→  const handleSubmit = () => {
+   112→    if (!customerName || !pickupCity || !destCity || !pkgDesc) {
+   113→      toast.error('Please fill in required fields (Customer, Pickup City, Destination City, Description)');
+   114→      return;
+   115→    }
+   116→    const newDelivery: Delivery = {
+   117→      id: `del-new-${Date.now()}`,
+   118→      trackingNumber: `SF${String(2025501 + Math.floor(Math.random() * 9000)).padStart(8, '0')}LS`,
+   119→      status: 'request_received',
+   120→      priority,
+   121→      customerId: 'cust-new',
+   122→      customerName,
+   123→      companyId: 'comp-001',
+   124→      companyName: 'Mountain Express',
+   125→      pickup: { name: pickupName || customerName, phone: pickupPhone, address: pickupAddress, city: pickupCity, country: pickupCountry },
+   126→      destination: { name: destName || customerName, phone: destPhone, address: destAddress, city: destCity, country: destCountry },
+   127→      packageDescription: pkgDesc,
+   128→      packageWeight: parseFloat(pkgWeight) || 0,
+   129→      packageDimensions: pkgDimensions || undefined,
+   130→      quotedAmount: undefined,
+   131→      paidAmount: undefined,
+   132→      estimatedDelivery: estDelivery || undefined,
+   133→      createdAt: new Date().toISOString(),
+   134→      updatedAt: new Date().toISOString(),
+   135→      notes: notes || undefined,
+   136→    };
+   137→    onSuccess(newDelivery);
+   138→    setOpen(false);
+   139→    toast.success('Delivery created successfully!', { description: `Tracking #${newDelivery.trackingNumber}` });
+   140→  };
+   141→
+   142→  return (
+   143→    <Dialog open={open} onOpenChange={setOpen}>
+   144→      <DialogTrigger asChild>
+   145→        <Button className="bg-green-600 hover:bg-green-700 text-white">
+   146→          <Plus className="mr-2 h-4 w-4" /> New Delivery
+   147→        </Button>
+   148→      </DialogTrigger>
+   149→      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+   150→        <DialogHeader>
+   151→          <DialogTitle>Create New Delivery</DialogTitle>
+   152→        </DialogHeader>
+   153→        <div className="grid gap-4 py-4">
+   154→          {/* Customer */}
+   155→          <div className="grid gap-2">
+   156→            <Label>Customer *</Label>
+   157→            <Input placeholder="Customer name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+   158→          </div>
+   159→          <Separator />
+   160→          {/* Pickup */}
+   161→          <div>
+   162→            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+   163→              <MapPin className="h-4 w-4 text-green-600" /> Pickup Address
+   164→            </h4>
+   165→            <div className="grid grid-cols-2 gap-3">
+   166→              <div className="grid gap-1"><Label className="text-xs">Name</Label><Input placeholder="Contact name" value={pickupName} onChange={(e) => setPickupName(e.target.value)} /></div>
+   167→              <div className="grid gap-1"><Label className="text-xs">Phone</Label><Input placeholder="+266 ..." value={pickupPhone} onChange={(e) => setPickupPhone(e.target.value)} /></div>
+   168→              <div className="col-span-2 grid gap-1"><Label className="text-xs">Address</Label><Input placeholder="Street address" value={pickupAddress} onChange={(e) => setPickupAddress(e.target.value)} /></div>
+   169→              <div className="grid gap-1"><Label className="text-xs">City *</Label><Input placeholder="e.g. Johannesburg" value={pickupCity} onChange={(e) => setPickupCity(e.target.value)} /></div>
+   170→              <div className="grid gap-1">
+   171→                <Label className="text-xs">Country</Label>
+   172→                <Select value={pickupCountry} onValueChange={setPickupCountry}>
+   173→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   174→                  <SelectContent>
+   175→                    <SelectItem value="South Africa">South Africa</SelectItem>
+   176→                    <SelectItem value="Lesotho">Lesotho</SelectItem>
+   177→                  </SelectContent>
+   178→                </Select>
+   179→              </div>
+   180→            </div>
+   181→          </div>
+   182→          <Separator />
+   183→          {/* Destination */}
+   184→          <div>
+   185→            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+   186→              <MapPin className="h-4 w-4 text-red-500" /> Destination Address
+   187→            </h4>
+   188→            <div className="grid grid-cols-2 gap-3">
+   189→              <div className="grid gap-1"><Label className="text-xs">Name</Label><Input placeholder="Recipient name" value={destName} onChange={(e) => setDestName(e.target.value)} /></div>
+   190→              <div className="grid gap-1"><Label className="text-xs">Phone</Label><Input placeholder="+266 ..." value={destPhone} onChange={(e) => setDestPhone(e.target.value)} /></div>
+   191→              <div className="col-span-2 grid gap-1"><Label className="text-xs">Address</Label><Input placeholder="Street address" value={destAddress} onChange={(e) => setDestAddress(e.target.value)} /></div>
+   192→              <div className="grid gap-1"><Label className="text-xs">City *</Label><Input placeholder="e.g. Maseru" value={destCity} onChange={(e) => setDestCity(e.target.value)} /></div>
+   193→              <div className="grid gap-1">
+   194→                <Label className="text-xs">Country</Label>
+   195→                <Select value={destCountry} onValueChange={setDestCountry}>
+   196→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   197→                  <SelectContent>
+   198→                    <SelectItem value="Lesotho">Lesotho</SelectItem>
+   199→                    <SelectItem value="South Africa">South Africa</SelectItem>
+   200→                  </SelectContent>
+   201→                </Select>
+   202→              </div>
+   203→            </div>
+   204→          </div>
+   205→          <Separator />
+   206→          {/* Package */}
+   207→          <div>
+   208→            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+   209→              <Package className="h-4 w-4" /> Package Details
+   210→            </h4>
+   211→            <div className="grid grid-cols-2 gap-3">
+   212→              <div className="col-span-2 grid gap-1"><Label className="text-xs">Description *</Label><Input placeholder="e.g. Electronics x2" value={pkgDesc} onChange={(e) => setPkgDesc(e.target.value)} /></div>
+   213→              <div className="grid gap-1"><Label className="text-xs">Weight (kg)</Label><Input type="number" placeholder="0.0" value={pkgWeight} onChange={(e) => setPkgWeight(e.target.value)} /></div>
+   214→              <div className="grid gap-1"><Label className="text-xs">Dimensions</Label><Input placeholder="L x W x H cm" value={pkgDimensions} onChange={(e) => setPkgDimensions(e.target.value)} /></div>
+   215→              <div className="grid gap-1">
+   216→                <Label className="text-xs">Priority</Label>
+   217→                <Select value={priority} onValueChange={(v) => setPriority(v as DeliveryPriority)}>
+   218→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   219→                  <SelectContent>
+   220→                    <SelectItem value="standard">Standard</SelectItem>
+   221→                    <SelectItem value="express">Express</SelectItem>
+   222→                    <SelectItem value="urgent">Urgent</SelectItem>
+   223→                  </SelectContent>
+   224→                </Select>
+   225→              </div>
+   226→              <div className="grid gap-1"><Label className="text-xs">Est. Delivery</Label><Input type="date" value={estDelivery} onChange={(e) => setEstDelivery(e.target.value)} /></div>
+   227→              <div className="col-span-2 grid gap-1"><Label className="text-xs">Notes</Label><Textarea placeholder="Additional notes..." value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+   228→            </div>
+   229→          </div>
+   230→        </div>
+   231→        <DialogFooter>
+   232→          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+   233→          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleSubmit}>Create Delivery</Button>
+   234→        </DialogFooter>
+   235→      </DialogContent>
+   236→    </Dialog>
+   237→  );
+   238→}
+   239→
+   240→// Delivery Detail Sheet
+   241→function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery | null; open: boolean; onClose: () => void }) {
+   242→  if (!delivery) return null;
+   243→  const timeline = getDeliveryTimeline(delivery);
+   244→
+   245→  return (
+   246→    <Sheet open={open} onOpenChange={onClose}>
+   247→      <SheetContent className="w-full sm:max-w-lg p-0 overflow-y-auto">
+   248→        <SheetHeader className="px-6 pt-6 pb-4 sticky top-0 bg-background z-10 border-b">
+   249→          <div className="flex items-center justify-between">
+   250→            <div className="flex items-center gap-3 min-w-0">
+   251→              <SheetTitle className="font-mono text-sm">{delivery.trackingNumber}</SheetTitle>
+   252→              <Badge className={statusColors[delivery.status] || ''} variant="secondary">
+   253→                {statusLabels[delivery.status] || delivery.status}
+   254→              </Badge>
+   255→            </div>
+   256→            <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
+   257→              <X className="h-4 w-4" />
+   258→            </Button>
+   259→          </div>
+   260→        </SheetHeader>
+   261→
+   262→        <div className="px-6 py-4 space-y-6">
+   263→          {/* Timeline */}
+   264→          <div>
+   265→            <h3 className="text-sm font-semibold mb-4">Delivery Timeline</h3>
+   266→            <div className="relative pl-6">
+   267→              {timeline.map((event, idx) => {
+   268→                const isLast = idx === timeline.length - 1;
+   269→                const isCurrent = idx === timeline.length - 1 && !['delivered', 'returned', 'cancelled'].includes(delivery.status);
+   270→                return (
+   271→                  <div key={event.id} className="relative pb-6 last:pb-0">
+   272→                    {/* Connecting line */}
+   273→                    {!isLast && (
+   274→                      <div className="absolute left-[-18px] top-6 bottom-0 w-px bg-green-200 dark:bg-green-800" />
+   275→                    )}
+   276→                    {/* Dot */}
+   277→                    <div className={`absolute left-[-22px] top-1.5 h-3 w-3 rounded-full border-2 ${
+   278→                      isCurrent
+   279→                        ? 'bg-green-500 border-green-500 animate-pulse'
+   280→                        : 'bg-green-500 border-green-500'
+   281→                    }`} />
+   282→                    <div className="ml-2">
+   283→                      <p className="text-sm font-medium">{event.description}</p>
+   284→                      <p className="text-xs text-muted-foreground mt-0.5">{event.location}</p>
+   285→                      <div className="flex items-center gap-3 mt-1">
+   286→                        <span className="text-xs text-muted-foreground">{formatDateTime(event.timestamp)}</span>
+   287→                        {event.performedBy && (
+   288→                          <span className="text-xs text-muted-foreground">by {event.performedBy}</span>
+   289→                        )}
+   290→                      </div>
+   291→                    </div>
+   292→                  </div>
+   293→                );
+   294→              })}
+   295→            </div>
+   296→          </div>
+   297→
+   298→          <Separator />
+   299→
+   300→          {/* Package Details */}
+   301→          <Card>
+   302→            <CardHeader className="pb-2">
+   303→              <CardTitle className="text-sm flex items-center gap-2">
+   304→                <Package className="h-4 w-4" /> Package Details
+   305→              </CardTitle>
+   306→            </CardHeader>
+   307→            <CardContent className="text-sm space-y-2">
+   308→              <div className="flex justify-between"><span className="text-muted-foreground">Description</span><span>{delivery.packageDescription}</span></div>
+   309→              <div className="flex justify-between"><span className="text-muted-foreground">Weight</span><span>{delivery.packageWeight} kg</span></div>
+   310→              {delivery.packageDimensions && (
+   311→                <div className="flex justify-between"><span className="text-muted-foreground">Dimensions</span><span>{delivery.packageDimensions}</span></div>
+   312→              )}
+   313→              {delivery.declaredValue && (
+   314→                <div className="flex justify-between"><span className="text-muted-foreground">Declared Value</span><span>M{delivery.declaredValue.toLocaleString()}</span></div>
+   315→              )}
+   316→              <div className="flex justify-between"><span className="text-muted-foreground">Priority</span>
+   317→                <Badge className={`${priorityColors[delivery.priority] || ''} capitalize`} variant="secondary">{delivery.priority}</Badge>
+   318→              </div>
+   319→            </CardContent>
+   320→          </Card>
+   321→
+   322→          {/* Pickup & Destination */}
+   323→          <div className="grid grid-cols-1 gap-3">
+   324→            <Card>
+   325→              <CardHeader className="pb-2">
+   326→                <CardTitle className="text-sm flex items-center gap-2">
+   327→                  <MapPin className="h-4 w-4 text-green-600" /> Pickup
+   328→                </CardTitle>
+   329→              </CardHeader>
+   330→              <CardContent className="text-sm space-y-1">
+   331→                <p className="font-medium">{delivery.pickup.name}</p>
+   332→                {delivery.pickup.phone && <p className="text-muted-foreground">{delivery.pickup.phone}</p>}
+   333→                <p className="text-muted-foreground">{delivery.pickup.address}</p>
+   334→                <p className="text-muted-foreground">{delivery.pickup.city}, {delivery.pickup.country}</p>
+   335→              </CardContent>
+   336→            </Card>
+   337→            <Card>
+   338→              <CardHeader className="pb-2">
+   339→                <CardTitle className="text-sm flex items-center gap-2">
+   340→                  <MapPin className="h-4 w-4 text-red-500" /> Destination
+   341→                </CardTitle>
+   342→              </CardHeader>
+   343→              <CardContent className="text-sm space-y-1">
+   344→                <p className="font-medium">{delivery.destination.name}</p>
+   345→                {delivery.destination.phone && <p className="text-muted-foreground">{delivery.destination.phone}</p>}
+   346→                <p className="text-muted-foreground">{delivery.destination.address}</p>
+   347→                <p className="text-muted-foreground">{delivery.destination.city}, {delivery.destination.country}</p>
+   348→              </CardContent>
+   349→            </Card>
+   350→          </div>
+   351→
+   352→          {/* Driver & Vehicle */}
+   353→          {delivery.driverName && (
+   354→            <Card>
+   355→              <CardHeader className="pb-2">
+   356→                <CardTitle className="text-sm flex items-center gap-2">
+   357→                  <Truck className="h-4 w-4" /> Driver & Vehicle
+   358→                </CardTitle>
+   359→              </CardHeader>
+   360→              <CardContent className="text-sm space-y-2">
+   361→                <div className="flex items-center gap-2">
+   362→                  <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 text-xs font-bold">
+   363→                    {delivery.driverName.split(' ').map(n => n[0]).join('')}
+   364→                  </div>
+   365→                  <span className="font-medium">{delivery.driverName}</span>
+   366→                </div>
+   367→                {delivery.vehiclePlate && (
+   368→                  <p className="text-muted-foreground">Vehicle: {delivery.vehiclePlate}</p>
+   369→                )}
+   370→              </CardContent>
+   371→            </Card>
+   372→          )}
+   373→
+   374→          {/* Quotation */}
+   375→          {delivery.quotedAmount && (
+   376→            <Card>
+   377→              <CardContent className="pt-4">
+   378→                <div className="flex items-center justify-between">
+   379→                  <span className="text-sm text-muted-foreground">Quoted Amount</span>
+   380→                  <span className="text-lg font-bold text-green-600">M{delivery.quotedAmount.toLocaleString()}</span>
+   381→                </div>
+   382→              </CardContent>
+   383→            </Card>
+   384→          )}
+   385→
+   386→          {/* Actions */}
+   387→          <div className="space-y-2">
+   388→            <h3 className="text-sm font-semibold">Actions</h3>
+   389→            <div className="flex flex-wrap gap-2">
+   390→              <DropdownMenu>
+   391→                <DropdownMenuTrigger asChild>
+   392→                  <Button variant="outline" size="sm">
+   393→                    <CheckCircle2 className="mr-2 h-4 w-4" /> Update Status
+   394→                  </Button>
+   395→                </DropdownMenuTrigger>
+   396→                <DropdownMenuContent>
+   397→                  {STATUS_ORDER.map((s) => (
+   398→                    <DropdownMenuItem key={s} onClick={() => toast.info(`Status would be updated to ${statusLabels[s]}`)}>
+   399→                      {s === delivery.status && <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />}
+   400→                      {statusLabels[s]}
+   401→                    </DropdownMenuItem>
+   402→                  ))}
+   403→                </DropdownMenuContent>
+   404→              </DropdownMenu>
+   405→              <Button variant="outline" size="sm" onClick={() => toast.info('Driver assignment dialog would open')}>
+   406→                <UserPlus className="mr-2 h-4 w-4" /> Assign Driver
+   407→              </Button>
+   408→              <Button variant="outline" size="sm" onClick={() => toast.info('Invoice generation would start')}>
+   409→                <FileText className="mr-2 h-4 w-4" /> Generate Invoice
+   410→              </Button>
+   411→            </div>
+   412→          </div>
+   413→
+   414→          {/* Status History */}
+   415→          <div>
+   416→            <h3 className="text-sm font-semibold mb-3">Status History</h3>
+   417→            <div className="space-y-2 text-sm">
+   418→              {timeline.slice().reverse().map((event) => (
+   419→                <div key={event.id} className="flex items-start gap-3 py-2 border-b last:border-0">
+   420→                  <Badge className={`${statusColors[event.status] || ''} shrink-0 text-xs`} variant="secondary">
+   421→                    {statusLabels[event.status]?.replace(' ', '\u00A0')}
+   422→                  </Badge>
+   423→                  <div className="min-w-0">
+   424→                    <p className="text-muted-foreground text-xs">{formatDateTime(event.timestamp)}</p>
+   425→                    <p className="truncate">{event.location}</p>
+   426→                  </div>
+   427→                </div>
+   428→              ))}
+   429→            </div>
+   430→          </div>
+   431→
+   432→          {/* Meta */}
+   433→          <div className="text-xs text-muted-foreground space-y-1 pb-6">
+   434→            <p>Created: {formatDateTime(delivery.createdAt)}</p>
+   435→            <p>Updated: {timeAgo(delivery.updatedAt)}</p>
+   436→            {delivery.notes && <p>Notes: {delivery.notes}</p>}
+   437→          </div>
+   438→        </div>
+   439→      </SheetContent>
+   440→    </Sheet>
+   441→  );
+   442→}
+   443→
+   444→// Main Deliveries Tab
+   445→export function DeliveriesTab() {
+   446→  const { selectDelivery, selectedDeliveryId } = useNavStore();
+   447→  const { currentUser } = useAuthStore();
+   448→  const isCustomer = currentUser?.role === 'customer';
+   449→  const isDriver = currentUser?.role === 'driver';
+   450→
+   451→  // Role-filtered base deliveries
+   452→  const baseDeliveries = useMemo(() => {
+   453→    if (isCustomer && currentUser) {
+   454→      return initialDeliveries.filter((d) => d.customerId === currentUser.id);
+   455→    }
+   456→    if (isDriver && currentUser) {
+   457→      return initialDeliveries.filter((d) => d.driverId === currentUser.id);
+   458→    }
+   459→    return initialDeliveries;
+   460→  }, [isCustomer, isDriver, currentUser]);
+   461→
+   462→  // Local delivery state (allows adding new)
+   463→  const [localDeliveries, setLocalDeliveries] = useState<Delivery[]>(baseDeliveries);
+   464→  const addDelivery = useCallback((d: Delivery) => {
+   465→    setLocalDeliveries((prev) => [d, ...prev]);
+   466→  }, []);
+   467→
+   468→  // Filters
+   469→  const [search, setSearch] = useState('');
+   470→  const [statusFilter, setStatusFilter] = useState('all');
+   471→  const [priorityFilter, setPriorityFilter] = useState('all');
+   472→  const [viewMode, setViewMode] = useState<ViewMode>('table');
+   473→  const [sortField, setSortField] = useState<SortField>('createdAt');
+   474→  const [sortDir, setSortDir] = useState<SortDir>('desc');
+   475→  const [page, setPage] = useState(1);
+   476→  const [selected, setSelected] = useState<Set<string>>(new Set());
+   477→
+   478→  // Detail panel
+   479→  const detailDelivery = useMemo(
+   480→    () => localDeliveries.find((d) => d.id === selectedDeliveryId) ?? null,
+   481→    [localDeliveries, selectedDeliveryId]
+   482→  );
+   483→
+   484→  // Filtered & sorted
+   485→  const filtered = useMemo(() => {
+   486→    let result = [...localDeliveries];
+   487→    if (search) {
+   488→      const s = search.toLowerCase();
+   489→      result = result.filter(
+   490→        (d) =>
+   491→          d.trackingNumber.toLowerCase().includes(s) ||
+   492→          d.customerName.toLowerCase().includes(s)
+   493→      );
+   494→    }
+   495→    if (statusFilter !== 'all') result = result.filter((d) => d.status === statusFilter);
+   496→    if (priorityFilter !== 'all') result = result.filter((d) => d.priority === priorityFilter);
+   497→
+   498→    result.sort((a, b) => {
+   499→      const dir = sortDir === 'asc' ? 1 : -1;
+   500→      switch (sortField) {
+   501→        case 'trackingNumber': return a.trackingNumber.localeCompare(b.trackingNumber) * dir;
+   502→        case 'customerName': return a.customerName.localeCompare(b.customerName) * dir;
+   503→        case 'status': return a.status.localeCompare(b.status) * dir;
+   504→        case 'priority': return a.priority.localeCompare(b.priority) * dir;
+   505→        case 'packageWeight': return (a.packageWeight - b.packageWeight) * dir;
+   506→        case 'createdAt': return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+   507→        default: return 0;
+   508→      }
+   509→    });
+   510→    return result;
+   511→  }, [localDeliveries, search, statusFilter, priorityFilter, sortField, sortDir]);
+   512→
+   513→  // Pagination
+   514→  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+   515→  const safePage = Math.min(page, totalPages);
+   516→  const paged = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+   517→
+   518→  const toggleSort = (field: SortField) => {
+   519→    if (sortField === field) {
+   520→      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+   521→    } else {
+   522→      setSortField(field);
+   523→      setSortDir('asc');
+   524→    }
+   525→  };
+   526→
+   527→  const toggleSelect = (id: string) => {
+   528→    setSelected((prev) => {
+   529→      const next = new Set(prev);
+   530→      if (next.has(id)) next.delete(id);
+   531→      else next.add(id);
+   532→      return next;
+   533→    });
+   534→  };
+   535→
+   536→  const toggleSelectAll = () => {
+   537→    if (selected.size === paged.length) {
+   538→      setSelected(new Set());
+   539→    } else {
+   540→      setSelected(new Set(paged.map((d) => d.id)));
+   541→    }
+   542→  };
+   543→
+   544→  const openDetail = (id: string) => {
+   545→    selectDelivery(id);
+   546→  };
+   547→
+   548→  const closeDetail = () => {
+   549→    selectDelivery(null);
+   550→  };
+   551→
+   552→  // Reset page when filters change
+   553→  const handleSearchChange = (v: string) => { setSearch(v); setPage(1); };
+   554→  const handleStatusFilter = (v: string) => { setStatusFilter(v); setPage(1); };
+   555→  const handlePriorityFilter = (v: string) => { setPriorityFilter(v); setPage(1); };
+   556→
+   557→  // Pagination helper
+   558→  const getPageNumbers = () => {
+   559→    const pages: number[] = [];
+   560→    const maxVisible = 5;
+   561→    let start = Math.max(1, safePage - Math.floor(maxVisible / 2));
+   562→    const end = Math.min(totalPages, start + maxVisible - 1);
+   563→    start = Math.max(1, end - maxVisible + 1);
+   564→    for (let i = start; i <= end; i++) pages.push(i);
+   565→    return pages;
+   566→  };
+   567→
+   568→  return (
+   569→    <div className="space-y-4">
+   570→      {/* Header Bar */}
+   571→      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   572→        <div className="flex items-center gap-3">
+   573→          <h1 className="text-2xl font-bold tracking-tight">
+   574→            {isCustomer ? 'My Shipments' : isDriver ? 'My Jobs' : 'Deliveries'}
+   575→          </h1>
+   576→          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+   577→            {filtered.length}
+   578→          </Badge>
+   579→        </div>
+   580→        <NewDeliveryForm onSuccess={addDelivery} />
+   581→      </div>
+   582→
+   583→      {/* Filters */}
+   584→      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+   585→        <div className="relative flex-1 max-w-sm">
+   586→          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   587→          <Input
+   588→            placeholder="Search tracking # or customer..."
+   589→            className="pl-9"
+   590→            value={search}
+   591→            onChange={(e) => handleSearchChange(e.target.value)}
+   592→          />
+   593→        </div>
+   594→        <Select value={statusFilter} onValueChange={handleStatusFilter}>
+   595→          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
+   596→          <SelectContent>
+   597→            <SelectItem value="all">All Statuses</SelectItem>
+   598→            {Object.entries(statusLabels).map(([key, label]) => (
+   599→              <SelectItem key={key} value={key}>{label}</SelectItem>
+   600→            ))}
+   601→          </SelectContent>
+   602→        </Select>
+   603→        <Select value={priorityFilter} onValueChange={handlePriorityFilter}>
+   604→          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Priority" /></SelectTrigger>
+   605→          <SelectContent>
+   606→            <SelectItem value="all">All Priorities</SelectItem>
+   607→            <SelectItem value="standard">Standard</SelectItem>
+   608→            <SelectItem value="express">Express</SelectItem>
+   609→            <SelectItem value="urgent">Urgent</SelectItem>
+   610→          </SelectContent>
+   611→        </Select>
+   612→        <div className="flex items-center rounded-md border">
+   613→          <Button
+   614→            variant={viewMode === 'table' ? 'default' : 'ghost'}
+   615→            size="icon"
+   616→            className="rounded-r-none"
+   617→            onClick={() => setViewMode('table')}
+   618→          >
+   619→            <List className="h-4 w-4" />
+   620→          </Button>
+   621→          <Button
+   622→            variant={viewMode === 'cards' ? 'default' : 'ghost'}
+   623→            size="icon"
+   624→            className="rounded-l-none"
+   625→            onClick={() => setViewMode('cards')}
+   626→          >
+   627→            <LayoutGrid className="h-4 w-4" />
+   628→          </Button>
+   629→        </div>
+   630→      </div>
+   631→
+   632→      {/* Table View */}
+   633→      {viewMode === 'table' && (
+   634→        <div className="rounded-lg border overflow-hidden">
+   635→          <div className="overflow-x-auto">
+   636→            <Table>
+   637→              <TableHeader>
+   638→                <TableRow className="bg-muted/50 hover:bg-muted/50">
+   639→                  <TableHead className="w-10">
+   640→                    <Checkbox
+   641→                      checked={paged.length > 0 && selected.size === paged.length}
+   642→                      onCheckedChange={toggleSelectAll}
+   643→                    />
+   644→                  </TableHead>
+   645→                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('trackingNumber')}>
+   646→                    <span className="flex items-center">Tracking #<SortIcon field="trackingNumber" sortField={sortField} sortDir={sortDir} /></span>
+   647→                  </TableHead>
+   648→                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('customerName')}>
+   649→                    <span className="flex items-center">Customer<SortIcon field="customerName" sortField={sortField} sortDir={sortDir} /></span>
+   650→                  </TableHead>
+   651→                  <TableHead>Route</TableHead>
+   652→                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('packageWeight')}>
+   653→                    <span className="flex items-center">Weight<SortIcon field="packageWeight" sortField={sortField} sortDir={sortDir} /></span>
+   654→                  </TableHead>
+   655→                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('status')}>
+   656→                    <span className="flex items-center">Status<SortIcon field="status" sortField={sortField} sortDir={sortDir} /></span>
+   657→                  </TableHead>
+   658→                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('priority')}>
+   659→                    <span className="flex items-center">Priority<SortIcon field="priority" sortField={sortField} sortDir={sortDir} /></span>
+   660→                  </TableHead>
+   661→                  <TableHead>Driver</TableHead>
+   662→                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('createdAt')}>
+   663→                    <span className="flex items-center">Date<SortIcon field="createdAt" sortField={sortField} sortDir={sortDir} /></span>
+   664→                  </TableHead>
+   665→                  <TableHead className="w-12"></TableHead>
+   666→                </TableRow>
+   667→              </TableHeader>
+   668→              <TableBody>
+   669→                {paged.length === 0 ? (
+   670→                  <TableRow>
+   671→                    <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+   672→                      <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
+   673→                      <p className="font-medium">No deliveries found</p>
+   674→                      <p className="text-sm">Try adjusting your search or filters</p>
+   675→                    </TableCell>
+   676→                  </TableRow>
+   677→                ) : (
+   678→                  paged.map((d, idx) => (
+   679→                    <TableRow
+   680→                      key={d.id}
+   681→                      className={`cursor-pointer transition-all duration-150 hover:bg-muted/50 ${
+   682→                        idx % 2 === 1 ? 'bg-muted/20' : ''
+   683→                      } ${selected.has(d.id) ? 'bg-green-50/50 dark:bg-green-900/10' : ''} ${d.priority === 'urgent' ? 'border-l-2 border-l-red-400' : d.priority === 'express' ? 'border-l-2 border-l-amber-400' : ''}`}
+   684→                      onClick={() => openDetail(d.id)}
+   685→                    >
+   686→                      <TableCell onClick={(e) => e.stopPropagation()}>
+   687→                        <Checkbox checked={selected.has(d.id)} onCheckedChange={() => toggleSelect(d.id)} />
+   688→                      </TableCell>
+   689→                      <TableCell>
+   690→                        <span className="font-mono text-sm font-medium text-green-700 dark:text-green-400 hover:underline">
+   691→                          {d.trackingNumber}
+   692→                        </span>
+   693→                      </TableCell>
+   694→                      <TableCell className="font-medium">{d.customerName}</TableCell>
+   695→                      <TableCell>
+   696→                        <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-[140px]">
+   697→                          <MapPin className="h-3 w-3 shrink-0 text-green-600" />
+   698→                          <span className="truncate">{d.pickup.city}</span>
+   699→                          <ArrowRight className="h-3 w-3 shrink-0" />
+   700→                          <span className="truncate">{d.destination.city}</span>
+   701→                        </div>
+   702→                      </TableCell>
+   703→                      <TableCell className="text-sm">{d.packageWeight} kg</TableCell>
+   704→                      <TableCell>
+   705→                        <Badge className={`${statusColors[d.status] || ''} gap-1.5`} variant="secondary">
+   706→                          <span className="h-1.5 w-1.5 rounded-full bg-current/60" />
+   707→                          {statusLabels[d.status] || d.status}
+   708→                        </Badge>
+   709→                      </TableCell>
+   710→                      <TableCell>
+   711→                        <Badge className={`${priorityColors[d.priority] || ''} capitalize`} variant="secondary">
+   712→                          {d.priority}
+   713→                        </Badge>
+   714→                      </TableCell>
+   715→                      <TableCell className="text-sm">
+   716→                        {d.driverName || <span className="text-muted-foreground">Unassigned</span>}
+   717→                      </TableCell>
+   718→                      <TableCell className="text-sm text-muted-foreground">{formatDate(d.createdAt)}</TableCell>
+   719→                      <TableCell onClick={(e) => e.stopPropagation()}>
+   720→                        <DropdownMenu>
+   721→                          <DropdownMenuTrigger asChild>
+   722→                            <Button variant="ghost" size="icon" className="h-8 w-8">
+   723→                              <MoreHorizontal className="h-4 w-4" />
+   724→                            </Button>
+   725→                          </DropdownMenuTrigger>
+   726→                          <DropdownMenuContent align="end">
+   727→                            <DropdownMenuItem onClick={() => openDetail(d.id)}>
+   728→                              <Eye className="mr-2 h-4 w-4" /> View Details
+   729→                            </DropdownMenuItem>
+   730→                            <DropdownMenuItem onClick={() => toast.info('Edit delivery dialog would open')}>
+   731→                              <FileText className="mr-2 h-4 w-4" /> Edit
+   732→                            </DropdownMenuItem>
+   733→                            <DropdownMenuSeparator />
+   734→                            <DropdownMenuItem
+   735→                              variant="destructive"
+   736→                              onClick={() => toast.info('Delivery would be cancelled')}
+   737→                            >
+   738→                              Cancel Delivery
+   739→                            </DropdownMenuItem>
+   740→                          </DropdownMenuContent>
+   741→                        </DropdownMenu>
+   742→                      </TableCell>
+   743→                    </TableRow>
+   744→                  ))
+   745→                )}
+   746→              </TableBody>
+   747→            </Table>
+   748→          </div>
+   749→
+   750→          {/* Footer */}
+   751→          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/30">
+   752→            <div className="text-sm text-muted-foreground">
+   753→              {selected.size > 0 ? (
+   754→                <span className="font-medium text-green-700 dark:text-green-400">{selected.size} selected</span>
+   755→              ) : (
+   756→                <span>{filtered.length} deliver{filtered.length === 1 ? 'y' : 'ies'}</span>
+   757→              )}
+   758→            </div>
+   759→            <Pagination>
+   760→              <PaginationContent>
+   761→                <PaginationItem>
+   762→                  <PaginationPrevious
+   763→                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+   764→                    className={safePage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+   765→                  />
+   766→                </PaginationItem>
+   767→                {getPageNumbers().map((p) => (
+   768→                  <PaginationItem key={p}>
+   769→                    <PaginationLink
+   770→                      isActive={p === safePage}
+   771→                      onClick={() => setPage(p)}
+   772→                      className="cursor-pointer"
+   773→                    >
+   774→                      {p}
+   775→                    </PaginationLink>
+   776→                  </PaginationItem>
+   777→                ))}
+   778→                <PaginationItem>
+   779→                  <PaginationNext
+   780→                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+   781→                    className={safePage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+   782→                  />
+   783→                </PaginationItem>
+   784→              </PaginationContent>
+   785→            </Pagination>
+   786→          </div>
+   787→        </div>
+   788→      )}
+   789→
+   790→      {/* Card View */}
+   791→      {viewMode === 'cards' && (
+   792→        <>
+   793→          {paged.length === 0 ? (
+   794→            <div className="text-center py-16 text-muted-foreground">
+   795→              <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
+   796→              <p className="font-medium text-lg">No deliveries found</p>
+   797→              <p className="text-sm">Try adjusting your search or filters</p>
+   798→            </div>
+   799→          ) : (
+   800→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   801→              {paged.map((d) => (
+   802→                <motion.div
+   803→                  key={d.id}
+   804→                  initial={{ opacity: 0, y: 8 }}
+   805→                  animate={{ opacity: 1, y: 0 }}
+   806→                  transition={{ duration: 0.2 }}
+   807→                >
+   808→                  <Card
+   809→                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400 hover:border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400 hover:border-l-amber-400' : 'border-l-primary/30 hover:border-l-primary/50'}`}
+   810→                    onClick={() => openDetail(d.id)}
+   811→                  >
+   812→                    <CardContent className="p-4 space-y-3">
+   813→                      <div className="flex items-start justify-between gap-2">
+   814→                        <span className="font-mono text-sm font-medium text-green-700 dark:text-green-400">
+   815→                          {d.trackingNumber}
+   816→                        </span>
+   817→                        <div className="flex gap-1.5 shrink-0">
+   818→                          <Badge className={`${priorityColors[d.priority] || ''} capitalize text-xs`} variant="secondary">
+   819→                            {d.priority}
+   820→                          </Badge>
+   821→                          <Badge className={`${statusColors[d.status] || ''} text-xs`} variant="secondary">
+   822→                            {statusLabels[d.status] || d.status}
+   823→                          </Badge>
+   824→                        </div>
+   825→                      </div>
+   826→                      <p className="font-medium text-sm">{d.customerName}</p>
+   827→                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+   828→                        <MapPin className="h-3.5 w-3.5 text-green-600 shrink-0" />
+   829→                        <span className="truncate">{d.pickup.city}</span>
+   830→                        <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+   831→                        <span className="truncate">{d.destination.city}</span>
+   832→                      </div>
+   833→                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+   834→                        <span className="flex items-center gap-1">
+   835→                          <Weight className="h-3 w-3" /> {d.packageWeight} kg
+   836→                        </span>
+   837→                        <span className="flex items-center gap-1">
+   838→                          <Truck className="h-3 w-3" /> {d.driverName || 'Unassigned'}
+   839→                        </span>
+   840→                        <span className="flex items-center gap-1">
+   841→                          <Clock className="h-3 w-3" /> {formatDate(d.createdAt)}
+   842→                        </span>
+   843→                      </div>
+   844→                    </CardContent>
+   845→                  </Card>
+   846→                </motion.div>
+   847→              ))}
+   848→            </div>
+   849→          )}
+   850→          {/* Card view pagination */}
+   851→          {filtered.length > ITEMS_PER_PAGE && (
+   852→            <div className="flex justify-center">
+   853→              <Pagination>
+   854→                <PaginationContent>
+   855→                  <PaginationItem>
+   856→                    <PaginationPrevious
+   857→                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+   858→                      className={safePage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+   859→                    />
+   860→                  </PaginationItem>
+   861→                  {getPageNumbers().map((p) => (
+   862→                    <PaginationItem key={p}>
+   863→                      <PaginationLink
+   864→                        isActive={p === safePage}
+   865→                        onClick={() => setPage(p)}
+   866→                        className="cursor-pointer"
+   867→                      >
+   868→                        {p}
+   869→                      </PaginationLink>
+   870→                    </PaginationItem>
+   871→                  ))}
+   872→                  <PaginationItem>
+   873→                    <PaginationNext
+   874→                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+   875→                      className={safePage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+   876→                    />
+   877→                  </PaginationItem>
+   878→                </PaginationContent>
+   879→              </Pagination>
+   880→            </div>
+   881→          )}
+   882→        </>
+   883→      )}
+   884→
+   885→      {/* Detail Panel */}
+   886→      <DeliveryDetailPanel delivery={detailDelivery} open={!!selectedDeliveryId} onClose={closeDetail} />
+   887→    </div>
+   888→  );
+   889→}

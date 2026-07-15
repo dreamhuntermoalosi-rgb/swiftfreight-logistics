@@ -30,7 +30,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { toast } from 'sonner';
-import { useNavStore } from '@/lib/store';
+import { useNavStore, useAuthStore } from '@/lib/store';
 import {
   deliveries as initialDeliveries,
   statusLabels,
@@ -43,7 +43,7 @@ import type { Delivery, DeliveryStatus, DeliveryPriority } from '@/lib/types';
 import {
   Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
-  FileText, UserPlus, Calendar, Phone, Building2, Weight,
+  FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -260,6 +260,15 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
         </SheetHeader>
 
         <div className="px-6 py-4 space-y-6">
+          {/* Rating (for delivered) */}
+          {delivery.status === 'delivered' && delivery.rating && (
+            <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <span className="text-sm font-medium">{delivery.rating}</span>
+              <span className="text-xs text-muted-foreground">Customer Rating</span>
+            </div>
+          )}
+
           {/* Timeline */}
           <div>
             <h3 className="text-sm font-semibold mb-4">Delivery Timeline</h3>
@@ -405,11 +414,74 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
               <Button variant="outline" size="sm" onClick={() => toast.info('Driver assignment dialog would open')}>
                 <UserPlus className="mr-2 h-4 w-4" /> Assign Driver
               </Button>
+              {delivery.status === 'delivered' && !delivery.rating && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => {
+                    toast.success('Rating submitted! Thank you for your feedback.');
+                  }}
+                >
+                  <Star className="h-3.5 w-3.5" />
+                  Rate Delivery
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={() => toast.info('Invoice generation would start')}>
                 <FileText className="mr-2 h-4 w-4" /> Generate Invoice
               </Button>
             </div>
           </div>
+
+          {/* Proof of Delivery */}
+          {(delivery.status === 'delivered' || delivery.status === 'returned') && (
+            <div className="mt-4 rounded-lg border bg-muted/30 p-4">
+              <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                <CheckCircle2 className="h-4 w-4" />
+                Proof of Delivery
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                    <User className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Received by</p>
+                    <p className="text-xs text-muted-foreground">{delivery.destination.name}</p>
+                  </div>
+                </div>
+
+                {/* Signature area */}
+                <div className="rounded-lg border border-dashed border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/10 p-4">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">Digital Signature</p>
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 flex-1 border-b-2 border-emerald-400 font-cursive text-lg text-emerald-700 italic">
+                      {delivery.destination.name}
+                    </div>
+                  </div>
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    Signed on {delivery.actualDelivery ? formatDate(delivery.actualDelivery) : 'N/A'}
+                  </p>
+                </div>
+
+                {/* Photo proof area */}
+                <div>
+                  <p className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">Delivery Photos</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['Package at doorstep', 'Recipient with package', 'Delivery location'].map((label, i) => (
+                      <div key={i} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed bg-muted/30 p-2 text-center">
+                        <Camera className="h-5 w-5 text-muted-foreground/50" />
+                        <span className="text-[10px] text-muted-foreground">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                    {delivery.actualDelivery ? `Uploaded on ${formatDate(delivery.actualDelivery)}` : 'Photos uploaded upon delivery'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Status History */}
           <div>
@@ -444,9 +516,23 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
 // Main Deliveries Tab
 export function DeliveriesTab() {
   const { selectDelivery, selectedDeliveryId } = useNavStore();
+  const { currentUser } = useAuthStore();
+  const isCustomer = currentUser?.role === 'customer';
+  const isDriver = currentUser?.role === 'driver';
+
+  // Role-filtered base deliveries
+  const baseDeliveries = useMemo(() => {
+    if (isCustomer && currentUser) {
+      return initialDeliveries.filter((d) => d.customerId === currentUser.id);
+    }
+    if (isDriver && currentUser) {
+      return initialDeliveries.filter((d) => d.driverId === currentUser.id);
+    }
+    return initialDeliveries;
+  }, [isCustomer, isDriver, currentUser]);
 
   // Local delivery state (allows adding new)
-  const [localDeliveries, setLocalDeliveries] = useState<Delivery[]>(initialDeliveries);
+  const [localDeliveries, setLocalDeliveries] = useState<Delivery[]>(baseDeliveries);
   const addDelivery = useCallback((d: Delivery) => {
     setLocalDeliveries((prev) => [d, ...prev]);
   }, []);
@@ -556,7 +642,9 @@ export function DeliveriesTab() {
       {/* Header Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight">Deliveries</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isCustomer ? 'My Shipments' : isDriver ? 'My Jobs' : 'Deliveries'}
+          </h1>
           <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
             {filtered.length}
           </Badge>

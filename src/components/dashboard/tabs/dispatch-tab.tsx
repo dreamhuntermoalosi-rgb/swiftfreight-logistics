@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/store';
 import { deliveries, drivers, vehicles, statusLabels, statusColors, priorityColors } from '@/lib/mock-data';
+import { MapPlaceholder } from '@/components/dashboard/map-placeholder';
 import {
   Radio, Truck, Users, MapPin, Package, Clock, Send, Search,
   Filter, AlertTriangle, ChevronRight, Zap, Printer, MessageSquare,
@@ -216,6 +217,22 @@ export function DispatchTab() {
           Send Bulk Updates
         </Button>
       </div>
+
+      {/* Live Map */}
+      <MapPlaceholder
+        className="mb-4"
+        height="h-48"
+        title="Live Operations Map"
+        subtitle="Real-time vehicle and delivery tracking across all routes"
+        markers={[
+          { label: 'Johannesburg Hub', type: 'warehouse' },
+          { label: 'Maseru HQ', type: 'warehouse' },
+          { label: 'Border Post', type: 'border' },
+          { label: 'LP 456 AB 789', type: 'driver' },
+          { label: 'LP 321 CD 456', type: 'driver' },
+          { label: 'Butha Buthe Delivery', type: 'destination' },
+        ]}
+      />
 
       {/* Main Layout */}
       <div className="grid gap-4 lg:grid-cols-5">
