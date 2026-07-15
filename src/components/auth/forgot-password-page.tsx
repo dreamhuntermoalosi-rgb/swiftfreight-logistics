@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import {
   Truck, Mail, ArrowLeft, KeyRound, CheckCircle2, MailCheck,
+  Shield, Zap, Globe,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -34,29 +35,110 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50/50">
-      {/* Top bar */}
-      <header className="w-full px-4 sm:px-6 py-4">
-        <div className="max-w-md mx-auto flex items-center gap-3">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left Panel — Branding */}
+      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600 text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tl from-teal-500/20 via-transparent to-emerald-400/20 animate-[gradientShift_8s_ease-in-out_infinite_alternate] pointer-events-none" />
+        {/* Geometric herringbone pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
+          backgroundImage: `linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white)`,
+          backgroundSize: '40px 70px',
+          backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px',
+        }} />
+        {/* Decorative shapes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
+          <div className="absolute top-1/2 -left-16 w-64 h-64 rounded-full bg-white/5" />
+          <div className="absolute -bottom-32 right-1/4 w-80 h-80 rounded-full bg-white/5" />
+        </div>
+
+        {/* Back to home */}
+        <div className="relative z-10">
           <button
-            onClick={() => setView('login')}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setView('marketing')}
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to login
+            Back to home
           </button>
         </div>
-      </header>
 
-      {/* Main */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-12">
+        {/* Brand content */}
+        <div className="relative z-10 space-y-8 flex-1 flex flex-col justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-white/15 backdrop-blur-sm p-2.5 rounded-xl">
+                <Truck className="h-8 w-8" />
+              </div>
+              <span className="text-2xl font-bold tracking-tight">SwiftFreight</span>
+            </div>
+            <h1 className="text-3xl lg:text-4xl font-bold leading-tight mb-4">
+              Password recovery<br />
+              <span className="text-emerald-200">made simple</span>
+            </h1>
+            <p className="text-white/70 text-lg max-w-md leading-relaxed">
+              Enter your email and we&apos;ll send you a secure link to reset your password. Usually arrives within minutes.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="space-y-4"
+          >
+            {[
+              { icon: Zap, text: 'Instant password reset via email' },
+              { icon: Shield, text: 'Secure, time-limited reset links' },
+              { icon: Globe, text: 'Access your account from anywhere' },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-3">
+                <div className="bg-white/10 rounded-lg p-1.5">
+                  <Icon className="h-4 w-4 text-emerald-200" />
+                </div>
+                <span className="text-white/85 text-sm">{text}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Bottom tagline */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="relative z-10 text-white/40 text-xs"
+        >
+          © {new Date().getFullYear()} SwiftFreight Technologies. All rights reserved.
+        </motion.div>
+      </div>
+
+      {/* Right Panel — Form */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-gray-50/50">
+        {/* Mobile back link */}
+        <button
+          onClick={() => setView('login')}
+          className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 hover:-translate-x-0.5 mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to login
+        </button>
+
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4 }}
           className="w-full max-w-md"
         >
-          <Card className="border-0 shadow-lg shadow-gray-200/60">
+          <Card className="relative border-0 shadow-xl shadow-emerald-500/[0.06] ring-1 ring-black/[0.04]">
+            {/* Decorative gradient line at top */}
+            <div className="h-1 rounded-t-xl gradient-top-bar" />
+
             <CardHeader className="text-center space-y-2 pb-2">
               <div className="flex justify-center mb-1">
                 <div className="bg-emerald-600 p-2 rounded-xl">
@@ -88,8 +170,8 @@ export function ForgotPasswordPage() {
                     className="space-y-3"
                   >
                     <div className="flex justify-center">
-                      <div className="bg-emerald-100 p-3 rounded-full">
-                        <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+                      <div className="animate-gradient-ring bg-emerald-100 p-4 rounded-full">
+                        <CheckCircle2 className="h-10 w-10 text-emerald-600" />
                       </div>
                     </div>
                     <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
@@ -124,7 +206,7 @@ export function ForgotPasswordPage() {
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="pl-9"
+                          className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           autoComplete="email"
                           autoFocus
                         />
@@ -158,11 +240,11 @@ export function ForgotPasswordPage() {
                     className="space-y-4"
                   >
                     {/* Info box */}
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex gap-3">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex gap-3 dark:bg-emerald-950/20 dark:border-emerald-900/40">
                       <MailCheck className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
-                      <div className="text-sm text-emerald-800">
+                      <div className="text-sm text-emerald-800 dark:text-emerald-300">
                         <p className="font-medium mb-1">What happens next?</p>
-                        <ol className="list-decimal list-inside space-y-1 text-emerald-700">
+                        <ol className="list-decimal list-inside space-y-1 text-emerald-700 dark:text-emerald-400">
                           <li>Check your inbox (and spam folder)</li>
                           <li>Click the reset link in the email</li>
                           <li>Create a new password</li>
@@ -197,9 +279,13 @@ export function ForgotPasswordPage() {
                 </button>
               </p>
             </CardFooter>
+            {/* Powered by footer */}
+            <p className="text-center text-[11px] text-muted-foreground/50 pb-4">
+              Powered by <span className="font-medium text-muted-foreground/70">SwiftFreight Technologies</span>
+            </p>
           </Card>
         </motion.div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -275,6 +275,16 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes gradient-border {
+  0% { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+
+@keyframes gradient-ring {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.42 0.14 155 / 0.4), 0 0 0 0 oklch(0.55 0.15 155 / 0.2), 0 0 0 0 oklch(0.65 0.12 175 / 0.1); }
+  50% { box-shadow: 0 0 0 4px oklch(0.42 0.14 155 / 0.2), 0 0 0 8px oklch(0.55 0.15 155 / 0.1), 0 0 0 12px oklch(0.65 0.12 175 / 0.05); }
+}
+
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-float-delayed { animation: float-delayed 7s ease-in-out infinite 1s; }
 .animate-float-slow { animation: float-slow 8s ease-in-out infinite 2s; }
@@ -285,6 +295,78 @@
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
 }
+
+.animate-gradient-ring {
+  animation: gradient-ring 2.5s ease-in-out infinite;
+}
+
+/* Shimmer text utility */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    oklch(0.42 0.14 155) 0%,
+    oklch(0.55 0.15 155) 25%,
+    oklch(0.65 0.12 175) 50%,
+    oklch(0.55 0.15 155) 75%,
+    oklch(0.42 0.14 155) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Gradient border utility (uses conic-gradient rotation) */
+.gradient-border-animated {
+  position: relative;
+  border: none !important;
+}
+.gradient-border-animated::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--gradient-angle, 0deg),
+    oklch(0.42 0.14 155),
+    oklch(0.55 0.15 155),
+    oklch(0.65 0.12 175),
+    oklch(0.42 0.14 155)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: gradient-border 3s linear infinite;
+  --gradient-angle: 0deg;
+}
+@supports (background: conic-gradient(from 0deg, red, blue)) {
+  @property --gradient-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+}
+
+/* Gradient top bar for cards */
+.gradient-top-bar {
+  background: linear-gradient(90deg, oklch(0.42 0.14 155), oklch(0.65 0.12 175));
+}
+.dark .gradient-top-bar {
+  background: linear-gradient(90deg, oklch(0.55 0.15 155), oklch(0.65 0.1 180));
+}
+
+/* Manager avatar gradient ring */
+.avatar-gradient-ring {
+  background: linear-gradient(135deg, oklch(0.42 0.14 155), oklch(0.55 0.15 155), oklch(0.65 0.12 175));
+  padding: 2px;
+  border-radius: 9999px;
+}
+.dark .avatar-gradient-ring {
+  background: linear-gradient(135deg, oklch(0.55 0.15 155), oklch(0.6 0.16 155), oklch(0.65 0.1 180));
+}
 .animate-pulse-ring { animation: pulse-ring 2.5s ease-in-out infinite; }
 .animate-gradient-x {
   background-size: 200% 200%;
@@ -294,9 +376,11 @@
 /* FAQ left accent border */
 .faq-item-active {
   border-left: 3px solid oklch(0.42 0.14 155);
+  background: linear-gradient(to right, oklch(0.42 0.14 155 / 0.05), transparent 60%);
 }
 .dark .faq-item-active {
   border-left: 3px solid oklch(0.55 0.15 155);
+  background: linear-gradient(to right, oklch(0.55 0.15 155 / 0.08), transparent 60%);
 }
 
 /* Gradient ring decoration for benefits */

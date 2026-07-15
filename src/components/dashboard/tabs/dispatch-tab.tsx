@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useAuthStore } from '@/lib/store';
 import { deliveries, drivers, vehicles, statusLabels, statusColors, priorityColors } from '@/lib/mock-data';
 import dynamic from 'next/dynamic';
@@ -30,7 +31,7 @@ const DispatchMap = dynamic(() => import('@/components/dashboard/dispatch-map').
 import {
   Radio, Truck, Users, MapPin, Package, Clock, Send, Search,
   Filter, AlertTriangle, ChevronRight, Zap, Printer, MessageSquare,
-  UserPlus, Fuel, Star, Phone, CheckCircle
+  UserPlus, Fuel, Star, Phone, CheckCircle, TrendingUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -167,8 +168,8 @@ export function DispatchTab() {
   }
 
   function printManifest() {
-    const pendingDeliveries = localDeliveries.filter(d => d.status === 'pending' || d.status === 'in_progress').slice(0, 20);
-    const companyName = currentUser?.companyName || 'Unknown Company';
+    const pendingDeliveries = localDeliveries.filter(d => d.status === 'request_received' || d.status === 'awaiting_quote' || d.status === 'collected').slice(0, 20);
+    const companyName = currentUser?.name || 'Unknown Company';
     const html = `<!DOCTYPE html><html><head><title>Dispatch Manifest</title>
     <style>body{font-family:system-ui,sans-serif;padding:40px;color:#111}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:13px}th{background:#f5f5f5;font-weight:600}h1{font-size:24px;margin:0}h2{font-size:14px;color:#666;margin-top:4px;margin-bottom:0}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #16a34a;padding-bottom:16px;margin-bottom:20px}.footer{margin-top:40px;font-size:12px;color:#888;text-align:center}</style>
   </head><body>
@@ -212,24 +213,56 @@ export function DispatchTab() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          { label: 'Pending Assignment', value: stats.pending, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Clock },
-          { label: 'In Transit', value: stats.inTransit, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', icon: Truck },
-          { label: 'Out for Delivery', value: stats.outForDelivery, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20', icon: MapPin },
-          { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package },
+          { label: 'Pending Assignment', value: stats.pending, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Clock, tooltip: 'Deliveries awaiting driver and vehicle assignment', bars: [40, 55, 35, 60] },
+          { label: 'In Transit', value: stats.inTransit, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', icon: Truck, tooltip: 'Active deliveries currently on the road between cities', bars: [70, 85, 75, 90] },
+          { label: 'Out for Delivery', value: stats.outForDelivery, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20', icon: MapPin, tooltip: 'Deliveries out for final-mile delivery to recipients', bars: [30, 50, 45, 65] },
+          { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package, tooltip: 'Total deliveries successfully completed today', bars: [20, 45, 60, 80] },
         ].map(stat => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden`}>
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 to-teal-400/40" />
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
-                    <p className={`text-2xl font-bold ${stat.color} ${stat.label === 'In Transit' ? 'animate-shimmer bg-gradient-to-r from-blue-600 via-teal-600 to-blue-600 bg-[length:200%_100%] bg-clip-text text-transparent dark:from-blue-400 dark:via-teal-400 dark:to-blue-400' : ''}`}>{stat.value}</p>
-                  </div>
-                  <stat.icon className={`h-8 w-8 ${stat.color} opacity-60`} />
-                </div>
-              </CardContent>
-            </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden cursor-default`}>
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 to-teal-400/40" />
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+                        <p className={`text-2xl font-bold ${stat.color} ${stat.label === 'In Transit' ? 'animate-shimmer bg-gradient-to-r from-blue-600 via-teal-600 to-blue-600 bg-[length:200%_100%] bg-clip-text text-transparent dark:from-blue-400 dark:via-teal-400 dark:to-blue-400' : ''}`}>{stat.value}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <stat.icon className={`h-8 w-8 ${stat.color} opacity-60`} />
+                        {/* Sparkline trend indicator */}
+                        <div className="flex items-end gap-0.5" aria-hidden="true">
+                          {stat.bars.map((h, i) => (
+                            <div
+                              key={i}
+                              className="w-1.5 rounded-sm bg-gradient-to-t from-emerald-600/60 to-teal-400/80"
+                              style={{ height: `${h * 0.16}px` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {stat.label === 'In Transit' && (
+                      <button
+                        type="button"
+                        className="mt-2 flex w-full items-center justify-center gap-1 text-[10px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toast.info('Showing 85 active deliveries');
+                        }}
+                      >
+                        <TrendingUp className="h-3 w-3" />
+                        View All Active
+                      </button>
+                    )}
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {stat.tooltip}
+              </TooltipContent>
+            </Tooltip>
           </motion.div>
         ))}
       </div>

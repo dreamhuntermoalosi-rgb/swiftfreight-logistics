@@ -674,8 +674,11 @@ export function MarketingWebsite() {
 
         {/* ─────────── 7. BENEFITS SECTION ─────────── */}
         <FadeIn>
-          <section className="bg-muted/30 py-20 sm:py-24">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <section className="group relative bg-muted/30 py-20 sm:py-24 overflow-hidden">
+            {/* Parallax-like gradient overlay that shifts on hover */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-teal/[0.05] transition-transform duration-700 group-hover:scale-105" />
+            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tl from-emerald/[0.04] via-transparent to-primary/[0.03]" />
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <SectionHeading
                 badge="Benefits"
                 title="Why companies choose SwiftFreight"
@@ -918,7 +921,7 @@ export function MarketingWebsite() {
                   >
                     {plan.highlighted && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="animate-shimmer rounded-full bg-gradient-to-r from-primary via-emerald to-primary px-4 py-1 text-xs font-bold text-primary-foreground shadow-lg shadow-primary/25">
+                        <Badge className="animate-shimmer rounded-full bg-gradient-to-r from-primary via-emerald to-primary px-4 py-1 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25">
                           <Star className="mr-1 h-3 w-3" />
                           Most Popular
                         </Badge>

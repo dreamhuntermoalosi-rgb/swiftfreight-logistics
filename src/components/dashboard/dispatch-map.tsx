@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -43,6 +43,38 @@ const activeStatuses = Object.keys(statusMarkerColors) as DeliveryStatus[];
 
 type DeliveryStatus = 'collected' | 'at_warehouse' | 'in_transit' | 'at_border' | 'out_for_delivery';
 
+// ── Theme detection hook ──────────────────────────────────────
+function useIsDarkMode() {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const check = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+
+    // Initial check
+    check();
+
+    // Use MutationObserver to detect class attribute changes on <html>
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          check();
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
+
 // ── Company locations ─────────────────────────────────────────
 const companyLocations = companies.map((c) => ({
   name: c.name,
@@ -57,55 +89,72 @@ const borderPost = {
 };
 
 // ── Legend component (Leaflet Control) ─────────────────────────
-function LegendControl() {
+function LegendControl({ isDark }: { isDark: boolean }) {
   const map = useMap();
   const controlRef = useRef<L.Control | null>(null);
 
-  useEffect(() => {
-    const legendHtml = `
+  const buildLegendHtml = useCallback((dark: boolean) => {
+    const bg = dark ? 'background: rgba(15,23,42,0.95)' : 'background: rgba(255,255,255,0.95)';
+    const textCol = dark ? '#e2e8f0' : '#374151';
+    const headerCol = dark ? '#f1f5f9' : '#1a1a1a';
+    const borderCol = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+    const shadowCol = dark ? '0 2px 8px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.12)';
+    const borderOuter = dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)';
+
+    return `
       <div style="
-        background: rgba(255,255,255,0.95);
+        ${bg};
         backdrop-filter: blur(8px);
         border-radius: 10px;
         padding: 10px 14px;
         font-size: 11px;
         line-height: 1.6;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: ${shadowCol};
+        border: ${borderOuter};
         font-family: system-ui, -apple-system, sans-serif;
       ">
-        <div style="font-weight:700; font-size:12px; margin-bottom:4px; color:#1a1a1a;">Delivery Status</div>
+        <div style="font-weight:700; font-size:12px; margin-bottom:4px; color:${headerCol};">Delivery Status</div>
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981;"></span>
-          <span style="color:#374151;">In Transit</span>
+          <span style="color:${textCol};">In Transit</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b;"></span>
-          <span style="color:#374151;">At Border</span>
+          <span style="color:${textCol};">At Border</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#06b6d4;"></span>
-          <span style="color:#374151;">Out for Delivery</span>
+          <span style="color:${textCol};">Out for Delivery</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#14b8a6;"></span>
-          <span style="color:#374151;">Collected</span>
+          <span style="color:${textCol};">Collected</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#6366f1;"></span>
-          <span style="color:#374151;">At Warehouse</span>
+          <span style="color:${textCol};">At Warehouse</span>
         </div>
-        <div style="font-weight:700; font-size:12px; margin-bottom:4px; margin-top:6px; border-top:1px solid #e5e7eb; padding-top:6px; color:#1a1a1a;">Locations</div>
+        <div style="font-weight:700; font-size:12px; margin-bottom:4px; margin-top:6px; border-top:1px solid ${borderCol}; padding-top:6px; color:${headerCol};">Locations</div>
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#059669;"></span>
-          <span style="color:#374151;">Company HQ</span>
+          <span style="color:${textCol};">Company HQ</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
           <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#dc2626; transform:rotate(45deg);"></span>
-          <span style="color:#374151;">Border Post</span>
+          <span style="color:${textCol};">Border Post</span>
         </div>
       </div>
     `;
+  }, []);
+
+  useEffect(() => {
+    const legendHtml = buildLegendHtml(isDark);
+
+    // Remove old control if it exists
+    if (controlRef.current) {
+      map.removeControl(controlRef.current);
+      controlRef.current = null;
+    }
 
     const control = new L.Control({ position: 'bottomright' });
     control.onAdd = function () {
@@ -117,10 +166,12 @@ function LegendControl() {
     controlRef.current = control;
 
     return () => {
-      map.removeControl(control);
-      controlRef.current = null;
+      if (controlRef.current) {
+        map.removeControl(controlRef.current);
+        controlRef.current = null;
+      }
     };
-  }, [map]);
+  }, [map, isDark, buildLegendHtml]);
 
   return null;
 }
@@ -137,8 +188,27 @@ function FitBoundsOnLoad({ coords }: { coords: [number, number][] }) {
   return null;
 }
 
+// ── Tile Layer component that responds to theme ───────────────
+function ThemedTileLayer() {
+  const isDark = useIsDarkMode();
+
+  return (
+    <TileLayer
+      key={isDark ? 'dark' : 'light'}
+      attribution={isDark
+        ? '&copy; <a href="https://carto.com/">CARTO</a>'
+        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}
+      url={isDark
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+    />
+  );
+}
+
 // ── Main DispatchMap Component ────────────────────────────────
 export function DispatchMap() {
+  const isDark = useIsDarkMode();
+
   // Filter active deliveries
   const activeDeliveries = useMemo(
     () => deliveries.filter((d) => activeStatuses.includes(d.status as DeliveryStatus)),
@@ -191,11 +261,8 @@ export function DispatchMap() {
         style={{ height: '100%', width: '100%' }}
         className="z-0"
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <LegendControl />
+        <ThemedTileLayer />
+        <LegendControl isDark={isDark} />
         <FitBoundsOnLoad coords={allCoords} />
 
         {/* Company Warehouse Markers */}

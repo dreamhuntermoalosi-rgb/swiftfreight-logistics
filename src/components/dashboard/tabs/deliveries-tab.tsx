@@ -44,7 +44,7 @@ import {
   Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
   FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
-  Download, CheckCircle,
+  Download, CheckCircle, Printer,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -70,6 +70,150 @@ const STATUS_ORDER: DeliveryStatus[] = [
   'request_received', 'awaiting_quote', 'quote_accepted', 'collected',
   'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery', 'delivered',
 ];
+
+function generatePOD(delivery: Delivery) {
+  const deliveryDate = delivery.actualDelivery ? new Date(delivery.actualDelivery) : new Date();
+  const dateStr = deliveryDate.toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
+  const timeStr = deliveryDate.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+  const statusLabel = statusLabels[delivery.status] || delivery.status;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Proof of Delivery - ${delivery.trackingNumber}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1a1a2e; background: #fff; padding: 40px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #059669 0%, #0d9488 50%, #0f766e 100%); color: white; padding: 32px 40px; border-radius: 12px; margin-bottom: 32px; }
+    .header h1 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; }
+    .header h2 { font-size: 28px; font-weight: 800; letter-spacing: 0.5px; }
+    .header .tracking { font-size: 14px; opacity: 0.9; margin-top: 8px; }
+    .section { margin-bottom: 24px; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #059669; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #d1fae5; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 32px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .field { margin-bottom: 0; }
+    .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 2px; }
+    .field-value { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+    .badge-delivered { background: #d1fae5; color: #065f46; }
+    .badge-returned { background: #fef3c7; color: #92400e; }
+    .received-section { background: #f0fdf4; border: 2px solid #a7f3d0; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .signature-line { border-bottom: 2px solid #059669; height: 40px; width: 100%; display: flex; align-items: end; padding-bottom: 4px; }
+    .signature-text { font-family: 'Georgia', 'Times New Roman', serif; font-style: italic; font-size: 22px; color: #059669; }
+    .photo-box { aspect-ratio: 1; border: 2px dashed #d1d5db; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px; background: #f9fafb; }
+    .photo-box .icon { font-size: 28px; margin-bottom: 4px; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 11px; }
+    .footer strong { color: #059669; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SwiftFreight Logistics</h1>
+      <h2>PROOF OF DELIVERY</h2>
+      <div class="tracking">Tracking #: ${delivery.trackingNumber} · ${statusLabel}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Delivery Details</div>
+      <div class="grid">
+        <div class="field">
+          <div class="field-label">Tracking Number</div>
+          <div class="field-value">${delivery.trackingNumber}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Delivery Date</div>
+          <div class="field-value">${dateStr}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Customer</div>
+          <div class="field-value">${delivery.customerName}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Driver</div>
+          <div class="field-value">${delivery.driverName || 'N/A'}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Route</div>
+          <div class="field-value">${delivery.pickup.city} → ${delivery.destination.city}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Status</div>
+          <div class="field-value"><span class="badge ${delivery.status === 'delivered' ? 'badge-delivered' : 'badge-returned'}">${statusLabel}</span></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Package Description</div>
+          <div class="field-value">${delivery.packageDescription}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Weight</div>
+          <div class="field-value">${delivery.packageWeight} kg</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="received-section">
+      <div class="section-title">Received By</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <div class="field-label">Recipient Name</div>
+          <div class="field-value" style="font-size: 18px;">${delivery.destination.name}</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="field-label">Phone</div>
+          <div class="field-value">${delivery.destination.phone}</div>
+        </div>
+      </div>
+      <div class="field-label" style="margin-bottom: 8px;">Signature</div>
+      <div class="signature-line">
+        <div class="signature-text">${delivery.destination.name}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Delivery Photos</div>
+      <div class="grid-3">
+        <div class="photo-box">
+          <div class="icon">📦</div>
+          Package at doorstep
+        </div>
+        <div class="photo-box">
+          <div class="icon">🤝</div>
+          Recipient with package
+        </div>
+        <div class="photo-box">
+          <div class="icon">📍</div>
+          Delivery location
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom: 0;">
+      <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280;">
+        <span>Timestamp: ${dateStr} at ${timeStr}</span>
+        <span>Location: ${delivery.destination.address}, ${delivery.destination.city}, ${delivery.destination.country}</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      <strong>SwiftFreight Logistics Operating System</strong><br>
+      Lesotho's Trusted Freight Management Platform<br>
+      Generated on ${new Date().toLocaleString('en-ZA')}
+    </div>
+  </div>
+  <script>window.onload = function() { window.print(); }</script>
+</body>
+</html>`;
+
+  const newWindow = window.open('', '_blank');
+  if (newWindow) {
+    newWindow.document.write(html);
+    newWindow.document.close();
+  }
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -473,10 +617,16 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           {/* Proof of Delivery */}
           {(delivery.status === 'delivered' || delivery.status === 'returned') && (
             <div className="mt-4 rounded-lg border bg-muted/30 p-4">
-              <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-600">
-                <CheckCircle2 className="h-4 w-4" />
-                Proof of Delivery
-              </h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Proof of Delivery
+                </h4>
+                <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs" onClick={() => generatePOD(delivery)}>
+                  <Printer className="h-3.5 w-3.5" />
+                  Generate POD
+                </Button>
+              </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">

@@ -36,6 +36,16 @@ function exportCSV(data: Record<string, unknown>[], filename: string) {
   toast.success(`Exported ${data.length} records to ${filename}`);
 }
 
+function getRowBorderClass(status: Quotation['status']): string {
+  switch (status) {
+    case 'pending': return 'border-l-[3px] border-l-amber-500';
+    case 'accepted': return 'border-l-[3px] border-l-emerald-500';
+    case 'rejected': return 'border-l-[3px] border-l-red-500';
+    case 'expired': return 'border-l-[3px] border-l-gray-400';
+    default: return '';
+  }
+}
+
 const statusConfig: Record<Quotation['status'], { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Clock },
   accepted: { label: 'Accepted', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle },
@@ -55,7 +65,7 @@ export function QuotationsTab() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
+  const [selectedQuote, setSelectedQuote] = useState<(Quotation & { trackingNumber: string; customerName: string; pickupCity: string; destCity: string }) | null>(null);
 
   // Lookup delivery info for each quotation
   const quotationWithDelivery = useMemo(() => {
@@ -203,7 +213,8 @@ export function QuotationsTab() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-          <Card className="border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-900/10">
+          <Card className="overflow-hidden border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-900/10">
+            <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -219,7 +230,8 @@ export function QuotationsTab() {
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <Card className="border-emerald-200/50 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+          <Card className="overflow-hidden border-emerald-200/50 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+            <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -235,7 +247,8 @@ export function QuotationsTab() {
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-900/10">
+          <Card className="overflow-hidden border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-900/10">
+            <div className="h-1 bg-gradient-to-r from-red-400 to-red-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -286,7 +299,7 @@ export function QuotationsTab() {
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.02 }}
-                        className="border-b transition-colors last:border-0 hover:bg-muted/30"
+                        className={`border-b transition-colors last:border-0 hover:bg-muted/30 ${getRowBorderClass(q.status)}`}
                       >
                         <td className="px-4 py-3">
                           <code className="text-xs font-semibold text-primary">{q.id.toUpperCase()}</code>
@@ -307,7 +320,7 @@ export function QuotationsTab() {
                           <span className="text-xs text-muted-foreground">{formatDate(q.validUntil)}</span>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <Badge className={`border-0 ${cfg.color} text-[11px]`}>
+                          <Badge className={`border-0 ${cfg.color} text-[11px] shadow-sm`}>
                             {cfg.label}
                           </Badge>
                         </td>
@@ -413,7 +426,8 @@ export function QuotationsTab() {
 
       {/* Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg overflow-hidden">
+          <div className="h-1 gradient-top-bar" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
@@ -556,7 +570,7 @@ export function QuotationsTab() {
                   <XCircle className="h-4 w-4" />
                   Reject
                 </Button>
-                <Button className="gap-1.5" onClick={handleAccept}>
+                <Button className="gap-1.5 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 text-white" onClick={handleAccept}>
                   <CheckCircle className="h-4 w-4" />
                   Accept
                 </Button>

@@ -1,0 +1,576 @@
+     1→'use client';
+     2→
+     3→import { useState, useMemo } from 'react';
+     4→import { Card, CardContent } from '@/components/ui/card';
+     5→import { Button } from '@/components/ui/button';
+     6→import { Badge } from '@/components/ui/badge';
+     7→import { Input } from '@/components/ui/input';
+     8→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+     9→import { ScrollArea } from '@/components/ui/scroll-area';
+    10→import { Separator } from '@/components/ui/separator';
+    11→import { toast } from 'sonner';
+    12→import { quotations, deliveries } from '@/lib/mock-data';
+    13→import type { Quotation } from '@/lib/types';
+    14→import {
+    15→  FileText, Search, Clock, CheckCircle, XCircle, AlertTriangle,
+    16→  Eye, ChevronLeft, ChevronRight, Calendar, Package, User,
+    17→  ArrowRightLeft, FileOutput, Sparkles, Download,
+    18→} from 'lucide-react';
+    19→import { motion } from 'framer-motion';
+    20→
+    21→// ── Helpers ──────────────────────────────────────────────────
+    22→function exportCSV(data: Record<string, unknown>[], filename: string) {
+    23→  if (data.length === 0) return;
+    24→  const headers = Object.keys(data[0]);
+    25→  const csv = [
+    26→    headers.join(','),
+    27→    ...data.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g, '""')}"`).join(','))
+    28→  ].join('\n');
+    29→  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    30→  const url = URL.createObjectURL(blob);
+    31→  const a = document.createElement('a');
+    32→  a.href = url;
+    33→  a.download = filename;
+    34→  a.click();
+    35→  URL.revokeObjectURL(url);
+    36→  toast.success(`Exported ${data.length} records to ${filename}`);
+    37→}
+    38→
+    39→const statusConfig: Record<Quotation['status'], { label: string; color: string; icon: React.ElementType }> = {
+    40→  pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Clock },
+    41→  accepted: { label: 'Accepted', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle },
+    42→  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
+    43→  expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400', icon: AlertTriangle },
+    44→};
+    45→
+    46→function formatDate(dateStr: string): string {
+    47→  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    48→}
+    49→
+    50→const ITEMS_PER_PAGE = 15;
+    51→
+    52→// ── Main Component ──────────────────────────────────────────
+    53→export function QuotationsTab() {
+    54→  const [search, setSearch] = useState('');
+    55→  const [statusFilter, setStatusFilter] = useState<string>('all');
+    56→  const [page, setPage] = useState(1);
+    57→  const [detailOpen, setDetailOpen] = useState(false);
+    58→  const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
+    59→
+    60→  // Lookup delivery info for each quotation
+    61→  const quotationWithDelivery = useMemo(() => {
+    62→    return quotations.map(q => {
+    63→      const delivery = deliveries.find(d => d.id === q.deliveryId);
+    64→      return {
+    65→        ...q,
+    66→        trackingNumber: delivery?.trackingNumber ?? 'N/A',
+    67→        customerName: delivery?.customerName ?? 'Unknown',
+    68→        pickupCity: delivery?.pickup.city ?? '',
+    69→        destCity: delivery?.destination.city ?? '',
+    70→      };
+    71→    });
+    72→  }, []);
+    73→
+    74→  // Filtered data
+    75→  const filtered = useMemo(() => {
+    76→    let data = quotationWithDelivery;
+    77→    if (statusFilter !== 'all') {
+    78→      data = data.filter(q => q.status === statusFilter);
+    79→    }
+    80→    if (search.trim()) {
+    81→      const q = search.toLowerCase();
+    82→      data = data.filter(
+    83→        item => item.trackingNumber.toLowerCase().includes(q) || item.customerName.toLowerCase().includes(q)
+    84→      );
+    85→    }
+    86→    return data;
+    87→  }, [quotationWithDelivery, statusFilter, search]);
+    88→
+    89→  // Pagination
+    90→  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+    91→  const paginated = useMemo(() => {
+    92→    return filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    93→  }, [filtered, page]);
+    94→
+    95→  // Reset page when filters change
+    96→  const handleStatusChange = (val: string) => {
+    97→    setStatusFilter(val);
+    98→    setPage(1);
+    99→  };
+   100→
+   101→  const handleSearchChange = (val: string) => {
+   102→    setSearch(val);
+   103→    setPage(1);
+   104→  };
+   105→
+   106→  // Summary stats
+   107→  const summary = useMemo(() => {
+   108→    const pending = quotationWithDelivery.filter(q => q.status === 'pending');
+   109→    const accepted = quotationWithDelivery.filter(q => q.status === 'accepted');
+   110→    const rejected = quotationWithDelivery.filter(q => q.status === 'rejected');
+   111→    return {
+   112→      pendingCount: pending.length,
+   113→      pendingValue: pending.reduce((sum, q) => sum + q.amount, 0),
+   114→      acceptedCount: accepted.length,
+   115→      acceptedValue: accepted.reduce((sum, q) => sum + q.amount, 0),
+   116→      rejectedCount: rejected.length,
+   117→    };
+   118→  }, [quotationWithDelivery]);
+   119→
+   120→  function openDetail(quote: typeof quotationWithDelivery[0]) {
+   121→    setSelectedQuote(quote);
+   122→    setDetailOpen(true);
+   123→  }
+   124→
+   125→  function handleAccept() {
+   126→    if (!selectedQuote) return;
+   127→    toast.success('Quotation Accepted', { description: `${selectedQuote.id} has been accepted` });
+   128→    setDetailOpen(false);
+   129→  }
+   130→
+   131→  function handleReject() {
+   132→    if (!selectedQuote) return;
+   133→    toast.error('Quotation Rejected', { description: `${selectedQuote.id} has been rejected` });
+   134→    setDetailOpen(false);
+   135→  }
+   136→
+   137→  function handleGenerateInvoice() {
+   138→    if (!selectedQuote) return;
+   139→    toast.success('Invoice Generated', { description: `Invoice for ${selectedQuote.id} is being generated` });
+   140→    setDetailOpen(false);
+   141→  }
+   142→
+   143→  return (
+   144→    <div className="space-y-4">
+   145→      {/* Header */}
+   146→      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   147→        <div className="flex items-center gap-3">
+   148→          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+   149→            <FileText className="h-5 w-5 text-primary" />
+   150→          </div>
+   151→          <div>
+   152→            <h2 className="text-xl font-bold">Quotations</h2>
+   153→            <p className="text-sm text-muted-foreground">{quotations.length} total quotations</p>
+   154→          </div>
+   155→        </div>
+   156→        <div className="flex items-center gap-2">
+   157→          <div className="relative">
+   158→            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+   159→            <Input
+   160→              placeholder="Search tracking # or customer..."
+   161→              className="w-full pl-8 sm:w-64"
+   162→              value={search}
+   163→              onChange={e => handleSearchChange(e.target.value)}
+   164→            />
+   165→          </div>
+   166→          <Button
+   167→            variant="outline"
+   168→            className="shrink-0 gap-2"
+   169→            onClick={() => {
+   170→              const data = filtered.map((q) => ({
+   171→                'Quote #': q.id.toUpperCase(),
+   172→                Delivery: q.trackingNumber,
+   173→                Customer: q.customerName,
+   174→                'Amount (M)': q.amount,
+   175→                'Est. Days': q.estimatedDays,
+   176→                'Valid Until': formatDate(q.validUntil),
+   177→                Status: q.status,
+   178→              }));
+   179→              exportCSV(data, 'quotations.csv');
+   180→            }}
+   181→          >
+   182→            <Download className="h-4 w-4" />
+   183→            Export CSV
+   184→          </Button>
+   185→          <div className="flex rounded-lg border bg-muted/50 p-0.5">
+   186→            {(['all', 'pending', 'accepted', 'rejected', 'expired'] as const).map(s => (
+   187→              <button
+   188→                key={s}
+   189→                onClick={() => handleStatusChange(s)}
+   190→                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+   191→                  statusFilter === s
+   192→                    ? 'bg-background text-foreground shadow-sm'
+   193→                    : 'text-muted-foreground hover:text-foreground'
+   194→                }`}
+   195→              >
+   196→                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+   197→              </button>
+   198→            ))}
+   199→          </div>
+   200→        </div>
+   201→      </div>
+   202→
+   203→      {/* Summary Cards */}
+   204→      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+   205→        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
+   206→          <Card className="border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-900/10">
+   207→            <CardContent className="p-4">
+   208→              <div className="flex items-center justify-between">
+   209→                <div>
+   210→                  <p className="text-xs font-medium text-muted-foreground">Pending</p>
+   211→                  <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{summary.pendingCount}</p>
+   212→                  <p className="text-xs text-muted-foreground">Total: M{summary.pendingValue.toLocaleString()}</p>
+   213→                </div>
+   214→                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+   215→                  <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+   216→                </div>
+   217→              </div>
+   218→            </CardContent>
+   219→          </Card>
+   220→        </motion.div>
+   221→        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+   222→          <Card className="border-emerald-200/50 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+   223→            <CardContent className="p-4">
+   224→              <div className="flex items-center justify-between">
+   225→                <div>
+   226→                  <p className="text-xs font-medium text-muted-foreground">Accepted</p>
+   227→                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{summary.acceptedCount}</p>
+   228→                  <p className="text-xs text-muted-foreground">Total: M{summary.acceptedValue.toLocaleString()}</p>
+   229→                </div>
+   230→                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+   231→                  <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+   232→                </div>
+   233→              </div>
+   234→            </CardContent>
+   235→          </Card>
+   236→        </motion.div>
+   237→        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+   238→          <Card className="border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-900/10">
+   239→            <CardContent className="p-4">
+   240→              <div className="flex items-center justify-between">
+   241→                <div>
+   242→                  <p className="text-xs font-medium text-muted-foreground">Rejected</p>
+   243→                  <p className="text-2xl font-bold text-red-700 dark:text-red-400">{summary.rejectedCount}</p>
+   244→                </div>
+   245→                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+   246→                  <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+   247→                </div>
+   248→              </div>
+   249→            </CardContent>
+   250→          </Card>
+   251→        </motion.div>
+   252→      </div>
+   253→
+   254→      {/* Quotation Table */}
+   255→      <Card>
+   256→        <CardContent className="p-0">
+   257→          {/* Desktop Table */}
+   258→          <div className="hidden md:block">
+   259→            <div className="overflow-x-auto">
+   260→              <table className="w-full text-sm">
+   261→                <thead>
+   262→                  <tr className="border-b bg-muted/30">
+   263→                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Quote #</th>
+   264→                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Delivery</th>
+   265→                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Customer</th>
+   266→                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Amount (M)</th>
+   267→                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Est. Days</th>
+   268→                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Valid Until</th>
+   269→                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Status</th>
+   270→                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Actions</th>
+   271→                  </tr>
+   272→                </thead>
+   273→                <tbody>
+   274→                  {paginated.length === 0 && (
+   275→                    <tr>
+   276→                      <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+   277→                        No quotations found
+   278→                      </td>
+   279→                    </tr>
+   280→                  )}
+   281→                  {paginated.map((q, i) => {
+   282→                    const cfg = statusConfig[q.status];
+   283→                    return (
+   284→                      <motion.tr
+   285→                        key={q.id}
+   286→                        initial={{ opacity: 0, y: 5 }}
+   287→                        animate={{ opacity: 1, y: 0 }}
+   288→                        transition={{ delay: i * 0.02 }}
+   289→                        className="border-b transition-colors last:border-0 hover:bg-muted/30"
+   290→                      >
+   291→                        <td className="px-4 py-3">
+   292→                          <code className="text-xs font-semibold text-primary">{q.id.toUpperCase()}</code>
+   293→                        </td>
+   294→                        <td className="px-4 py-3">
+   295→                          <code className="text-xs text-muted-foreground">{q.trackingNumber}</code>
+   296→                        </td>
+   297→                        <td className="px-4 py-3">
+   298→                          <span className="text-sm">{q.customerName}</span>
+   299→                        </td>
+   300→                        <td className="px-4 py-3 text-right">
+   301→                          <span className="text-sm font-semibold">{q.amount.toLocaleString()}</span>
+   302→                        </td>
+   303→                        <td className="px-4 py-3 text-center">
+   304→                          <span className="text-sm">{q.estimatedDays}</span>
+   305→                        </td>
+   306→                        <td className="px-4 py-3">
+   307→                          <span className="text-xs text-muted-foreground">{formatDate(q.validUntil)}</span>
+   308→                        </td>
+   309→                        <td className="px-4 py-3 text-center">
+   310→                          <Badge className={`border-0 ${cfg.color} text-[11px]`}>
+   311→                            {cfg.label}
+   312→                          </Badge>
+   313→                        </td>
+   314→                        <td className="px-4 py-3 text-center">
+   315→                          <Button
+   316→                            variant="ghost"
+   317→                            size="sm"
+   318→                            className="h-7 gap-1 text-xs"
+   319→                            onClick={() => openDetail(q)}
+   320→                          >
+   321→                            <Eye className="h-3.5 w-3.5" />
+   322→                            View
+   323→                          </Button>
+   324→                        </td>
+   325→                      </motion.tr>
+   326→                    );
+   327→                  })}
+   328→                </tbody>
+   329→              </table>
+   330→            </div>
+   331→          </div>
+   332→
+   333→          {/* Mobile Cards */}
+   334→          <div className="md:hidden">
+   335→            <div className="divide-y">
+   336→              {paginated.length === 0 && (
+   337→                <div className="py-12 text-center text-sm text-muted-foreground">No quotations found</div>
+   338→              )}
+   339→              {paginated.map((q, i) => {
+   340→                const cfg = statusConfig[q.status];
+   341→                return (
+   342→                  <motion.div
+   343→                    key={q.id}
+   344→                    initial={{ opacity: 0, y: 5 }}
+   345→                    animate={{ opacity: 1, y: 0 }}
+   346→                    transition={{ delay: i * 0.03 }}
+   347→                    className="flex items-center gap-3 p-4"
+   348→                  >
+   349→                    <div className="min-w-0 flex-1">
+   350→                      <div className="flex items-center gap-2">
+   351→                        <code className="text-xs font-semibold text-primary">{q.id.toUpperCase()}</code>
+   352→                        <Badge className={`border-0 ${cfg.color} text-[10px]`}>{cfg.label}</Badge>
+   353→                      </div>
+   354→                      <p className="mt-0.5 text-sm font-medium truncate">{q.customerName}</p>
+   355→                      <p className="text-xs text-muted-foreground">
+   356→                        <code>{q.trackingNumber}</code> • {q.estimatedDays} days
+   357→                      </p>
+   358→                    </div>
+   359→                    <div className="text-right shrink-0">
+   360→                      <p className="text-sm font-bold">M{q.amount.toLocaleString()}</p>
+   361→                      <p className="text-[11px] text-muted-foreground">{formatDate(q.validUntil)}</p>
+   362→                    </div>
+   363→                    <Button variant="ghost" size="sm" className="h-8 shrink-0" onClick={() => openDetail(q)}>
+   364→                      <Eye className="h-4 w-4" />
+   365→                    </Button>
+   366→                  </motion.div>
+   367→                );
+   368→              })}
+   369→            </div>
+   370→          </div>
+   371→
+   372→          {/* Pagination */}
+   373→          {totalPages > 1 && (
+   374→            <div className="flex items-center justify-between border-t px-4 py-3">
+   375→              <p className="text-xs text-muted-foreground">
+   376→                Showing {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+   377→              </p>
+   378→              <div className="flex items-center gap-1">
+   379→                <Button
+   380→                  variant="outline"
+   381→                  size="icon"
+   382→                  className="h-8 w-8"
+   383→                  disabled={page <= 1}
+   384→                  onClick={() => setPage(p => p - 1)}
+   385→                >
+   386→                  <ChevronLeft className="h-4 w-4" />
+   387→                </Button>
+   388→                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+   389→                  <Button
+   390→                    key={p}
+   391→                    variant={page === p ? 'default' : 'outline'}
+   392→                    size="icon"
+   393→                    className="h-8 w-8 text-xs"
+   394→                    onClick={() => setPage(p)}
+   395→                  >
+   396→                    {p}
+   397→                  </Button>
+   398→                ))}
+   399→                <Button
+   400→                  variant="outline"
+   401→                  size="icon"
+   402→                  className="h-8 w-8"
+   403→                  disabled={page >= totalPages}
+   404→                  onClick={() => setPage(p => p + 1)}
+   405→                >
+   406→                  <ChevronRight className="h-4 w-4" />
+   407→                </Button>
+   408→              </div>
+   409→            </div>
+   410→          )}
+   411→        </CardContent>
+   412→      </Card>
+   413→
+   414→      {/* Detail Dialog */}
+   415→      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+   416→        <DialogContent className="sm:max-w-lg">
+   417→          <DialogHeader>
+   418→            <DialogTitle className="flex items-center gap-2">
+   419→              <FileText className="h-5 w-5 text-primary" />
+   420→              Quotation Details
+   421→            </DialogTitle>
+   422→          </DialogHeader>
+   423→
+   424→          {selectedQuote && (
+   425→            <div className="space-y-4">
+   426→              {/* Status & Quote # */}
+   427→              <div className="flex items-center justify-between">
+   428→                <code className="text-lg font-bold text-primary">{selectedQuote.id.toUpperCase()}</code>
+   429→                <Badge className={`border-0 ${statusConfig[selectedQuote.status].color}`}>
+   430→                  {statusConfig[selectedQuote.status].label}
+   431→                </Badge>
+   432→              </div>
+   433→
+   434→              <Separator />
+   435→
+   436→              {/* Quotation Info Grid */}
+   437→              <div className="grid grid-cols-2 gap-4">
+   438→                <div className="space-y-1">
+   439→                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+   440→                    <Package className="h-3.5 w-3.5" />
+   441→                    Delivery Reference
+   442→                  </p>
+   443→                  <p className="text-sm font-medium">{selectedQuote.trackingNumber}</p>
+   444→                </div>
+   445→                <div className="space-y-1">
+   446→                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+   447→                    <User className="h-3.5 w-3.5" />
+   448→                    Customer
+   449→                  </p>
+   450→                  <p className="text-sm font-medium">{selectedQuote.customerName}</p>
+   451→                </div>
+   452→                <div className="space-y-1">
+   453→                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+   454→                    <ArrowRightLeft className="h-3.5 w-3.5" />
+   455→                    Route
+   456→                  </p>
+   457→                  <p className="text-sm font-medium">
+   458→                    {selectedQuote.pickupCity} → {selectedQuote.destCity}
+   459→                  </p>
+   460→                </div>
+   461→                <div className="space-y-1">
+   462→                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+   463→                    <Sparkles className="h-3.5 w-3.5" />
+   464→                    Amount
+   465→                  </p>
+   466→                  <p className="text-sm font-bold text-primary">
+   467→                    {selectedQuote.currency}{selectedQuote.amount.toLocaleString()}
+   468→                  </p>
+   469→                </div>
+   470→                <div className="space-y-1">
+   471→                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+   472→                    <Clock className="h-3.5 w-3.5" />
+   473→                    Estimated Delivery
+   474→                  </p>
+   475→                  <p className="text-sm font-medium">{selectedQuote.estimatedDays} days</p>
+   476→                </div>
+   477→                <div className="space-y-1">
+   478→                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+   479→                    <Calendar className="h-3.5 w-3.5" />
+   480→                    Valid Until
+   481→                  </p>
+   482→                  <p className="text-sm font-medium">{formatDate(selectedQuote.validUntil)}</p>
+   483→                </div>
+   484→              </div>
+   485→
+   486→              <Separator />
+   487→
+   488→              {/* Status Timeline */}
+   489→              <div>
+   490→                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+   491→                  Status History
+   492→                </p>
+   493→                <div className="space-y-3">
+   494→                  <div className="flex items-start gap-3">
+   495→                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+   496→                      <FileText className="h-3 w-3 text-primary" />
+   497→                    </div>
+   498→                    <div className="min-w-0 flex-1">
+   499→                      <p className="text-sm font-medium">Quotation Created</p>
+   500→                      <p className="text-xs text-muted-foreground">{formatDate(selectedQuote.createdAt)}</p>
+   501→                    </div>
+   502→                  </div>
+   503→                  {selectedQuote.status === 'pending' && (
+   504→                    <div className="flex items-start gap-3">
+   505→                      <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+   506→                        <Clock className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+   507→                      </div>
+   508→                      <div className="min-w-0 flex-1">
+   509→                        <p className="text-sm font-medium">Awaiting Customer Response</p>
+   510→                        <p className="text-xs text-muted-foreground">Valid until {formatDate(selectedQuote.validUntil)}</p>
+   511→                      </div>
+   512→                    </div>
+   513→                  )}
+   514→                  {(selectedQuote.status === 'accepted' || selectedQuote.status === 'rejected') && (
+   515→                    <div className="flex items-start gap-3">
+   516→                      <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+   517→                        selectedQuote.status === 'accepted' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30'
+   518→                      }`}>
+   519→                        {selectedQuote.status === 'accepted'
+   520→                          ? <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+   521→                          : <XCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
+   522→                        }
+   523→                      </div>
+   524→                      <div className="min-w-0 flex-1">
+   525→                        <p className="text-sm font-medium">
+   526→                          {selectedQuote.status === 'accepted' ? 'Quotation Accepted' : 'Quotation Rejected'}
+   527→                        </p>
+   528→                        <p className="text-xs text-muted-foreground">
+   529→                          {selectedQuote.status === 'accepted'
+   530→                            ? 'Delivery can now proceed to dispatch'
+   531→                            : 'Customer has declined the quotation'}
+   532→                        </p>
+   533→                      </div>
+   534→                    </div>
+   535→                  )}
+   536→                  {selectedQuote.status === 'expired' && (
+   537→                    <div className="flex items-start gap-3">
+   538→                      <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900/30">
+   539→                        <AlertTriangle className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+   540→                      </div>
+   541→                      <div className="min-w-0 flex-1">
+   542→                        <p className="text-sm font-medium">Quotation Expired</p>
+   543→                        <p className="text-xs text-muted-foreground">Expired on {formatDate(selectedQuote.validUntil)}</p>
+   544→                      </div>
+   545→                    </div>
+   546→                  )}
+   547→                </div>
+   548→              </div>
+   549→            </div>
+   550→          )}
+   551→
+   552→          <DialogFooter className="gap-2">
+   553→            {selectedQuote?.status === 'pending' && (
+   554→              <>
+   555→                <Button variant="destructive" className="gap-1.5" onClick={handleReject}>
+   556→                  <XCircle className="h-4 w-4" />
+   557→                  Reject
+   558→                </Button>
+   559→                <Button className="gap-1.5" onClick={handleAccept}>
+   560→                  <CheckCircle className="h-4 w-4" />
+   561→                  Accept
+   562→                </Button>
+   563→              </>
+   564→            )}
+   565→            {selectedQuote?.status === 'accepted' && (
+   566→              <Button className="gap-1.5" onClick={handleGenerateInvoice}>
+   567→                <FileOutput className="h-4 w-4" />
+   568→                Generate Invoice
+   569→              </Button>
+   570→            )}
+   571→          </DialogFooter>
+   572→        </DialogContent>
+   573→      </Dialog>
+   574→    </div>
+   575→  );
+   576→}

@@ -246,17 +246,17 @@ export function TrackingTab() {
               </div>
               {delivery.estimatedDelivery && delivery.status !== 'delivered' && (
                 <div className={`mt-4 pt-4 border-t ${
-                  delivery.status === 'delivered' || delivery.status === 'cancelled' || delivery.status === 'returned'
+                  delivery.status === 'cancelled' || delivery.status === 'returned'
                     ? 'border-white/20'
                     : 'border-green-200 dark:border-green-700'
                 }`}>
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className={`h-4 w-4 ${
-                      delivery.status === 'delivered' || delivery.status === 'cancelled' || delivery.status === 'returned'
+                      delivery.status === 'cancelled' || delivery.status === 'returned'
                         ? 'text-white/80'
                         : 'text-green-600 dark:text-green-400'
                     }`} />
-                    <span className={delivery.status === 'delivered' || delivery.status === 'cancelled' || delivery.status === 'returned'
+                    <span className={delivery.status === 'cancelled' || delivery.status === 'returned'
                       ? 'text-white/80'
                       : 'text-green-700 dark:text-green-300'
                     }>

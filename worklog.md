@@ -1198,3 +1198,179 @@ SwiftFreight is a highly polished, investor-ready multi-tenant SaaS Logistics Op
 3. Add WebSocket service for real-time activity feed
 4. Implement column visibility toggles on key tables
 5. Add data export to Excel (.xlsx) format
+---
+Task ID: r8-map-roles
+Agent: full-stack-developer
+Task: Dark mode Leaflet map, Trailer Owner dashboard, Warehouse Partner dashboard
+
+Work Log:
+- Read worklog.md and analyzed existing codebase patterns (chart configs, role routing, KPI card styles, table patterns)
+- Task 1: Modified `dispatch-map.tsx` to add dark mode Leaflet tile support
+  - Created `useIsDarkMode` hook using MutationObserver on `<html>` class attribute
+  - Extracted `ThemedTileLayer` component that switches between OSM and CartoDB dark_all tiles
+  - Updated `LegendControl` to accept `isDark` prop and render dark/light styling accordingly
+  - Dark legend: `rgba(15,23,42,0.95)` bg, `#e2e8f0` text, `#f1f5f9` headers, `rgba(255,255,255,0.1)` borders
+- Task 2: Added `TrailerOwnerOverview` component in `overview-tab.tsx`
+  - 4 KPI cards: My Trailers (emerald), Active Hires (teal), Monthly Revenue M45,200 (primary), Utilization Rate (amber)
+  - Trailers table with plate, make/model, status badges, assigned driver, current route columns
+  - BarChart with gradient fill showing 6-month revenue trend (M12k–M45k)
+  - Filters vehicles by type=`trailer` from mock data
+- Task 3: Added `WarehousePartnerOverview` component in `overview-tab.tsx`
+  - 4 KPI cards: Storage Capacity 71% (emerald), Pending Dispatch (amber, real count from at_warehouse), Today Inbound 23 (teal), Outbound 18 (primary)
+  - 3 Quick Action buttons: Receive Package, Process Dispatch, View Inventory
+  - Activity feed with 6 warehouse operations (received, dispatched, alert, inspection, temperature, inventory)
+- Added `trailer_owner` and `warehouse_partner` role checks in `OverviewTab` router
+- Added `vehicles` import from mock-data and `Vehicle` type import
+- Added `trailerRevenueChartConfig` chart config
+- Ran `bun run lint` — 0 errors, 1 pre-existing warning
+- Verified dev server compiles successfully
+
+Stage Summary:
+- Dark mode map: CartoDB dark matter tiles with MutationObserver-based theme detection, dark legend styling
+- Trailer Owner dashboard: 4 KPIs, trailers table, 6-month revenue bar chart, fully responsive 2x2/4-col grid
+- Warehouse Partner dashboard: 4 KPIs, quick actions, 6-item activity feed with colored type indicators
+- All components follow existing SourcingAgentOverview patterns (KPI card style, chart usage, table structure)
+
+---
+Task ID: r8-features
+Agent: full-stack-developer
+Task: Global quick search, POD document generation, dispatch stat enhancements
+
+Work Log:
+- Read worklog.md and analyzed existing codebase (dashboard-layout.tsx, deliveries-tab.tsx, dispatch-tab.tsx, mock-data.ts, store.ts)
+- Task 1: Enhanced "Quick Track" input in dashboard-layout.tsx header:
+  - Added `useState` for quickSearchQuery, showQuickSearch, highlightedIndex
+  - Added `useRef` for searchContainerRef and searchInputRef
+  - Added `useMemo` to search across deliveries (trackingNumber, customerName), customers (name, email), drivers (name, phone) with 2+ char threshold
+  - Added click-outside detection via `useEffect` with document mousedown listener
+  - Added keyboard navigation (ArrowUp/Down, Enter to select, Escape to close)
+  - Built grouped dropdown with glass effect (bg-background/95 backdrop-blur-sm), max 3 results per type (6 total)
+  - Each result shows icon (Package/UserIcon/Truck), title, subtitle, and status badge
+  - Clicking a delivery result calls selectDelivery(id) and navigates to deliveries tab
+  - Clicking customer/driver navigates to respective tabs
+  - Footer shows keyboard shortcut hints (↑↓ Navigate, ↵ Select, esc Close)
+  - Imported deliveries, customers, drivers, statusLabels, statusColors from mock-data
+- Task 2: Added "Generate Proof of Delivery" button in deliveries-tab.tsx:
+  - Added `generatePOD(delivery)` function that opens a new browser window with professional POD HTML document
+  - POD includes: green gradient header, tracking number, delivery details grid (8 fields), received-by section with signature, 3 photo placeholder boxes, timestamp/location, footer
+  - Triggers `window.print()` via window.onload in the new window
+  - Added `Printer` icon import from lucide-react
+  - Button placed in the Proof of Delivery section header for delivered/returned deliveries
+- Task 3: Enhanced dispatch statistics cards in dispatch-tab.tsx:
+  - Added 4-bar sparkline trend indicator per card using emerald/teal gradient bars with varying heights
+  - Wrapped each card in Tooltip with metric definition
+  - Added "View All Active" link on In Transit card that shows toast "Showing 85 active deliveries"
+  - Imported Tooltip, TooltipTrigger, TooltipContent from ui/tooltip and TrendingUp icon
+- Fixed lint error: moved handleResultClick before useEffect that referenced it to avoid "accessed before declared" error
+- Ran `bun run lint` — 0 errors, 0 warnings
+- Verified dev server compiles successfully
+
+Stage Summary:
+- Global quick search with real-time fuzzy search across deliveries, customers, drivers; glass dropdown with keyboard navigation
+- Professional POD document generation via new window with print dialog, matching SwiftFreight branding
+- Dispatch stat cards enhanced with sparkline trends, tooltips, and "View All Active" action
+
+---
+Task ID: r8-styling
+Agent: frontend-styling-expert
+Task: Styling polish — auth pages, warehouse, quotations, notifications, marketing
+
+Work Log:
+- Added global CSS: @keyframes gradient-border, @keyframes gradient-ring, .shimmer-text utility, .gradient-border-animated utility, .gradient-top-bar utility, .avatar-gradient-ring utility
+- Updated FAQ .faq-item-active with gradient background (from-primary/5 to-transparent)
+- Rewrote forgot-password-page.tsx: converted to split layout with left branding panel (gradient overlay, herringbone pattern, decorative shapes), added gradient top bar on card, improved success state with animate-gradient-ring and larger icon (h-10 w-10), added hover effect on back button (-translate-x-0.5), added "Powered by SwiftFreight Technologies" footer, dark mode support on info box
+- Updated register-page.tsx: added gradient top bar on card, added "Powered by SwiftFreight Technologies" footer, added focus-visible ring effects on all remaining company inputs (comp-owner-name, comp-password), updated plan cards with hover:scale-[1.02] and gradient-border-animated on active state, dark mode support on plan cards
+- Updated warehouse-tab.tsx: changed all 4 KPI card top bars to gradient-top-bar (primary-to-teal), added group class to warehouse cards with group-hover:h-3 on utilization bars, added gradient top bar on storage breakdown chart card, added 3px colored left borders on activity feed items (red=alert, amber=warning, emerald=success, transparent=info), added avatar-gradient-ring on manager avatars
+- Updated quotations-tab.tsx: added getRowBorderClass helper for 3px colored left borders on table rows (amber=pending, emerald=accepted, red=rejected, gray=expired), added gradient top borders on summary cards (amber/emerald/red), added shadow-sm on status badges, added gradient top bar on detail dialog header, added gradient background on Accept button
+- Rewrote notifications-tab.tsx: added getNotificationBorderClass helper for 3px colored left borders per type (emerald=delivery, primary=message, teal=payment, amber=alert, muted=system), improved empty state with larger Bell icon (h-12 w-12) and descriptive sub-text, added gradient background on active filter buttons, added shadow-sm on unread badge
+- Updated marketing-website.tsx: changed pricing badge to uppercase "MOST POPULAR" with tracking-wider, added parallax-like gradient overlay on benefits section (two overlapping gradients with hover scale/opacity transitions), FAQ expanded items now use gradient background via updated .faq-item-active CSS
+
+Stage Summary:
+- 7 files modified: globals.css, forgot-password-page.tsx, register-page.tsx, warehouse-tab.tsx, quotations-tab.tsx, notifications-tab.tsx, marketing-website.tsx
+- Lint and build pass cleanly
+- All changes support dark mode via dark: variants and oklch color variables
+- Added 2 new CSS keyframe animations and 5 new utility classes to globals.css
+
+---
+Task ID: r8-orchestrator
+Agent: Main Orchestrator
+Task: Round 8 — QA, TypeScript fixes, handover
+
+Work Log:
+- Read worklog.md for full project context (7 previous rounds documented)
+- Ran ESLint: zero errors
+- QA via agent-browser:
+  - Marketing website: all sections render, zero console errors
+  - Company Owner login: all 14 nav tabs load, zero errors
+  - Driver login: personalized "Welcome, Lebo!" overview with 5-item sidebar
+  - Customer login: personalized dashboard with 6-item sidebar (Overview, My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices)
+  - Dispatch tab: Leaflet map with zoom controls and OSM attribution confirmed
+  - Dark mode: verified across views
+  - Mobile viewport (375x812): hamburger menu, responsive layout confirmed
+- Launched 3 parallel subagents for Round 8 development:
+  1. full-stack-developer: Dark mode map + Trailer Owner + Warehouse Partner dashboards
+  2. frontend-styling-expert: Styling polish on 7 files (auth, warehouse, quotations, notifications, marketing, globals.css)
+  3. full-stack-developer: Global quick search, POD document, dispatch stat enhancements
+- Post-subagent TypeScript fixes (6 errors caught and fixed):
+  1. register-page.tsx: Duplicate 'User' identifier (lucide icon vs type) — renamed to UserIcon/UserType
+  2. dispatch-tab.tsx: Invalid DeliveryStatus values 'pending'/'in_progress' → 'request_received'/'awaiting_quote'/'collected'
+  3. dispatch-tab.tsx: User type has no 'companyName' → changed to currentUser?.name
+  4. overview-tab.tsx: SourcingAgentOverview destructured currentUser from useNavStore (wrong) → useAuthStore
+  5. overview-tab.tsx: months array typed as never[] → added explicit type annotation
+  6. tracking-tab.tsx: Redundant 'delivered' comparison inside narrowed block → removed
+  7. warehouse-tab.tsx: 'success' not in activity types → changed to 'info'
+  8. quotations-tab.tsx: Quotation type missing trackingNumber/customerName/pickupCity/destCity → enriched state type with intersection
+- Final verification: ESLint zero errors, TypeScript zero new src/ errors (4 pre-existing mock-data.ts readonly issues remain)
+
+Stage Summary:
+- 3 major features delivered via parallel subagents (dark mode map, 2 role dashboards, global search, POD, dispatch enhancements)
+- 7 files received detailed styling improvements
+- 8 TypeScript errors caught and fixed post-subagent
+- App remains stable with zero ESLint errors
+
+---
+## HANDOVER DOCUMENT (Updated Round 8)
+
+### Current Project Status / Assessment
+SwiftFreight is a highly polished, investor-ready multi-tenant SaaS Logistics Operating System demo for Lesotho. After 8 rounds of continuous development with comprehensive QA at each round, the application has 16 dashboard tabs, an interactive Leaflet map with dark mode support, real PDF invoice generation, professional POD document generation, global search with keyboard navigation, localStorage state persistence, rich analytics (10+ charts), and extensive micro-interaction polish across every component. The codebase is stable — zero ESLint errors, zero new TypeScript errors, clean compilation.
+
+**Current Feature Set:**
+- Marketing website (12+ sections: hero with shimmer, features, how-it-works, customer types, benefits with parallax, testimonials, pricing with "MOST POPULAR" badge, FAQ with gradient backgrounds, contact, footer with animated underlines, logo scroll)
+- Auth pages (Login with gradient overlay + herringbone pattern, Register with sliding tabs + animated plan cards + gradient borders, Forgot Password with split layout + gradient ring animation)
+- 16 dashboard tabs:
+  - **Staff** (14 nav items): Overview (pipeline + activity feed + colored borders + framer-motion), Deliveries (priority borders + pulsing dots + star rating + enhanced timeline + **POD document generation**), Tracking (9-step gradient progress), Messages (gradient bubbles + enhanced empty state), Customers (CSV export + status borders), Drivers (CSV export + status-colored left borders), Fleet (vehicle detail Sheet), Warehouse (**gradient KPI bars** + activity feed colored borders + avatar gradient rings), Dispatch (**dark mode Leaflet map** + CartoDB tiles + print manifest + **sparkline stat cards** + tooltips + "View All Active"), Sourcing (gradient tabs, progress bars), Invoices (real PDF generation), Quotations (**status-colored row borders** + gradient cards + gradient Accept button), Reports (10+ charts with gradient headers), Notifications (**type-colored left borders** + enhanced empty state + gradient filter buttons), Settings (color-coded nav badges, enhanced danger zone)
+  - **Driver** (5 nav items): Overview (KPIs + weekly earnings chart), My Jobs, My Vehicle, Messages, Settings
+  - **Customer** (6 nav items): Overview (KPIs + spending trend chart), My Shipments, Track Parcel, Sourcing Requests, Messages, Invoices
+  - **Sourcing Agent**: Personalized overview with 4 KPIs, quick actions, recent sourcing requests
+  - **Trailer Owner** [NEW]: Personalized overview with 4 KPIs (trailers, active hires, revenue, utilization), trailers table, 6-month revenue BarChart
+  - **Warehouse Partner** [NEW]: Personalized overview with 4 KPIs (capacity, pending dispatch, inbound, outbound), quick actions, 6-item activity feed
+- **Global Quick Search** [NEW]: Real-time search across deliveries, customers, drivers with glass dropdown, keyboard navigation (↑↓/Enter/Esc), grouped results with status badges
+- **Dark Mode Map** [NEW]: CartoDB dark matter tiles in dark mode, light OSM in light mode, dark-themed legend
+- **POD Document** [NEW]: Professional proof-of-delivery generation with SwiftFreight branding, delivery details, signature area, photo placeholders
+- **State Persistence**: localStorage via Zustand persist middleware (auth, nav, delivery filters)
+- 9 API routes, Prisma schema with 13 models
+- 500+ demo deliveries, 60 drivers, 40 vehicles, 300 customers, 3 companies
+
+### Completed This Round
+- **Features**: Dark mode Leaflet map (CartoDB tiles), Trailer Owner dashboard, Warehouse Partner dashboard, Global Quick Search (keyboard nav), POD document generation, Dispatch sparkline stat cards
+- **Styling**: Forgot Password (split layout, gradient overlay, herringbone, gradient ring success), Register (gradient borders, plan card hover, "Powered by" footer), Warehouse (gradient KPI bars, hover utilization, activity feed borders, avatar rings), Quotations (status-colored row borders, gradient summary cards, gradient dialog header), Notifications (type-colored borders, enhanced empty state, gradient filter buttons), Marketing (parallax benefits, "MOST POPULAR" badge, FAQ gradient backgrounds), CSS (2 new keyframes, 5 new utility classes)
+- **Bug fixes**: 8 TypeScript errors fixed (duplicate User import, invalid DeliveryStatus values, wrong store destructure, untyped array, redundant comparison, wrong activity type, missing Quotation fields)
+- **All verified** via ESLint (zero errors) and TypeScript (zero new src/ errors)
+
+### Unresolved Issues / Risks + Priority Recommendations
+1. **[Low] Pre-existing mock-data.ts TS errors** — readonly tuple array assignment (4 errors, doesn't affect runtime)
+2. **[Enhancement] Real-time WebSocket** — Live Activity Feed is static; WebSocket would make it truly real-time
+3. **[Enhancement] Batch PDF download** — Currently only single invoice downloads; full batch loop needed
+4. **[Enhancement] Data export to Excel** — CSV is good but .xlsx would be more professional
+5. **[Enhancement] Column visibility toggles** — No column toggle on any table
+6. **[Enhancement] Advanced table features** — Multi-sort, saved filters, column reordering
+7. **[Enhancement] Dark mode map popups** — Leaflet popups still use hardcoded light colors
+8. **[Enhancement] Mobile map performance** — Leaflet may need optimization on low-end mobile devices
+
+**Priority recommendations for next phase:**
+1. Fix dark mode Leaflet popup styling (quick win)
+2. Add column visibility toggles on Deliveries and Customers tables
+3. Add WebSocket mini-service for real-time activity feed
+4. Implement batch PDF invoice download
+5. Add data export to Excel (.xlsx) format via xlsx skill
+

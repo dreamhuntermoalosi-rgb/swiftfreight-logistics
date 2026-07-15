@@ -12,6 +12,7 @@ import {
   Info,
   CheckCheck,
   Inbox,
+  Bell,
 } from 'lucide-react';
 import { useNotificationStore, useAuthStore } from '@/lib/store';
 import { notifications as mockNotifications } from '@/lib/mock-data';
@@ -75,6 +76,23 @@ function getNotificationIconBg(type: NotificationType) {
   }
 }
 
+function getNotificationBorderClass(type: NotificationType): string {
+  switch (type) {
+    case 'delivery_update':
+      return 'border-l-[3px] border-l-emerald-500';
+    case 'new_message':
+      return 'border-l-[3px] border-l-primary';
+    case 'quote_received':
+    case 'payment':
+      return 'border-l-[3px] border-l-teal-500';
+    case 'alert':
+      return 'border-l-[3px] border-l-amber-500';
+    case 'system':
+    default:
+      return 'border-l-[3px] border-l-muted-foreground/30';
+  }
+}
+
 function matchesFilter(type: NotificationType, filter: NotificationFilter): boolean {
   switch (filter) {
     case 'all':
@@ -128,7 +146,7 @@ export function NotificationsTab() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
           {unreadCount > 0 && (
-            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 shadow-sm">
               {unreadCount} unread
             </Badge>
           )}
@@ -160,15 +178,18 @@ export function NotificationsTab() {
       {/* Notification List */}
       <ScrollArea className="max-h-[calc(100vh-320px)]">
         {filteredNotifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/50 mb-4">
-              <Inbox className="h-8 w-8 opacity-40" />
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+            <div className="relative mb-6">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted/30">
+                <Bell className="h-12 w-12 opacity-20" />
+              </div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/5 to-transparent" />
             </div>
-            <p className="text-lg font-medium">No notifications</p>
-            <p className="text-sm mt-1">
+            <p className="text-lg font-medium text-foreground/70">No notifications</p>
+            <p className="text-sm mt-2 max-w-xs text-center">
               {filter === 'unread'
-                ? 'You&apos;re all caught up!'
-                : 'No notifications match this filter'}
+                ? 'You\'re all caught up! No unread notifications to show.'
+                : 'No notifications match this filter. Try selecting a different category.'}
             </p>
           </div>
         ) : (
@@ -176,6 +197,7 @@ export function NotificationsTab() {
             {filteredNotifications.map((notification) => {
               const IconComponent = getNotificationIcon(notification.type);
               const iconBg = getNotificationIconBg(notification.type);
+              const borderClass = getNotificationBorderClass(notification.type);
 
               return (
                 <button
@@ -185,7 +207,7 @@ export function NotificationsTab() {
                       markAsRead(notification.id);
                     }
                   }}
-                  className={`group flex w-full items-start gap-4 rounded-lg px-4 py-4 text-left transition-all duration-200 hover:bg-muted/50 ${
+                  className={`group flex w-full items-start gap-4 rounded-lg px-4 py-4 text-left transition-all duration-200 hover:bg-muted/50 ${borderClass} ${
                     !notification.isRead ? 'bg-primary/[0.03]' : ''
                   }`}
                 >
@@ -248,7 +270,7 @@ function NotificationFilters({
           size="sm"
           className={`rounded-full transition-all duration-200 ${
             current === opt.key
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+              ? 'bg-gradient-to-r from-primary to-teal-600 text-primary-foreground hover:from-primary/90 hover:to-teal-600/90 shadow-sm'
               : 'hover:bg-muted'
           }`}
           onClick={() => onChange(opt.key)}

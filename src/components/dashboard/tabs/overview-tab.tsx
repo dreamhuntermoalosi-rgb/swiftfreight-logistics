@@ -61,9 +61,9 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { analyticsData, deliveries, notifications, statusLabels, statusColors, customers, sourcingRequests } from '@/lib/mock-data';
+import { analyticsData, deliveries, notifications, statusLabels, statusColors, customers, sourcingRequests, vehicles } from '@/lib/mock-data';
 import { useAuthStore, useNavStore } from '@/lib/store';
-import type { Delivery, SourcingStatus } from '@/lib/types';
+import type { Delivery, SourcingStatus, Vehicle } from '@/lib/types';
 
 // ============ Chart Configs ============
 const revenueChartConfig: ChartConfig = {
@@ -109,6 +109,10 @@ const spendingTrendChartConfig: ChartConfig = {
 
 const weeklyEarningsChartConfig: ChartConfig = {
   earnings: { label: 'Earnings (M)', color: '#16a34a' },
+};
+
+const trailerRevenueChartConfig: ChartConfig = {
+  revenue: { label: 'Revenue (M)', color: '#16a34a' },
 };
 
 // Live activity feed data
@@ -340,7 +344,7 @@ function CustomerOverview() {
   // Mock spending by month (last 6 months)
   const spendingByMonth = useMemo(() => {
     const now = new Date();
-    const months = [];
+    const months: { month: string; spent: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthLabel = date.toLocaleString('default', { month: 'short' });
@@ -1255,7 +1259,8 @@ const sourcingStatusConfig: Record<SourcingStatus, { label: string; color: strin
 };
 
 function SourcingAgentOverview() {
-  const { currentUser, setDashboardTab } = useNavStore();
+  const currentUser = useAuthStore(s => s.currentUser);
+  const setDashboardTab = useNavStore(s => s.setDashboardTab);
 
   const activeRequests = sourcingRequests.filter((r) => r.status === 'pending' || r.status === 'quoted');
 
@@ -1444,15 +1449,399 @@ function SourcingAgentOverview() {
   );
 }
 
+// ============ Trailer Owner Overview ============
+function TrailerOwnerOverview() {
+  const { currentUser } = useAuthStore();
+
+  const myTrailers = useMemo(() => vehicles.filter((v) => v.type === 'trailer'), []);
+  const activeHires = useMemo(() => myTrailers.filter((v) => v.status === 'in_use'), []);
+  const utilizationRate = myTrailers.length > 0
+    ? Math.round((activeHires.length / myTrailers.length) * 100)
+    : 0;
+
+  const revenueData = [
+    { month: 'Jul', revenue: 12 },
+    { month: 'Aug', revenue: 18 },
+    { month: 'Sep', revenue: 22 },
+    { month: 'Oct', revenue: 15 },
+    { month: 'Nov', revenue: 28 },
+    { month: 'Dec', revenue: 45 },
+  ];
+
+  const vehicleStatusColor: Record<string, string> = {
+    available: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    in_use: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+    maintenance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    out_of_service: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Welcome, <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">{currentUser?.name?.split(' ')[0] || 'Owner'}</span>!
+        </h1>
+        <p className="text-muted-foreground">Here&apos;s your trailer fleet overview for today.</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* My Trailers */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">My Trailers</p>
+                <p className="text-2xl font-bold tracking-tight">{myTrailers.length}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                <Truck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                {activeHires.length} in use
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Active Hires */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-teal-300 dark:hover:border-teal-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-teal-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Active Hires</p>
+                <p className="text-2xl font-bold tracking-tight">{activeHires.length}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
+                <CheckCircle2 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">
+                Currently deployed
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Revenue */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
+                <p className="text-2xl font-bold tracking-tight">M45,200</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
+                <DollarSign className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
+              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="text-xs font-semibold text-emerald-600">+12%</span>
+              <span className="text-xs text-muted-foreground">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Utilization Rate */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-amber-300 dark:hover:border-amber-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Utilization Rate</p>
+                <p className="text-2xl font-bold tracking-tight">{utilizationRate}%</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                <TrendingUp className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                {myTrailers.length - activeHires.length} available
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trailers Table + Revenue Chart */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        {/* My Trailers Table */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="text-base">My Trailers</CardTitle>
+            <CardDescription>All trailers in your fleet</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="max-h-96 overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Plate Number</TableHead>
+                    <TableHead className="hidden sm:table-cell">Make / Model</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Assigned Driver</TableHead>
+                    <TableHead className="hidden lg:table-cell">Current Route</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {myTrailers.map((v) => (
+                    <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50">
+                      <TableCell className="font-medium font-mono text-sm">{v.plateNumber}</TableCell>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground">{v.make} {v.model}</TableCell>
+                      <TableCell>
+                        <Badge className={`border-0 text-[11px] ${vehicleStatusColor[v.status] || ''}`} variant="secondary">
+                          {v.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-muted-foreground">{v.assignedDriverName || '—'}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-muted-foreground">Maseru → Leribe</TableCell>
+                    </TableRow>
+                  ))}
+                  {myTrailers.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                        No trailers found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Revenue Trend Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Revenue Trend</CardTitle>
+            <CardDescription>Monthly revenue over last 6 months</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={trailerRevenueChartConfig} className="h-[280px] w-full">
+              <BarChart data={revenueData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="fillTrailerRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.4} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  axisLine={false}
+                  className="text-xs"
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  className="text-xs"
+                  tickFormatter={(v) => `M${v}k`}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar
+                  dataKey="revenue"
+                  fill="url(#fillTrailerRevenue)"
+                  radius={[4, 4, 0, 0]}
+                  barSize={32}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ============ Warehouse Partner Overview ============
+function WarehousePartnerOverview() {
+  const { currentUser } = useAuthStore();
+
+  const pendingDispatch = useMemo(
+    () => deliveries.filter((d) => d.status === 'at_warehouse'),
+    []
+  );
+
+  const warehouseActivities = [
+    { id: 1, type: 'received', message: 'Package #SF2025001842LS received from Johannesburg', time: '12 min ago', color: 'bg-emerald-500' },
+    { id: 2, type: 'dispatched', message: 'Shipment #SF2025001735LS dispatched to Mafeteng', time: '45 min ago', color: 'bg-teal-500' },
+    { id: 3, type: 'alert', message: 'Storage zone B nearing 90% capacity', time: '1h ago', color: 'bg-amber-500' },
+    { id: 4, type: 'inspection', message: 'Quality inspection completed for 8 packages', time: '2h ago', color: 'bg-emerald-500' },
+    { id: 5, type: 'temperature', message: 'Cold storage temperature check: 2.4°C (normal)', time: '3h ago', color: 'bg-teal-500' },
+    { id: 6, type: 'inventory', message: 'Weekly inventory count completed — 3,200 packages', time: '5h ago', color: 'bg-primary' },
+  ];
+
+  const activityTypeIcon: Record<string, React.ReactNode> = {
+    received: <Package className="h-3.5 w-3.5" />,
+    dispatched: <Truck className="h-3.5 w-3.5" />,
+    alert: <AlertTriangle className="h-3.5 w-3.5" />,
+    inspection: <CheckCircle2 className="h-3.5 w-3.5" />,
+    temperature: <Info className="h-3.5 w-3.5" />,
+    inventory: <ClipboardCheck className="h-3.5 w-3.5" />,
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Welcome, <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">{currentUser?.name?.split(' ')[0] || 'Partner'}</span>!
+        </h1>
+        <p className="text-muted-foreground">Here&apos;s your warehouse operations overview.</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Storage Capacity */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Storage Capacity</p>
+                <p className="text-2xl font-bold tracking-tight">71%</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                <Package className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                3,200 / 4,500 packages
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pending Dispatch */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-amber-300 dark:hover:border-amber-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Pending Dispatch</p>
+                <p className="text-2xl font-bold tracking-tight">{pendingDispatch.length}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                Awaiting processing
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Today's Inbound */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-teal-300 dark:hover:border-teal-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-teal-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Today&apos;s Inbound</p>
+                <p className="text-2xl font-bold tracking-tight">23</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
+                <ArrowUpRight className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">
+                packages received
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Outbound Today */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Outbound Today</p>
+                <p className="text-2xl font-bold tracking-tight">18</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
+                <Truck className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-primary">
+                shipments dispatched
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-3">
+        <Button className="bg-green-600 text-white hover:bg-green-700">
+          <Package className="mr-2 h-4 w-4" />
+          Receive Package
+        </Button>
+        <Button variant="outline">
+          <Truck className="mr-2 h-4 w-4" />
+          Process Dispatch
+        </Button>
+        <Button variant="outline">
+          <Search className="mr-2 h-4 w-4" />
+          View Inventory
+        </Button>
+      </div>
+
+      {/* Warehouse Activity Feed */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Warehouse Activity</CardTitle>
+          <CardDescription>Recent warehouse operations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {warehouseActivities.map((activity) => (
+              <div key={activity.id} className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50">
+                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${activity.color}`}>
+                  {activityTypeIcon[activity.type] || <Info className="h-3.5 w-3.5" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm leading-snug">{activity.message}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{activity.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ============ Overview Tab (Router) ============
 export function OverviewTab() {
   const { currentUser } = useAuthStore();
   const isCustomer = currentUser?.role === 'customer';
   const isDriver = currentUser?.role === 'driver';
   const isSourcingAgent = currentUser?.role === 'sourcing_agent';
+  const isTrailerOwner = currentUser?.role === 'trailer_owner';
+  const isWarehousePartner = currentUser?.role === 'warehouse_partner';
 
   if (isCustomer) return <CustomerOverview />;
   if (isDriver) return <DriverOverview />;
   if (isSourcingAgent) return <SourcingAgentOverview />;
+  if (isTrailerOwner) return <TrailerOwnerOverview />;
+  if (isWarehousePartner) return <WarehousePartnerOverview />;
   return <CompanyOverview />;
 }

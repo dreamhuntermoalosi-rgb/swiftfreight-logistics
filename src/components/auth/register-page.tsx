@@ -10,10 +10,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import type { User } from '@/lib/types';
+import type { User as UserType } from '@/lib/types';
 import {
   Truck, Mail, Lock, ArrowLeft, Eye, EyeOff, UserPlus,
-  Building2, Phone, User, MapPin, Briefcase,
+  Building2, Phone, UserIcon, MapPin, Briefcase,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -74,7 +74,7 @@ export function RegisterPage() {
 
     setIsLoading(true);
     setTimeout(() => {
-      const newUser: User = {
+      const newUser: UserType = {
         id: `user-new-${Date.now()}`,
         email: custEmail.trim(),
         name: custName.trim(),
@@ -103,7 +103,7 @@ export function RegisterPage() {
 
     setIsLoading(true);
     setTimeout(() => {
-      const newUser: User = {
+      const newUser: UserType = {
         id: `user-new-${Date.now()}`,
         email: compEmail.trim(),
         name: compOwnerName.trim(),
@@ -143,7 +143,9 @@ export function RegisterPage() {
           transition={{ duration: 0.4 }}
           className="w-full max-w-lg"
         >
-          <Card className="border-0 shadow-lg shadow-gray-200/60">
+          <Card className="relative border-0 shadow-lg shadow-gray-200/60">
+            {/* Decorative gradient line at top */}
+            <div className="h-1 rounded-t-xl gradient-top-bar" />
             <CardHeader className="text-center space-y-2 pb-2">
               <div className="flex justify-center mb-1">
                 <div className="bg-emerald-600 p-2 rounded-xl">
@@ -159,7 +161,7 @@ export function RegisterPage() {
                 <div className="relative mb-6">
                   <TabsList className="grid w-full grid-cols-2 relative">
                     <TabsTrigger value="customer" className="gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white relative z-10">
-                      <User className="h-4 w-4" />
+                      <UserIcon className="h-4 w-4" />
                       Customer
                     </TabsTrigger>
                     <TabsTrigger value="company" className="gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white relative z-10">
@@ -177,7 +179,7 @@ export function RegisterPage() {
                     <div className="space-y-2">
                       <Label htmlFor="cust-name">Full Name</Label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="cust-name"
                           placeholder="Mmathapelo Mphatsoe"
@@ -326,7 +328,7 @@ export function RegisterPage() {
                           placeholder="Mountain Express Logistics"
                           value={compName}
                           onChange={(e) => setCompName(e.target.value)}
-                          className="pl-9"
+                          className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                         />
                       </div>
                     </div>
@@ -342,7 +344,7 @@ export function RegisterPage() {
                             placeholder="info@company.co.ls"
                             value={compEmail}
                             onChange={(e) => setCompEmail(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                         </div>
                       </div>
@@ -356,7 +358,7 @@ export function RegisterPage() {
                             placeholder="+266 2xxx xxxx"
                             value={compPhone}
                             onChange={(e) => setCompPhone(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                         </div>
                       </div>
@@ -380,13 +382,13 @@ export function RegisterPage() {
                       <div className="space-y-2">
                         <Label>Your Name</Label>
                         <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="comp-owner-name"
                             placeholder="Your full name"
                             value={compOwnerName}
                             onChange={(e) => setCompOwnerName(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                           />
                         </div>
                       </div>
@@ -403,21 +405,21 @@ export function RegisterPage() {
                             key={plan.value}
                             type="button"
                             onClick={() => setCompPlan(plan.value)}
-                            className={`relative rounded-lg border-2 p-3 text-left transition-all ${
+                            className={`relative rounded-lg border-2 p-3 text-left transition-all duration-200 hover:scale-[1.02] ${
                               compPlan === plan.value
-                                ? 'border-emerald-600 bg-emerald-50 ring-1 ring-emerald-600'
-                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                                ? 'gradient-border-animated bg-emerald-50 dark:bg-emerald-950/20'
+                                : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600 bg-white dark:bg-card'
                             }`}
                           >
                             {compPlan === plan.value && (
-                              <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-emerald-600 flex items-center justify-center">
-                                <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                                <svg className="h-3 w-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                               </div>
                             )}
                             <p className="font-semibold text-sm">{plan.label}</p>
-                            <p className="text-emerald-700 font-bold text-lg leading-tight">{plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+                            <p className="text-emerald-700 dark:text-emerald-400 font-bold text-lg leading-tight">{plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
                             <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{plan.desc}</p>
                           </button>
                         ))}
@@ -434,7 +436,7 @@ export function RegisterPage() {
                           placeholder="Min. 6 characters"
                           value={compPassword}
                           onChange={(e) => setCompPassword(e.target.value)}
-                          className="pl-9 pr-9"
+                          className="pl-9 pr-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
                         />
                         <button
                           type="button"
@@ -496,6 +498,10 @@ export function RegisterPage() {
               </p>
             </CardFooter>
           </Card>
+          {/* Powered by footer */}
+          <p className="text-center text-[11px] text-muted-foreground/50 mt-4">
+            Powered by <span className="font-medium text-muted-foreground/70">SwiftFreight Technologies</span>
+          </p>
         </motion.div>
       </main>
     </div>

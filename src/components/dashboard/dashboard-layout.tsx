@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import {
   LayoutDashboard,
@@ -32,6 +32,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
+import { deliveries, customers, drivers, statusLabels, statusColors } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -571,6 +572,7 @@ function DashboardHeader() {
     setDashboardTab,
     setTrackingNumber,
     trackingNumber,
+    selectDelivery,
   } = useNavStore();
   const { theme, setTheme } = useTheme();
   const isMobile = useIsMobile();
@@ -580,15 +582,141 @@ function DashboardHeader() {
   const role = currentUser?.role ?? 'customer';
   const title = getTabTitleForRole(dashboardTab, role);
 
+  // Quick search state
+  const [quickSearchQuery, setQuickSearchQuery] = useState('');
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Search results memoized
+  const quickSearchResults = useMemo(() => {
+    const q = quickSearchQuery.trim().toLowerCase();
+    if (q.length < 2) return { deliveries: [], customers: [], drivers: [] };
+
+    const maxPerType = 3;
+    const deliveryResults = deliveries
+      .filter(
+        (d) =>
+          d.trackingNumber.toLowerCase().includes(q) ||
+          d.customerName.toLowerCase().includes(q)
+      )
+      .slice(0, maxPerType)
+      .map((d) => ({
+        id: d.id,
+        type: 'delivery' as const,
+        title: d.trackingNumber,
+        subtitle: d.customerName,
+        badge: statusLabels[d.status] || d.status,
+        badgeColor: statusColors[d.status] || '',
+      }));
+
+    const customerResults = customers
+      .filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q)
+      )
+      .slice(0, maxPerType)
+      .map((c) => ({
+        id: c.id,
+        type: 'customer' as const,
+        title: c.name,
+        subtitle: c.email,
+        badge: 'Customer',
+        badgeColor: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+      }));
+
+    const driverResults = drivers
+      .filter(
+        (d) =>
+          d.name.toLowerCase().includes(q) ||
+          d.phone.includes(q)
+      )
+      .slice(0, maxPerType)
+      .map((d) => ({
+        id: d.id,
+        type: 'driver' as const,
+        title: d.name,
+        subtitle: d.phone,
+        badge: `Driver · ${d.status.replace('_', ' ')}`,
+        badgeColor: d.status === 'available' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      }));
+
+    return { deliveries: deliveryResults, customers: customerResults, drivers: driverResults };
+  }, [quickSearchQuery]);
+
+  // Flat results for keyboard navigation
+  const flatResults = useMemo(() => {
+    return [
+      ...quickSearchResults.deliveries.map((r) => ({ ...r, group: 'Deliveries' })),
+      ...quickSearchResults.customers.map((r) => ({ ...r, group: 'Customers' })),
+      ...quickSearchResults.drivers.map((r) => ({ ...r, group: 'Drivers' })),
+    ];
+  }, [quickSearchResults]);
+
+  const totalResults = flatResults.length;
+
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowQuickSearch(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleResultClick = useCallback(
+    (result: typeof flatResults[number]) => {
+      setShowQuickSearch(false);
+      setQuickSearchQuery('');
+      if (result.type === 'delivery') {
+        selectDelivery(result.id);
+        setDashboardTab('deliveries');
+      } else if (result.type === 'customer') {
+        setDashboardTab('customers');
+      } else if (result.type === 'driver') {
+        setDashboardTab('drivers');
+      }
+    },
+    [selectDelivery, setDashboardTab]
+  );
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!showQuickSearch || totalResults === 0) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev < totalResults - 1 ? prev + 1 : 0));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : totalResults - 1));
+      } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+        e.preventDefault();
+        handleResultClick(flatResults[highlightedIndex]);
+      } else if (e.key === 'Escape') {
+        setShowQuickSearch(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showQuickSearch, totalResults, highlightedIndex, handleResultClick]);
+
   const handleQuickTrack = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const val = trackingNumber.trim();
+      const val = quickSearchQuery.trim() || trackingNumber.trim();
       if (val) {
+        setTrackingNumber(val);
         setDashboardTab('tracking');
+        setShowQuickSearch(false);
       }
     },
-    [trackingNumber, setDashboardTab]
+    [quickSearchQuery, trackingNumber, setTrackingNumber, setDashboardTab]
   );
 
   return (
@@ -624,17 +752,148 @@ function DashboardHeader() {
 
       {/* Right: search, theme, notifications, user */}
       <div className="ml-auto flex items-center gap-2">
-        {/* Tracking search — desktop only */}
+        {/* Quick search — desktop only */}
         <form onSubmit={handleQuickTrack} className="hidden md:block">
-          <div className="relative">
+          <div ref={searchContainerRef} className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
+              ref={searchInputRef}
               type="text"
-              placeholder="Quick track..."
-              value={trackingNumber}
-              onChange={(e) => setTrackingNumber(e.target.value)}
-              className="h-9 w-48 bg-muted/50 pl-8 text-sm lg:w-64 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/30"
+              placeholder="Search deliveries, customers, drivers..."
+              value={quickSearchQuery}
+              onChange={(e) => {
+                setQuickSearchQuery(e.target.value);
+                setShowQuickSearch(true);
+                setHighlightedIndex(-1);
+              }}
+              onFocus={() => {
+                if (quickSearchQuery.trim().length >= 2) setShowQuickSearch(true);
+              }}
+              className="h-9 w-56 bg-muted/50 pl-8 pr-3 text-sm lg:w-72 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/30"
             />
+
+            {/* Search dropdown */}
+            {showQuickSearch && quickSearchQuery.trim().length >= 2 && (
+              <div className="absolute left-0 top-full z-50 mt-1.5 w-80 lg:w-96 rounded-xl border bg-background/95 backdrop-blur-sm shadow-lg overflow-hidden">
+                {totalResults === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                    <Search className="h-8 w-8 mb-2 opacity-40" />
+                    <p className="text-sm">No results found</p>
+                    <p className="text-xs mt-1">Try a different search term</p>
+                  </div>
+                ) : (
+                  <ScrollArea className="max-h-80">
+                    <div className="p-1.5">
+                      {/* Deliveries group */}
+                      {quickSearchResults.deliveries.length > 0 && (
+                        <div>
+                          <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Deliveries</p>
+                          {quickSearchResults.deliveries.map((r) => {
+                            const idx = flatResults.findIndex((f) => f.id === r.id && f.type === 'delivery');
+                            return (
+                              <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => handleResultClick({ ...r, group: 'Deliveries' })}
+                                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                                  highlightedIndex === idx ? 'bg-primary/10 text-primary' : 'hover:bg-muted/80'
+                                }`}
+                              >
+                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                                  highlightedIndex === idx ? 'bg-primary/20' : 'bg-muted'
+                                }`}>
+                                  <Package className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-medium">{r.title}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{r.subtitle}</p>
+                                </div>
+                                <Badge variant="secondary" className={`shrink-0 text-[10px] ${r.badgeColor}`}>
+                                  {r.badge}
+                                </Badge>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Customers group */}
+                      {quickSearchResults.customers.length > 0 && (
+                        <div>
+                          <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Customers</p>
+                          {quickSearchResults.customers.map((r) => {
+                            const idx = flatResults.findIndex((f) => f.id === r.id && f.type === 'customer');
+                            return (
+                              <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => handleResultClick({ ...r, group: 'Customers' })}
+                                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                                  highlightedIndex === idx ? 'bg-primary/10 text-primary' : 'hover:bg-muted/80'
+                                }`}
+                              >
+                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                                  highlightedIndex === idx ? 'bg-primary/20' : 'bg-muted'
+                                }`}>
+                                  <UserIcon className="h-4 w-4 text-violet-500" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-medium">{r.title}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{r.subtitle}</p>
+                                </div>
+                                <Badge variant="secondary" className={`shrink-0 text-[10px] ${r.badgeColor}`}>
+                                  {r.badge}
+                                </Badge>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Drivers group */}
+                      {quickSearchResults.drivers.length > 0 && (
+                        <div>
+                          <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Drivers</p>
+                          {quickSearchResults.drivers.map((r) => {
+                            const idx = flatResults.findIndex((f) => f.id === r.id && f.type === 'driver');
+                            return (
+                              <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => handleResultClick({ ...r, group: 'Drivers' })}
+                                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                                  highlightedIndex === idx ? 'bg-primary/10 text-primary' : 'hover:bg-muted/80'
+                                }`}
+                              >
+                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                                  highlightedIndex === idx ? 'bg-primary/20' : 'bg-muted'
+                                }`}>
+                                  <Truck className="h-4 w-4 text-amber-500" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-medium">{r.title}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{r.subtitle}</p>
+                                </div>
+                                <Badge variant="secondary" className={`shrink-0 text-[10px] ${r.badgeColor}`}>
+                                  {r.badge}
+                                </Badge>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Footer hint */}
+                      <div className="mt-1 border-t px-2.5 py-1.5 flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><kbd className="rounded border bg-muted px-1 font-mono text-[9px]">↑↓</kbd> Navigate</span>
+                        <span className="flex items-center gap-1"><kbd className="rounded border bg-muted px-1 font-mono text-[9px]">↵</kbd> Select</span>
+                        <span className="flex items-center gap-1"><kbd className="rounded border bg-muted px-1 font-mono text-[9px]">esc</kbd> Close</span>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            )}
           </div>
         </form>
 

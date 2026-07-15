@@ -120,7 +120,7 @@ export function WarehouseTab() {
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="overflow-hidden">
-          <div className="h-1 bg-emerald-500" />
+          <div className="h-1 gradient-top-bar" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -135,7 +135,7 @@ export function WarehouseTab() {
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="h-1 bg-teal-500" />
+          <div className="h-1 gradient-top-bar" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -150,7 +150,7 @@ export function WarehouseTab() {
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="h-1 bg-primary" />
+          <div className="h-1 gradient-top-bar" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -165,7 +165,7 @@ export function WarehouseTab() {
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="h-1 bg-amber-500" />
+          <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-500" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -187,7 +187,7 @@ export function WarehouseTab() {
           return (
             <Card
               key={wh.id}
-              className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
@@ -208,7 +208,7 @@ export function WarehouseTab() {
                     <span className="text-muted-foreground">Utilization</span>
                     <span className={`font-semibold ${getUtilizationColor(pct)}`}>{pct}%</span>
                   </div>
-                  <Progress value={pct} className={`h-2.5 ${getUtilizationBarColor(pct)}`} />
+                  <Progress value={pct} className={`h-2.5 ${getUtilizationBarColor(pct)} group-hover:h-3 transition-all duration-300`} />
                   <p className="text-xs text-muted-foreground">
                     {wh.used} / {wh.capacity} packages
                   </p>
@@ -241,8 +241,10 @@ export function WarehouseTab() {
 
                 {/* Manager */}
                 <div className="flex items-center gap-2.5 border-t pt-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                    {getInitials(wh.manager)}
+                  <div className="avatar-gradient-ring">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                      {getInitials(wh.manager)}
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm font-medium">{wh.manager}</p>
@@ -256,7 +258,8 @@ export function WarehouseTab() {
       </div>
 
       {/* Storage Breakdown Chart */}
-      <Card>
+      <Card className="overflow-hidden">
+        <div className="h-0.5 gradient-top-bar" />
         <CardHeader>
           <CardTitle className="text-base">Storage Breakdown by Warehouse</CardTitle>
         </CardHeader>
@@ -320,10 +323,12 @@ export function WarehouseTab() {
                   key={activity.id}
                   className={`flex items-start gap-3 px-6 py-3.5 transition-colors hover:bg-muted/50 ${
                     activity.type === 'alert'
-                      ? 'bg-red-50 dark:bg-red-950/20'
+                      ? 'bg-red-50 dark:bg-red-950/20 border-l-[3px] border-l-red-500'
                       : activity.type === 'warning'
-                        ? 'bg-amber-50 dark:bg-amber-950/20'
-                        : ''
+                        ? 'bg-amber-50 dark:bg-amber-950/20 border-l-[3px] border-l-amber-500'
+                        : activity.type === 'info'
+                          ? 'border-l-[3px] border-l-emerald-500'
+                          : 'border-l-[3px] border-l-transparent'
                   }`}
                 >
                   <div className="mt-0.5">
