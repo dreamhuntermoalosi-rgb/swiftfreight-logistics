@@ -225,10 +225,10 @@ export function MessagesTab() {
                 <button
                   key={conv.contactId}
                   onClick={() => handleSelectConversation(conv.contactId)}
-                  className={`mb-1 flex w-full items-center gap-3 rounded-lg p-2.5 text-left transition-colors ${
+                  className={`mb-1 flex w-full items-center gap-3 rounded-lg p-2.5 text-left transition-all duration-150 ${
                     activeConversation === conv.contactId
                       ? 'bg-primary/10 text-foreground'
-                      : 'hover:bg-muted/50'
+                      : 'hover:bg-muted/50 active:bg-muted'
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -256,7 +256,7 @@ export function MessagesTab() {
                     {conv.linkedDeliveryId && (
                       <div className="mt-0.5 flex items-center gap-1 text-[10px] text-primary/70">
                         <Package className="h-3 w-3" />
-                        Linked to delivery
+                        <span className="rounded-full bg-primary/10 px-1.5 py-0.5 font-medium">Linked to delivery</span>
                       </div>
                     )}
                   </div>
@@ -311,8 +311,9 @@ export function MessagesTab() {
                       return (
                         <motion.div
                           key={msg.id}
-                          initial={{ opacity: 0, y: 5 }}
+                          initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2 }}
                           className={`flex gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}
                         >
                           {!isSent && showAvatar && (
@@ -327,8 +328,8 @@ export function MessagesTab() {
                             <div
                               className={`rounded-2xl px-3.5 py-2 ${
                                 isSent
-                                  ? 'rounded-br-md bg-primary text-primary-foreground'
-                                  : 'rounded-bl-md bg-muted'
+                                  ? 'rounded-br-sm bg-primary text-primary-foreground'
+                                  : 'rounded-bl-sm bg-muted'
                               }`}
                             >
                               <p className="text-sm leading-relaxed">{msg.content}</p>

@@ -1,0 +1,610 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState } from 'react';
+     4→     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+     5→     5→import { Button } from '@/components/ui/button';
+     6→     6→import { Badge } from '@/components/ui/badge';
+     7→     7→import { Input } from '@/components/ui/input';
+     8→     8→import { Label } from '@/components/ui/label';
+     9→     9→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    10→    10→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+    11→    11→import { Switch } from '@/components/ui/switch';
+    12→    12→import { Separator } from '@/components/ui/separator';
+    13→    13→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    14→    14→import { toast } from 'sonner';
+    15→    15→import { useAuthStore } from '@/lib/store';
+    16→    16→import { companies, roleLabels } from '@/lib/mock-data';
+    17→    17→import { useTheme } from 'next-themes';
+    18→    18→import {
+    19→    19→  Settings, Bell, Shield, Palette, User, Building2, Mail,
+    20→    20→  Phone, MessageSquare, Lock, Trash2, Zap, Sun, Moon, Monitor,
+    21→    21→  AlertTriangle, ShieldCheck, Camera, Globe, MapPin
+    22→    22→} from 'lucide-react';
+    23→    23→import { motion } from 'framer-motion';
+    24→    24→
+    25→    25→// ── Helpers ──────────────────────────────────────────────────
+    26→    26→function getInitials(name: string): string {
+    27→    27→  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    28→    28→}
+    29→    29→
+    30→    30→const planColors: Record<string, string> = {
+    31→    31→  starter: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    32→    32→  professional: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    33→    33→  enterprise: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    34→    34→};
+    35→    35→
+    36→    36→// ── Main Component ──────────────────────────────────────────
+    37→    37→export function SettingsTab() {
+    38→    38→  const { currentUser, logout } = useAuthStore();
+    39→    39→  const { theme, setTheme } = useTheme();
+    40→    40→  const [activeSection, setActiveSection] = useState('profile');
+    41→    41→  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    42→    42→  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+    43→    43→
+    44→    44→  // Profile form state
+    45→    45→  const [profileForm, setProfileForm] = useState({
+    46→    46→    name: currentUser?.name || '',
+    47→    47→    email: currentUser?.email || '',
+    48→    48→    phone: currentUser?.phone || '',
+    49→    49→  });
+    50→    50→
+    51→    51→  // Company form state
+    52→    52→  const userCompany = currentUser?.companyId
+    53→    53→    ? companies.find(c => c.id === currentUser.companyId)
+    54→    54→    : null;
+    55→    55→
+    56→    56→  const [companyForm, setCompanyForm] = useState({
+    57→    57→    name: userCompany?.name || '',
+    58→    58→    email: userCompany?.email || '',
+    59→    59→    phone: userCompany?.phone || '',
+    60→    60→    address: userCompany?.address || '',
+    61→    61→    city: userCompany?.city || '',
+    62→    62→    country: userCompany?.country || '',
+    63→    63→  });
+    64→    64→
+    65→    65→  // Notification preferences
+    66→    66→  const [notifications, setNotifications] = useState({
+    67→    67→    email: true,
+    68→    68→    push: true,
+    69→    69→    sms: false,
+    70→    70→    deliveryUpdates: true,
+    71→    71→    newMessages: true,
+    72→    72→    marketing: false,
+    73→    73→  });
+    74→    74→
+    75→    75→  // Password form
+    76→    76→  const [passwordForm, setPasswordForm] = useState({
+    77→    77→    current: '',
+    78→    78→    newPassword: '',
+    79→    79→    confirm: '',
+    80→    80→  });
+    81→    81→
+    82→    82→  const isOwnerOrManager = currentUser?.role === 'company_owner' || currentUser?.role === 'operations_manager';
+    83→    83→
+    84→    84→  function handleSaveProfile() {
+    85→    85→    toast.success('Profile Updated', { description: 'Your profile changes have been saved' });
+    86→    86→  }
+    87→    87→
+    88→    88→  function handleSaveCompany() {
+    89→    89→    toast.success('Company Updated', { description: 'Company settings have been saved' });
+    90→    90→  }
+    91→    91→
+    92→    92→  function handleToggleNotification(key: keyof typeof notifications) {
+    93→    93→    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    94→    94→    toast.success('Preference Updated', {
+    95→    95→      description: `${key.replace(/([A-Z])/g, ' $1').trim()} notification ${notifications[key] ? 'disabled' : 'enabled'}`,
+    96→    96→    });
+    97→    97→  }
+    98→    98→
+    99→    99→  function handleChangePassword() {
+   100→   100→    if (!passwordForm.current || !passwordForm.newPassword || !passwordForm.confirm) {
+   101→   101→      toast.error('Please fill in all password fields');
+   102→   102→      return;
+   103→   103→    }
+   104→   104→    if (passwordForm.newPassword.length < 8) {
+   105→   105→      toast.error('Password must be at least 8 characters');
+   106→   106→      return;
+   107→   107→    }
+   108→   108→    if (passwordForm.newPassword !== passwordForm.confirm) {
+   109→   109→      toast.error('New passwords do not match');
+   110→   110→      return;
+   111→   111→    }
+   112→   112→    toast.success('Password Changed', { description: 'Your password has been updated successfully' });
+   113→   113→    setPasswordForm({ current: '', newPassword: '', confirm: '' });
+   114→   114→  }
+   115→   115→
+   116→   116→  function handleDeleteAccount() {
+   117→   117→    toast.success('Account Deletion Requested', { description: 'Your account will be deleted within 30 days' });
+   118→   118→    setDeleteDialogOpen(false);
+   119→   119→    setTimeout(() => logout(), 1000);
+   120→   120→  }
+   121→   121→
+   122→   122→  function handleDeactivateCompany() {
+   123→   123→    toast.success('Company Deactivation Requested', { description: 'The company will be deactivated within 30 days' });
+   124→   124→    setDeactivateDialogOpen(false);
+   125→   125→  }
+   126→   126→
+   127→   127→  const settingsNav = [
+   128→   128→    { id: 'profile', label: 'Profile', icon: User },
+   129→   129→    ...(isOwnerOrManager ? [{ id: 'company', label: 'Company', icon: Building2 }] : []),
+   130→   130→    { id: 'notifications', label: 'Notifications', icon: Bell },
+   131→   131→    { id: 'appearance', label: 'Appearance', icon: Palette },
+   132→   132→    { id: 'security', label: 'Security', icon: Shield },
+   133→   133→    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
+   134→   134→  ];
+   135→   135→
+   136→   136→  return (
+   137→   137→    <div className="space-y-4">
+   138→   138→      {/* Header */}
+   139→   139→      <div className="flex items-center gap-3">
+   140→   140→        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+   141→   141→          <Settings className="h-5 w-5 text-primary" />
+   142→   142→        </div>
+   143→   143→        <div>
+   144→   144→          <h2 className="text-xl font-bold">Settings</h2>
+   145→   145→          <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
+   146→   146→        </div>
+   147→   147→      </div>
+   148→   148→
+   149→   149→      <div className="flex flex-col gap-4 lg:flex-row">
+   150→   150→        {/* Settings Nav - vertical on desktop */}
+   151→   151→        <Card className="w-full shrink-0 lg:w-56">
+   152→   152→          <CardContent className="p-2">
+   153→   153→            <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col">
+   154→   154→              {settingsNav.map(item => (
+   155→   155→                <button
+   156→   156→                  key={item.id}
+   157→   157→                  onClick={() => setActiveSection(item.id)}
+   158→   158→                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors whitespace-nowrap ${
+   159→   159→                    activeSection === item.id
+   160→   160→                      ? 'bg-primary/10 font-medium text-primary'
+   161→   161→                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+   162→   162→                  }`}
+   163→   163→                >
+   164→   164→                  <item.icon className="h-4 w-4 shrink-0" />
+   165→   165→                  {item.label}
+   166→   166→                </button>
+   167→   167→              ))}
+   168→   168→            </nav>
+   169→   169→          </CardContent>
+   170→   170→        </Card>
+   171→   171→
+   172→   172→        {/* Settings Content */}
+   173→   173→        <div className="flex-1">
+   174→   174→          <motion.div key={activeSection} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15 }}>
+   175→   175→
+   176→   176→            {/* ── Profile Section ── */}
+   177→   177→            {activeSection === 'profile' && (
+   178→   178→              <Card>
+   179→   179→                <CardHeader>
+   180→   180→                  <CardTitle className="text-base">Profile Settings</CardTitle>
+   181→   181→                  <CardDescription>Update your personal information</CardDescription>
+   182→   182→                </CardHeader>
+   183→   183→                <CardContent className="space-y-6">
+   184→   184→                  <div className="flex items-center gap-4">
+   185→   185→                    <div className="relative">
+   186→   186→                      <Avatar className="h-20 w-20">
+   187→   187→                        <AvatarFallback className="bg-primary/10 text-xl font-bold text-primary">
+   188→   188→                          {getInitials(profileForm.name || 'U')}
+   189→   189→                        </AvatarFallback>
+   190→   190→                      </Avatar>
+   191→   191→                      <Button
+   192→   192→                        size="icon"
+   193→   193→                        variant="outline"
+   194→   194→                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full"
+   195→   195→                        onClick={() => toast.info('Avatar upload coming soon')}
+   196→   196→                      >
+   197→   197→                        <Camera className="h-3.5 w-3.5" />
+   198→   198→                      </Button>
+   199→   199→                    </div>
+   200→   200→                    <div>
+   201→   201→                      <h3 className="text-lg font-semibold">{profileForm.name || 'User'}</h3>
+   202→   202→                      <Badge className={`mt-1 ${planColors[userCompany?.plan || 'starter']}`}>
+   203→   203→                        {currentUser?.role ? roleLabels[currentUser.role] : 'User'}
+   204→   204→                      </Badge>
+   205→   205→                    </div>
+   206→   206→                  </div>
+   207→   207→
+   208→   208→                  <Separator />
+   209→   209→
+   210→   210→                  <div className="grid gap-4 sm:grid-cols-2">
+   211→   211→                    <div className="space-y-2">
+   212→   212→                      <Label htmlFor="profile-name">Full Name</Label>
+   213→   213→                      <Input
+   214→   214→                        id="profile-name"
+   215→   215→                        value={profileForm.name}
+   216→   216→                        onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))}
+   217→   217→                      />
+   218→   218→                    </div>
+   219→   219→                    <div className="space-y-2">
+   220→   220→                      <Label htmlFor="profile-email">Email</Label>
+   221→   221→                      <Input
+   222→   222→                        id="profile-email"
+   223→   223→                        type="email"
+   224→   224→                        value={profileForm.email}
+   225→   225→                        onChange={e => setProfileForm(f => ({ ...f, email: e.target.value }))}
+   226→   226→                      />
+   227→   227→                    </div>
+   228→   228→                    <div className="space-y-2">
+   229→   229→                      <Label htmlFor="profile-phone">Phone</Label>
+   230→   230→                      <Input
+   231→   231→                        id="profile-phone"
+   232→   232→                        type="tel"
+   233→   233→                        value={profileForm.phone}
+   234→   234→                        onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))}
+   235→   235→                      />
+   236→   236→                    </div>
+   237→   237→                    <div className="space-y-2">
+   238→   238→                      <Label>Role</Label>
+   239→   239→                      <Input
+   240→   240→                        value={currentUser?.role ? roleLabels[currentUser.role] : 'User'}
+   241→   241→                        disabled
+   242→   242→                        className="bg-muted"
+   243→   243→                      />
+   244→   244→                    </div>
+   245→   245→                  </div>
+   246→   246→
+   247→   247→                  {userCompany && (
+   248→   248→                    <>
+   249→   249→                      <Separator />
+   250→   250→                      <div>
+   251→   251→                        <Label className="text-muted-foreground">Company</Label>
+   252→   252→                        <p className="mt-1 flex items-center gap-2 text-sm font-medium">
+   253→   253→                          <Building2 className="h-4 w-4 text-primary" />
+   254→   254→                          {userCompany.name}
+   255→   255→                        </p>
+   256→   256→                      </div>
+   257→   257→                    </>
+   258→   258→                  )}
+   259→   259→
+   260→   260→                  <div className="flex justify-end">
+   261→   261→                    <Button onClick={handleSaveProfile} className="gap-2">
+   262→   262→                      Save Changes
+   263→   263→                    </Button>
+   264→   264→                  </div>
+   265→   265→                </CardContent>
+   266→   266→              </Card>
+   267→   267→            )}
+   268→   268→
+   269→   269→            {/* ── Company Section ── */}
+   270→   270→            {activeSection === 'company' && userCompany && (
+   271→   271→              <Card>
+   272→   272→                <CardHeader>
+   273→   273→                  <CardTitle className="text-base">Company Settings</CardTitle>
+   274→   274→                  <CardDescription>Manage your company information</CardDescription>
+   275→   275→                </CardHeader>
+   276→   276→                <CardContent className="space-y-6">
+   277→   277→                  <div className="flex items-center justify-between">
+   278→   278→                    <div className="flex items-center gap-3">
+   279→   279→                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+   280→   280→                        <Building2 className="h-6 w-6 text-primary" />
+   281→   281→                      </div>
+   282→   282→                      <div>
+   283→   283→                        <h3 className="font-semibold">{companyForm.name}</h3>
+   284→   284→                        <Badge className={`mt-1 capitalize ${planColors[userCompany.plan]}`}>
+   285→   285→                          {userCompany.plan} Plan
+   286→   286→                        </Badge>
+   287→   287→                      </div>
+   288→   288→                    </div>
+   289→   289→                    <Button
+   290→   290→                      variant="outline"
+   291→   291→                      className="gap-2"
+   292→   292→                      onClick={() => toast.info('Upgrade feature coming soon')}
+   293→   293→                    >
+   294→   294→                      <Zap className="h-4 w-4" />
+   295→   295→                      Upgrade Plan
+   296→   296→                    </Button>
+   297→   297→                  </div>
+   298→   298→
+   299→   299→                  <Separator />
+   300→   300→
+   301→   301→                  <div className="grid gap-4 sm:grid-cols-2">
+   302→   302→                    <div className="space-y-2">
+   303→   303→                      <Label>Company Name</Label>
+   304→   304→                      <Input
+   305→   305→                        value={companyForm.name}
+   306→   306→                        onChange={e => setCompanyForm(f => ({ ...f, name: e.target.value }))}
+   307→   307→                      />
+   308→   308→                    </div>
+   309→   309→                    <div className="space-y-2">
+   310→   310→                      <Label>Business Email</Label>
+   311→   311→                      <Input
+   312→   312→                        type="email"
+   313→   313→                        value={companyForm.email}
+   314→   314→                        onChange={e => setCompanyForm(f => ({ ...f, email: e.target.value }))}
+   315→   315→                      />
+   316→   316→                    </div>
+   317→   317→                    <div className="space-y-2">
+   318→   318→                      <Label>Phone</Label>
+   319→   319→                      <Input
+   320→   320→                        type="tel"
+   321→   321→                        value={companyForm.phone}
+   322→   322→                        onChange={e => setCompanyForm(f => ({ ...f, phone: e.target.value }))}
+   323→   323→                      />
+   324→   324→                    </div>
+   325→   325→                    <div className="space-y-2">
+   326→   326→                      <Label>Address</Label>
+   327→   327→                      <Input
+   328→   328→                        value={companyForm.address}
+   329→   329→                        onChange={e => setCompanyForm(f => ({ ...f, address: e.target.value }))}
+   330→   330→                      />
+   331→   331→                    </div>
+   332→   332→                    <div className="space-y-2">
+   333→   333→                      <Label>City</Label>
+   334→   334→                      <Input
+   335→   335→                        value={companyForm.city}
+   336→   336→                        onChange={e => setCompanyForm(f => ({ ...f, city: e.target.value }))}
+   337→   337→                      />
+   338→   338→                    </div>
+   339→   339→                    <div className="space-y-2">
+   340→   340→                      <Label>Country</Label>
+   341→   341→                      <Input
+   342→   342→                        value={companyForm.country}
+   343→   343→                        onChange={e => setCompanyForm(f => ({ ...f, country: e.target.value }))}
+   344→   344→                      />
+   345→   345→                    </div>
+   346→   346→                  </div>
+   347→   347→
+   348→   348→                  <div className="flex justify-end">
+   349→   349→                    <Button onClick={handleSaveCompany} className="gap-2">
+   350→   350→                      Save Changes
+   351→   351→                    </Button>
+   352→   352→                  </div>
+   353→   353→                </CardContent>
+   354→   354→              </Card>
+   355→   355→            )}
+   356→   356→
+   357→   357→            {/* ── Notifications Section ── */}
+   358→   358→            {activeSection === 'notifications' && (
+   359→   359→              <Card>
+   360→   360→                <CardHeader>
+   361→   361→                  <CardTitle className="text-base flex items-center gap-2">
+   362→   362→                    <Bell className="h-4 w-4" />
+   363→   363→                    Notification Preferences
+   364→   364→                  </CardTitle>
+   365→   365→                  <CardDescription>Choose how you want to be notified</CardDescription>
+   366→   366→                </CardHeader>
+   367→   367→                <CardContent className="space-y-1">
+   368→   368→                  {[
+   369→   369→                    { key: 'email' as const, label: 'Email Notifications', desc: 'Receive notifications via email', icon: Mail },
+   370→   370→                    { key: 'push' as const, label: 'Push Notifications', desc: 'Receive push notifications in your browser', icon: Bell },
+   371→   371→                    { key: 'sms' as const, label: 'SMS Notifications', desc: 'Receive notifications via text message', icon: Phone },
+   372→   372→                    { key: 'deliveryUpdates' as const, label: 'Delivery Updates', desc: 'Get notified about delivery status changes', icon: Globe },
+   373→   373→                    { key: 'newMessages' as const, label: 'New Messages', desc: 'Get notified when you receive new messages', icon: MessageSquare },
+   374→   374→                    { key: 'marketing' as const, label: 'Marketing Emails', desc: 'Receive promotional emails and offers', icon: Zap },
+   375→   375→                  ].map((item, i) => (
+   376→   376→                    <div key={item.key}>
+   377→   377→                      {i > 0 && <Separator className="my-3" />}
+   378→   378→                      <div className="flex items-center justify-between">
+   379→   379→                        <div className="flex items-center gap-3">
+   380→   380→                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+   381→   381→                            <item.icon className="h-4 w-4 text-muted-foreground" />
+   382→   382→                          </div>
+   383→   383→                          <div>
+   384→   384→                            <p className="text-sm font-medium">{item.label}</p>
+   385→   385→                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+   386→   386→                          </div>
+   387→   387→                        </div>
+   388→   388→                        <Switch
+   389→   389→                          checked={notifications[item.key]}
+   390→   390→                          onCheckedChange={() => handleToggleNotification(item.key)}
+   391→   391→                        />
+   392→   392→                      </div>
+   393→   393→                    </div>
+   394→   394→                  ))}
+   395→   395→                </CardContent>
+   396→   396→              </Card>
+   397→   397→            )}
+   398→   398→
+   399→   399→            {/* ── Appearance Section ── */}
+   400→   400→            {activeSection === 'appearance' && (
+   401→   401→              <Card>
+   402→   402→                <CardHeader>
+   403→   403→                  <CardTitle className="text-base flex items-center gap-2">
+   404→   404→                    <Palette className="h-4 w-4" />
+   405→   405→                    Appearance
+   406→   406→                  </CardTitle>
+   407→   407→                  <CardDescription>Customize the look and feel</CardDescription>
+   408→   408→                </CardHeader>
+   409→   409→                <CardContent>
+   410→   410→                  <div className="space-y-4">
+   411→   411→                    <div>
+   412→   412→                      <Label className="text-sm font-medium">Theme</Label>
+   413→   413→                      <p className="text-xs text-muted-foreground mb-3">Select your preferred color theme</p>
+   414→   414→                      <div className="grid grid-cols-3 gap-3">
+   415→   415→                        {[
+   416→   416→                          { value: 'light', label: 'Light', icon: Sun },
+   417→   417→                          { value: 'dark', label: 'Dark', icon: Moon },
+   418→   418→                          { value: 'system', label: 'System', icon: Monitor },
+   419→   419→                        ].map(t => (
+   420→   420→                          <button
+   421→   421→                            key={t.value}
+   422→   422→                            onClick={() => {
+   423→   423→                              setTheme(t.value);
+   424→   424→                              toast.success('Theme Updated', { description: `${t.label} theme applied` });
+   425→   425→                            }}
+   426→   426→                            className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
+   427→   427→                              theme === t.value
+   428→   428→                                ? 'border-primary bg-primary/5'
+   429→   429→                                : 'border-muted hover:border-muted-foreground/30'
+   430→   430→                            }`}
+   431→   431→                          >
+   432→   432→                            <t.icon className={`h-6 w-6 ${theme === t.value ? 'text-primary' : 'text-muted-foreground'}`} />
+   433→   433→                            <span className={`text-sm font-medium ${theme === t.value ? 'text-primary' : ''}`}>
+   434→   434→                              {t.label}
+   435→   435→                            </span>
+   436→   436→                          </button>
+   437→   437→                        ))}
+   438→   438→                      </div>
+   439→   439→                    </div>
+   440→   440→                  </div>
+   441→   441→                </CardContent>
+   442→   442→              </Card>
+   443→   443→            )}
+   444→   444→
+   445→   445→            {/* ── Security Section ── */}
+   446→   446→            {activeSection === 'security' && (
+   447→   447→              <Card>
+   448→   448→                <CardHeader>
+   449→   449→                  <CardTitle className="text-base flex items-center gap-2">
+   450→   450→                    <Shield className="h-4 w-4" />
+   451→   451→                    Security
+   452→   452→                  </CardTitle>
+   453→   453→                  <CardDescription>Manage your account security settings</CardDescription>
+   454→   454→                </CardHeader>
+   455→   455→                <CardContent className="space-y-6">
+   456→   456→                  {/* Change Password */}
+   457→   457→                  <div>
+   458→   458→                    <h3 className="text-sm font-semibold flex items-center gap-2">
+   459→   459→                      <Lock className="h-4 w-4" />
+   460→   460→                      Change Password
+   461→   461→                    </h3>
+   462→   462→                    <div className="mt-4 space-y-4 max-w-md">
+   463→   463→                      <div className="space-y-2">
+   464→   464→                        <Label htmlFor="current-pw">Current Password</Label>
+   465→   465→                        <Input
+   466→   466→                          id="current-pw"
+   467→   467→                          type="password"
+   468→   468→                          placeholder="Enter current password"
+   469→   469→                          value={passwordForm.current}
+   470→   470→                          onChange={e => setPasswordForm(f => ({ ...f, current: e.target.value }))}
+   471→   471→                        />
+   472→   472→                      </div>
+   473→   473→                      <div className="space-y-2">
+   474→   474→                        <Label htmlFor="new-pw">New Password</Label>
+   475→   475→                        <Input
+   476→   476→                          id="new-pw"
+   477→   477→                          type="password"
+   478→   478→                          placeholder="Enter new password"
+   479→   479→                          value={passwordForm.newPassword}
+   480→   480→                          onChange={e => setPasswordForm(f => ({ ...f, newPassword: e.target.value }))}
+   481→   481→                        />
+   482→   482→                      </div>
+   483→   483→                      <div className="space-y-2">
+   484→   484→                        <Label htmlFor="confirm-pw">Confirm New Password</Label>
+   485→   485→                        <Input
+   486→   486→                          id="confirm-pw"
+   487→   487→                          type="password"
+   488→   488→                          placeholder="Confirm new password"
+   489→   489→                          value={passwordForm.confirm}
+   490→   490→                          onChange={e => setPasswordForm(f => ({ ...f, confirm: e.target.value }))}
+   491→   491→                        />
+   492→   492→                      </div>
+   493→   493→                      <Button onClick={handleChangePassword} className="gap-2">
+   494→   494→                        <Lock className="h-4 w-4" />
+   495→   495→                        Update Password
+   496→   496→                      </Button>
+   497→   497→                    </div>
+   498→   498→                  </div>
+   499→   499→
+   500→   500→                  <Separator />
+   501→   501→
+   502→   502→                  {/* 2FA */}
+   503→   503→                  <div>
+   504→   504→                    <div className="flex items-center justify-between">
+   505→   505→                      <div className="flex items-center gap-3">
+   506→   506→                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+   507→   507→                          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+   508→   508→                        </div>
+   509→   509→                        <div>
+   510→   510→                          <p className="text-sm font-medium">Two-Factor Authentication</p>
+   511→   511→                          <p className="text-xs text-muted-foreground">Add an extra layer of security</p>
+   512→   512→                        </div>
+   513→   513→                      </div>
+   514→   514→                      <div className="flex items-center gap-2">
+   515→   515→                        <Badge variant="outline" className="text-xs">Coming Soon</Badge>
+   516→   516→                        <Switch disabled />
+   517→   517→                      </div>
+   518→   518→                    </div>
+   519→   519→                  </div>
+   520→   520→                </CardContent>
+   521→   521→              </Card>
+   522→   522→            )}
+   523→   523→
+   524→   524→            {/* ── Danger Zone Section ── */}
+   525→   525→            {activeSection === 'danger' && (
+   526→   526→              <Card className="border-red-200 dark:border-red-900/50">
+   527→   527→                <CardHeader>
+   528→   528→                  <CardTitle className="text-base text-red-600 flex items-center gap-2">
+   529→   529→                    <AlertTriangle className="h-4 w-4" />
+   530→   530→                    Danger Zone
+   531→   531→                  </CardTitle>
+   532→   532→                  <CardDescription>Irreversible and destructive actions</CardDescription>
+   533→   533→                </CardHeader>
+   534→   534→                <CardContent className="space-y-4">
+   535→   535→                  <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50">
+   536→   536→                    <div>
+   537→   537→                      <p className="text-sm font-medium text-red-600 dark:text-red-400">Delete Account</p>
+   538→   538→                      <p className="text-xs text-muted-foreground">
+   539→   539→                        Permanently delete your account and all associated data. This action cannot be undone.
+   540→   540→                      </p>
+   541→   541→                    </div>
+   542→   542→                    <Button variant="destructive" className="gap-2 shrink-0" onClick={() => setDeleteDialogOpen(true)}>
+   543→   543→                      <Trash2 className="h-4 w-4" />
+   544→   544→                      Delete Account
+   545→   545→                    </Button>
+   546→   546→                  </div>
+   547→   547→
+   548→   548→                  {currentUser?.role === 'company_owner' && (
+   549→   549→                    <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50">
+   550→   550→                      <div>
+   551→   551→                        <p className="text-sm font-medium text-red-600 dark:text-red-400">Deactivate Company</p>
+   552→   552→                        <p className="text-xs text-muted-foreground">
+   553→   553→                          Deactivate {userCompany?.name || 'your company'} and all operations. This can be reversed within 30 days.
+   554→   554→                        </p>
+   555→   555→                      </div>
+   556→   556→                      <Button variant="destructive" className="gap-2 shrink-0" onClick={() => setDeactivateDialogOpen(true)}>
+   557→   557→                        <Building2 className="h-4 w-4" />
+   558→   558→                        Deactivate
+   559→   559→                      </Button>
+   560→   560→                    </div>
+   561→   561→                  )}
+   562→   562→                </CardContent>
+   563→   563→              </Card>
+   564→   564→            )}
+   565→   565→          </motion.div>
+   566→   566→        </div>
+   567→   567→      </div>
+   568→   568→
+   569→   569→      {/* Delete Account Confirmation Dialog */}
+   570→   570→      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+   571→   571→        <DialogContent className="sm:max-w-md">
+   572→   572→          <DialogHeader>
+   573→   573→            <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+   574→   574→            <DialogDescription>
+   575→   575→              Are you sure you want to delete your account? This action is permanent and cannot be undone.
+   576→   576→              All your data, including delivery history and messages, will be permanently deleted.
+   577→   577→            </DialogDescription>
+   578→   578→          </DialogHeader>
+   579→   579→          <DialogFooter>
+   580→   580→            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+   581→   581→            <Button variant="destructive" className="gap-2" onClick={handleDeleteAccount}>
+   582→   582→              <Trash2 className="h-4 w-4" />
+   583→   583→              Yes, Delete My Account
+   584→   584→            </Button>
+   585→   585→          </DialogFooter>
+   586→   586→        </DialogContent>
+   587→   587→      </Dialog>
+   588→   588→
+   589→   589→      {/* Deactivate Company Confirmation Dialog */}
+   590→   590→      <Dialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
+   591→   591→        <DialogContent className="sm:max-w-md">
+   592→   592→          <DialogHeader>
+   593→   593→            <DialogTitle className="text-red-600">Deactivate Company</DialogTitle>
+   594→   594→            <DialogDescription>
+   595→   595→              Are you sure you want to deactivate {userCompany?.name}? All company operations will be paused.
+   596→   596→              This can be reversed within 30 days by contacting support.
+   597→   597→            </DialogDescription>
+   598→   598→          </DialogHeader>
+   599→   599→          <DialogFooter>
+   600→   600→            <Button variant="outline" onClick={() => setDeactivateDialogOpen(false)}>Cancel</Button>
+   601→   601→            <Button variant="destructive" className="gap-2" onClick={handleDeactivateCompany}>
+   602→   602→              <Building2 className="h-4 w-4" />
+   603→   603→              Yes, Deactivate Company
+   604→   604→            </Button>
+   605→   605→          </DialogFooter>
+   606→   606→        </DialogContent>
+   607→   607→      </Dialog>
+   608→   608→    </div>
+   609→   609→  );
+   610→   610→}

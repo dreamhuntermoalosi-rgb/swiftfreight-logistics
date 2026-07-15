@@ -662,9 +662,9 @@ export function DeliveriesTab() {
                   paged.map((d, idx) => (
                     <TableRow
                       key={d.id}
-                      className={`cursor-pointer transition-colors hover:bg-muted/80 ${
+                      className={`cursor-pointer transition-all duration-150 hover:bg-muted/50 ${
                         idx % 2 === 1 ? 'bg-muted/20' : ''
-                      } ${selected.has(d.id) ? 'bg-green-50/50 dark:bg-green-900/10' : ''}`}
+                      } ${selected.has(d.id) ? 'bg-green-50/50 dark:bg-green-900/10' : ''} ${d.priority === 'urgent' ? 'border-l-2 border-l-red-400' : d.priority === 'express' ? 'border-l-2 border-l-amber-400' : ''}`}
                       onClick={() => openDetail(d.id)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -686,7 +686,8 @@ export function DeliveriesTab() {
                       </TableCell>
                       <TableCell className="text-sm">{d.packageWeight} kg</TableCell>
                       <TableCell>
-                        <Badge className={statusColors[d.status] || ''} variant="secondary">
+                        <Badge className={`${statusColors[d.status] || ''} gap-1.5`} variant="secondary">
+                          <span className="h-1.5 w-1.5 rounded-full bg-current/60" />
                           {statusLabels[d.status] || d.status}
                         </Badge>
                       </TableCell>
@@ -789,7 +790,7 @@ export function DeliveriesTab() {
                   transition={{ duration: 0.2 }}
                 >
                   <Card
-                    className="cursor-pointer hover:shadow-md transition-shadow border hover:border-green-300 dark:hover:border-green-700"
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400 hover:border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400 hover:border-l-amber-400' : 'border-l-primary/30 hover:border-l-primary/50'}`}
                     onClick={() => openDetail(d.id)}
                   >
                     <CardContent className="p-4 space-y-3">

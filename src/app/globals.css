@@ -128,6 +128,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
   }
@@ -210,4 +213,129 @@
 }
 .dark .map-placeholder {
   background: linear-gradient(135deg, oklch(0.2 0.02 155), oklch(0.22 0.02 175));
+}
+
+/* ─── Marketing Animations ─── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes blob-move {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(20px, -20px) scale(1.05); }
+  50% { transform: translate(-10px, 15px) scale(0.95); }
+  75% { transform: translate(15px, 10px) scale(1.02); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.42 0.14 155 / 0.25); }
+  50% { box-shadow: 0 0 0 6px oklch(0.42 0.14 155 / 0); }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-delayed { animation: float-delayed 7s ease-in-out infinite 1s; }
+.animate-float-slow { animation: float-slow 8s ease-in-out infinite 2s; }
+.animate-blob { animation: blob-move 15s ease-in-out infinite; }
+.animate-blob-delayed { animation: blob-move 18s ease-in-out infinite 5s; }
+.animate-blob-slow { animation: blob-move 20s ease-in-out infinite 10s; }
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+.animate-pulse-ring { animation: pulse-ring 2.5s ease-in-out infinite; }
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 4s ease infinite;
+}
+
+/* FAQ left accent border */
+.faq-item-active {
+  border-left: 3px solid oklch(0.42 0.14 155);
+}
+.dark .faq-item-active {
+  border-left: 3px solid oklch(0.55 0.15 155);
+}
+
+/* Gradient ring decoration for benefits */
+.benefit-ring {
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.42 0.14 155 / 0.15),
+    oklch(0.55 0.15 155 / 0.1),
+    oklch(0.65 0.12 175 / 0.15),
+    oklch(0.42 0.14 155 / 0.15)
+  );
+}
+.dark .benefit-ring {
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.55 0.15 155 / 0.2),
+    oklch(0.6 0.16 155 / 0.15),
+    oklch(0.65 0.1 180 / 0.2),
+    oklch(0.55 0.15 155 / 0.2)
+  );
+}
+
+/* Pricing highlighted gradient border */
+.pricing-highlighted {
+  position: relative;
+}
+.pricing-highlighted::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, oklch(0.42 0.14 155), oklch(0.55 0.15 155), oklch(0.65 0.12 175));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.dark .pricing-highlighted::before {
+  background: linear-gradient(135deg, oklch(0.55 0.15 155), oklch(0.6 0.16 155), oklch(0.65 0.1 180));
+}
+
+/* Dot pattern for contact section */
+.dot-pattern {
+  background-image: radial-gradient(circle, oklch(1 0 0 / 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Hero bottom fade */
+.hero-fade::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, oklch(0.99 0.002 155 / 0.8));
+  pointer-events: none;
+  z-index: 1;
+}
+.dark .hero-fade::after {
+  background: linear-gradient(to bottom, transparent, oklch(0.14 0.01 155 / 0.8));
 }

@@ -161,7 +161,7 @@ Stage Summary:
 ---
 Task ID: 10
 Agent: Main Orchestrator
-Task: Browser Testing & QA
+Task: Browser Testing & QA (Round 1)
 
 Work Log:
 - ESLint: passes clean (zero errors)
@@ -187,19 +187,71 @@ Stage Summary:
 - Complete end-to-end demo flow: Marketing → Login → Dashboard → All Tabs → Sign Out
 
 ---
+Task ID: cron-1
+Agent: QA + Styling + Features (Continuous Development Round 1)
+
+Work Log:
+
+**Bugs Found & Fixed:**
+1. Hero heading "LogisticsOperating" missing space - Fixed by wrapping text in {' '} JSX expressions for proper accessibility tree rendering
+2. Customer dashboard landing on "Settings" tab - Fixed by adding useEffect in DashboardLayout that detects role and redirects to first valid nav item
+3. Customer sidebar showing "Mountain Express" (wrong company) - Fixed by conditionally rendering company name only when currentUser.companyId exists, with dynamic lookup from companies array
+4. Runtime error "setDashboardTab is not defined" - Fixed by adding setDashboardTab to the useNavStore() destructure in DashboardLayout component
+
+**Styling Improvements (Marketing Website):**
+- Hero: animated gradient blob backgrounds, 8 floating decorative elements, glass-effect stats bar with dividers, bottom gradient fade
+- Feature/Product Overview cards: hover lift (-translate-y-1), gradient icon containers, top gradient line reveal on hover
+- How It Works: gradient step number badges with arrows, arrow-tipped connector lines, gradient section background
+- Customer Types: gradient icon circles, hover lift + ring glow
+- Benefits: conic-gradient decorative rings, larger gradient-text stats, hover ring scale animation
+- Pricing: CSS gradient border (mask-composite), shimmer badge animation, gradient price text
+- FAQ: left border accent on expanded items, hover background
+- Contact: gradient background (primary → emerald), dot-pattern overlay, pulse-ring success animation
+- General: FadeIn wrapper (framer-motion whileInView), gradient dividers, smooth scroll, back-to-top button
+
+**Styling Improvements (Dashboard):**
+- KPI Cards: hover:shadow-md hover:-translate-y-0.5, border-l-4 accent, growth arrow icon, pill-wrapped indicator
+- Delivery Table: priority-based left border colors, status dot indicator before badge text, card view lift
+- Sidebar: gradient active background, animated gradient pill indicator, hover indent, gradient logo border
+- Dispatch: stat card hover lift, delivery queue item hover shadow
+- Fleet: vehicle type-based left border colors, status dot on icon, animate-pulse on maintenance badges
+- Messages: refined bubble corners, slide-up entry animation, active:bg-muted touch fallback, styled delivery badge
+- Settings: gradient dividers, camera button hover-reveal, danger zone hover effects
+- Tracking: gradient status banners, gradient progress fill, scale-110 current step
+- General: h-1 gradient top-border bar between header and content, scroll-smooth
+
+**New Features:**
+1. Customer Overview: personalized greeting, 4 KPIs (Active Shipments, Delivered, Total Spent, Avg Time), Quick Action cards, Recent Shipments table, Spending Overview chart
+2. Driver Overview: personalized greeting, 4 KPIs (Today's Jobs, Weekly Completed, Monthly Earnings, Rating), Quick Actions, Today's deliveries
+3. Invoices Tab: search, status filter (All/Paid/Pending/Overdue), 3 summary cards, sortable table with pagination, detail dialog with itemized breakdown, Pay Now button
+4. Role-aware tab titles (My Shipments, Track Parcel, Invoices for customers; My Jobs, My Vehicle for drivers)
+5. Invoices added to staff navigation and tab map
+
+Stage Summary:
+- 3 bugs fixed (hero text, customer routing, company name, runtime error)
+- Marketing page: 9 sections enhanced with hover effects, animations, gradients
+- Dashboard: 10 files polished with micro-interactions
+- 2 new role-specific dashboards (customer + driver overview)
+- 1 new tab (Invoices) with full CRUD-style management
+- ESLint: zero errors throughout all changes
+- All flows re-tested and verified via agent-browser
+
+---
 Current Project Status:
-- COMPLETE: Marketing website, Auth pages, Dashboard shell, All 12 dashboard tabs, API routes, Database schema
-- All core features functional and browser-tested
-- 500+ demo deliveries, 60 drivers, 40 vehicles, 300 customers, 3 companies
-- Role-based dashboards for 5 different roles
+- COMPLETE: Marketing website, Auth pages, Dashboard shell, 13 dashboard tabs (was 12 + Invoices), API routes, Database schema
+- Role-based dashboards for 5 roles (Company Owner, Ops Manager, Dispatcher, Driver, Customer)
+- Customer + Driver personalized overviews
+- Invoice management for all roles
+- Comprehensive micro-interaction polish across entire app
 - Light/dark mode support
 - Responsive design (mobile + desktop)
+- 500+ demo deliveries, 60 drivers, 40 vehicles, 300 customers, 3 companies, 50 invoices
 
 Current Goals:
-- Setup cron job for continuous development and improvement
-- Future: Add more polish, animations, additional features
+- Continue polishing and adding features in next development rounds
+- Potential next features: Proof of Delivery section, rating system, map placeholder, customer delivery filtering
 
 Unresolved Issues / Risks:
-- Dev server process management needs setsid for background operation
+- Customer "My Shipments" shows all 500 deliveries (not filtered to customer's own) - functional improvement needed
 - No real authentication (demo mode only - acceptable for investor demo)
-- Tracking number format: now fixed (SF2025000001LS through SF2025000500LS)
+- Driver overview "Monthly Earnings" and "Today's Jobs" data not personalized from mock data

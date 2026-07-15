@@ -272,6 +272,7 @@ export type DashboardTab =
   | 'sourcing'
   | 'messages'
   | 'reports'
+  | 'invoices'
   | 'settings';
 
 export interface Quotation {

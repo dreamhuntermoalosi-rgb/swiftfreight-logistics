@@ -1,0 +1,1102 @@
+     1→'use client';
+     2→
+     3→import { useState, type FormEvent } from 'react';
+     4→import { useNavStore } from '@/lib/store';
+     5→import { Button } from '@/components/ui/button';
+     6→import {
+     7→  Card,
+     8→  CardContent,
+     9→  CardDescription,
+    10→  CardHeader,
+    11→  CardTitle,
+    12→} from '@/components/ui/card';
+    13→import { Badge } from '@/components/ui/badge';
+    14→import {
+    15→  Accordion,
+    16→  AccordionContent,
+    17→  AccordionItem,
+    18→  AccordionTrigger,
+    19→} from '@/components/ui/accordion';
+    20→import { Input } from '@/components/ui/input';
+    21→import { Textarea } from '@/components/ui/textarea';
+    22→import {
+    23→  Sheet,
+    24→  SheetContent,
+    25→  SheetTrigger,
+    26→  SheetTitle,
+    27→} from '@/components/ui/sheet';
+    28→import {
+    29→  Truck,
+    30→  Menu,
+    31→  ArrowRight,
+    32→  Play,
+    33→  Workflow,
+    34→  Building2,
+    35→  MapPin,
+    36→  Brain,
+    37→  Activity,
+    38→  Car,
+    39→  ShoppingBag,
+    40→  BarChart3,
+    41→  MessageSquare,
+    42→  FileText,
+    43→  Zap,
+    44→  Eye,
+    45→  TrendingUp,
+    46→  Package,
+    47→  Users,
+    48→  Warehouse,
+    49→  Search,
+    50→  ClipboardList,
+    51→  Quote,
+    52→  Route,
+    53→  CheckCircle2,
+    54→  Phone,
+    55→  Mail,
+    56→  MapPinned,
+    57→  Send,
+    58→  Check,
+    59→  Star,
+    60→  ChevronRight,
+    61→  X,
+    62→} from 'lucide-react';
+    63→
+    64→// ─────────────────────────────────────────────────────────────────────────────
+    65→// NAV LINKS
+    66→// ─────────────────────────────────────────────────────────────────────────────
+    67→const NAV_LINKS = [
+    68→  { label: 'Features', href: '#features' },
+    69→  { label: 'How It Works', href: '#how-it-works' },
+    70→  { label: 'Pricing', href: '#pricing' },
+    71→  { label: 'FAQ', href: '#faq' },
+    72→] as const;
+    73→
+    74→// ─────────────────────────────────────────────────────────────────────────────
+    75→// SMOOTH SCROLL HELPER
+    76→// ─────────────────────────────────────────────────────────────────────────────
+    77→function scrollTo(href: string) {
+    78→  const el = document.querySelector(href);
+    79→  if (el) {
+    80→    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    81→  }
+    82→}
+    83→
+    84→// ─────────────────────────────────────────────────────────────────────────────
+    85→// SECTION HEADING COMPONENT
+    86→// ─────────────────────────────────────────────────────────────────────────────
+    87→function SectionHeading({
+    88→  badge,
+    89→  title,
+    90→  description,
+    91→}: {
+    92→  badge?: string;
+    93→  title: string;
+    94→  description: string;
+    95→}) {
+    96→  return (
+    97→    <div className="mx-auto max-w-2xl text-center">
+    98→      {badge && (
+    99→        <Badge
+   100→          variant="secondary"
+   101→          className="mb-4 rounded-full border border-primary/10 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-primary"
+   102→        >
+   103→          {badge}
+   104→        </Badge>
+   105→      )}
+   106→      <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+   107→        {title}
+   108→      </h2>
+   109→      <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+   110→        {description}
+   111→      </p>
+   112→    </div>
+   113→  );
+   114→}
+   115→
+   116→// ═══════════════════════════════════════════════════════════════════════════════
+   117→// MARKETING WEBSITE
+   118→// ═══════════════════════════════════════════════════════════════════════════════
+   119→export function MarketingWebsite() {
+   120→  const { setView } = useNavStore();
+   121→  const [mobileOpen, setMobileOpen] = useState(false);
+   122→  const [contactName, setContactName] = useState('');
+   123→  const [contactEmail, setContactEmail] = useState('');
+   124→  const [contactMessage, setContactMessage] = useState('');
+   125→  const [contactSubmitted, setContactSubmitted] = useState(false);
+   126→
+   127→  const handleContactSubmit = (e: FormEvent) => {
+   128→    e.preventDefault();
+   129→    setContactSubmitted(true);
+   130→    setContactName('');
+   131→    setContactEmail('');
+   132→    setContactMessage('');
+   133→    setTimeout(() => setContactSubmitted(false), 4000);
+   134→  };
+   135→
+   136→  const handleNavClick = (href: string) => {
+   137→    setMobileOpen(false);
+   138→    scrollTo(href);
+   139→  };
+   140→
+   141→  return (
+   142→    <div className="flex min-h-screen flex-col">
+   143→      {/* ─────────── 1. NAVIGATION BAR ─────────── */}
+   144→      <header className="glass sticky top-0 z-50 w-full border-b border-border/50">
+   145→        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+   146→          {/* Logo */}
+   147→          <button
+   148→            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+   149→            className="flex items-center gap-2 focus:outline-none"
+   150→          >
+   151→            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+   152→              <Truck className="h-4.5 w-4.5 text-primary-foreground" />
+   153→            </div>
+   154→            <span className="text-lg font-bold tracking-tight text-foreground">
+   155→              Swift<span className="gradient-text">Freight</span>
+   156→            </span>
+   157→          </button>
+   158→
+   159→          {/* Desktop Nav */}
+   160→          <nav className="hidden items-center gap-1 md:flex">
+   161→            {NAV_LINKS.map((link) => (
+   162→              <button
+   163→                key={link.href}
+   164→                onClick={() => scrollTo(link.href)}
+   165→                className="rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+   166→              >
+   167→                {link.label}
+   168→              </button>
+   169→            ))}
+   170→          </nav>
+   171→
+   172→          {/* Desktop Actions */}
+   173→          <div className="hidden items-center gap-3 md:flex">
+   174→            <Button
+   175→              variant="ghost"
+   176→              className="h-9 text-sm font-medium"
+   177→              onClick={() => setView('login')}
+   178→            >
+   179→              Sign In
+   180→            </Button>
+   181→            <Button
+   182→              className="h-9 bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
+   183→              onClick={() => setView('register')}
+   184→            >
+   185→              Get Started
+   186→              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+   187→            </Button>
+   188→          </div>
+   189→
+   190→          {/* Mobile Menu */}
+   191→          <div className="md:hidden">
+   192→            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+   193→              <SheetTrigger asChild>
+   194→                <Button variant="ghost" size="icon" className="h-9 w-9">
+   195→                  <Menu className="h-5 w-5" />
+   196→                  <span className="sr-only">Open menu</span>
+   197→                </Button>
+   198→              </SheetTrigger>
+   199→              <SheetContent side="right" className="w-72 pt-12">
+   200→                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+   201→                <nav className="flex flex-col gap-1 px-4">
+   202→                  {NAV_LINKS.map((link) => (
+   203→                    <button
+   204→                      key={link.href}
+   205→                      onClick={() => handleNavClick(link.href)}
+   206→                      className="rounded-md px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+   207→                    >
+   208→                      {link.label}
+   209→                    </button>
+   210→                  ))}
+   211→                  <div className="my-4 h-px bg-border" />
+   212→                  <Button
+   213→                    variant="ghost"
+   214→                    className="justify-start px-3 text-sm font-medium"
+   215→                    onClick={() => {
+   216→                      setMobileOpen(false);
+   217→                      setView('login');
+   218→                    }}
+   219→                  >
+   220→                    Sign In
+   221→                  </Button>
+   222→                  <Button
+   223→                    className="mt-1 bg-primary text-primary-foreground hover:bg-primary/90"
+   224→                    onClick={() => {
+   225→                      setMobileOpen(false);
+   226→                      setView('register');
+   227→                    }}
+   228→                  >
+   229→                    Get Started
+   230→                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+   231→                  </Button>
+   232→                </nav>
+   233→              </SheetContent>
+   234→            </Sheet>
+   235→          </div>
+   236→        </div>
+   237→      </header>
+   238→
+   239→      <main className="flex-1">
+   240→        {/* ─────────── 2. HERO SECTION ─────────── */}
+   241→        <section className="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-32 lg:pb-36">
+   242→          {/* Abstract geometric background */}
+   243→          <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+   244→            <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
+   245→            <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-emerald/5 blur-3xl" />
+   246→            <div className="absolute top-1/2 left-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal/5 blur-3xl" />
+   247→            {/* Grid pattern */}
+   248→            <svg
+   249→              className="absolute inset-0 h-full w-full opacity-[0.03]"
+   250→              xmlns="http://www.w3.org/2000/svg"
+   251→            >
+   252→              <defs>
+   253→                <pattern id="hero-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+   254→                  <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1" />
+   255→                </pattern>
+   256→              </defs>
+   257→              <rect width="100%" height="100%" fill="url(#hero-grid)" />
+   258→            </svg>
+   259→            {/* Diagonal lines */}
+   260→            <div className="absolute top-0 right-0 h-full w-1/2">
+   261→              <div className="absolute top-20 right-20 h-px w-60 rotate-45 bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+   262→              <div className="absolute top-40 right-10 h-px w-48 rotate-45 bg-gradient-to-r from-transparent via-emerald/10 to-transparent" />
+   263→              <div className="absolute top-60 right-32 h-px w-72 rotate-45 bg-gradient-to-r from-transparent via-teal/8 to-transparent" />
+   264→            </div>
+   265→            {/* Floating shapes */}
+   266→            <div className="absolute top-32 left-[15%] h-2.5 w-2.5 rotate-12 rounded-sm bg-primary/15" />
+   267→            <div className="absolute top-48 right-[20%] h-3 w-3 rotate-45 rounded-full bg-emerald/12" />
+   268→            <div className="absolute bottom-40 left-[25%] h-2 w-2 rounded-full bg-teal/15" />
+   269→            <div className="absolute bottom-60 right-[30%] h-4 w-1 rotate-12 rounded-full bg-primary/10" />
+   270→          </div>
+   271→
+   272→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   273→            <div className="mx-auto max-w-4xl text-center">
+   274→              <Badge
+   275→                variant="secondary"
+   276→                className="mb-6 rounded-full border border-primary/10 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-primary"
+   277→              >
+   278→                Built for Lesotho &middot; Ready for Southern Africa
+   279→              </Badge>
+   280→              <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+   281→                The Intelligent{' '}
+   282→                <span className="gradient-text">Logistics Operating System</span>{' '}
+   283→                for Africa
+   284→              </h1>
+   285→              <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl">
+   286→                SwiftFreight connects courier companies, drivers, warehouses, and
+   287→                customers in one powerful ecosystem. Built for Lesotho, ready for
+   288→                Southern Africa.
+   289→              </p>
+   290→              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+   291→                <Button
+   292→                  size="lg"
+   293→                  className="h-12 w-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 sm:w-auto"
+   294→                  onClick={() => setView('register')}
+   295→                >
+   296→                  Start Free Trial
+   297→                  <ArrowRight className="ml-2 h-4 w-4" />
+   298→                </Button>
+   299→                <Button
+   300→                  size="lg"
+   301→                  variant="outline"
+   302→                  className="h-12 w-full border-border/60 px-8 text-base font-semibold sm:w-auto"
+   303→                >
+   304→                  <Play className="mr-2 h-4 w-4" />
+   305→                  Watch Demo
+   306→                </Button>
+   307→              </div>
+   308→            </div>
+   309→
+   310→            {/* Stats bar */}
+   311→            <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 sm:mt-20 sm:grid-cols-4 sm:gap-8">
+   312→              {[
+   313→                { value: '500+', label: 'Deliveries' },
+   314→                { value: '3', label: 'Companies' },
+   315→                { value: '60', label: 'Drivers' },
+   316→                { value: '98%', label: 'On-Time' },
+   317→              ].map((stat) => (
+   318→                <div key={stat.label} className="text-center">
+   319→                  <div className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+   320→                    {stat.value}
+   321→                  </div>
+   322→                  <div className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+   323→                    {stat.label}
+   324→                  </div>
+   325→                </div>
+   326→              ))}
+   327→            </div>
+   328→          </div>
+   329→        </section>
+   330→
+   331→        {/* ─────────── 3. PRODUCT OVERVIEW ─────────── */}
+   332→        <section className="border-t border-border/50 bg-muted/30 py-20 sm:py-24">
+   333→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   334→            <SectionHeading
+   335→              badge="Product Overview"
+   336→              title="One Platform. Every Logistics Need."
+   337→              description="From the first delivery request to proof of delivery, SwiftFreight handles your entire logistics operation in one unified system."
+   338→            />
+   339→            <div className="mt-14 grid gap-6 sm:mt-16 md:grid-cols-3">
+   340→              {[
+   341→                {
+   342→                  icon: Workflow,
+   343→                  title: 'Complete Workflow',
+   344→                  description:
+   345→                    'From request to delivery and proof of delivery — manage every step of the logistics chain without switching tools.',
+   346→                },
+   347→                {
+   348→                  icon: Building2,
+   349→                  title: 'Multi-Tenant SaaS',
+   350→                  description:
+   351→                    'Each company gets its own isolated workspace with custom branding, users, vehicles, and data — all on one platform.',
+   352→                },
+   353→                {
+   354→                  icon: MapPin,
+   355→                  title: 'Real-Time Tracking',
+   356→                  description:
+   357→                    'Track every parcel with live status updates. Customers and operators see the same real-time view of all shipments.',
+   358→                },
+   359→              ].map((item) => (
+   360→                <Card
+   361→                  key={item.title}
+   362→                  className="group border-border/50 bg-background transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+   363→                >
+   364→                  <CardHeader className="pb-4">
+   365→                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+   366→                      <item.icon className="h-5 w-5" />
+   367→                    </div>
+   368→                    <CardTitle className="mt-2 text-lg font-semibold">
+   369→                      {item.title}
+   370→                    </CardTitle>
+   371→                  </CardHeader>
+   372→                  <CardContent>
+   373→                    <CardDescription className="text-sm leading-relaxed">
+   374→                      {item.description}
+   375→                    </CardDescription>
+   376→                  </CardContent>
+   377→                </Card>
+   378→              ))}
+   379→            </div>
+   380→          </div>
+   381→        </section>
+   382→
+   383→        {/* ─────────── 4. FEATURES SECTION ─────────── */}
+   384→        <section id="features" className="py-20 sm:py-24">
+   385→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   386→            <SectionHeading
+   387→              badge="Features"
+   388→              title="Everything you need to run logistics"
+   389→              description="Powerful tools designed for the realities of logistics in Lesotho and Southern Africa."
+   390→            />
+   391→            <div className="mt-14 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+   392→              {[
+   393→                {
+   394→                  icon: Brain,
+   395→                  title: 'Smart Dispatch',
+   396→                  description:
+   397→                    'AI-powered driver and vehicle assignment optimizes routes and reduces empty miles for every delivery.',
+   398→                },
+   399→                {
+   400→                  icon: Activity,
+   401→                  title: 'Live Tracking',
+   402→                  description:
+   403→                    'Real-time parcel tracking with full status timeline. Know exactly where every shipment is at all times.',
+   404→                },
+   405→                {
+   406→                  icon: Car,
+   407→                  title: 'Fleet Management',
+   408→                  description:
+   409→                    'Vehicle maintenance schedules, insurance tracking, and utilization analytics to maximize fleet performance.',
+   410→                },
+   411→                {
+   412→                  icon: ShoppingBag,
+   413→                  title: 'Sourcing Services',
+   414→                  description:
+   415→                    'Source products from South Africa with dedicated agent assistance. Cross-border logistics made simple.',
+   416→                },
+   417→                {
+   418→                  icon: BarChart3,
+   419→                  title: 'Analytics Dashboard',
+   420→                  description:
+   421→                    'Revenue, performance, and growth insights at a glance. Make data-driven decisions with powerful reporting.',
+   422→                },
+   423→                {
+   424→                  icon: MessageSquare,
+   425→                  title: 'Communication Hub',
+   426→                  description:
+   427→                    'Integrated messaging linked directly to deliveries. All conversations organized and traceable per shipment.',
+   428→                },
+   429→              ].map((feature) => (
+   430→                <Card
+   431→                  key={feature.title}
+   432→                  className="group relative overflow-hidden border-border/50 bg-background transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+   433→                >
+   434→                  <CardHeader className="pb-3">
+   435→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+   436→                      <feature.icon className="h-5 w-5" />
+   437→                    </div>
+   438→                    <CardTitle className="mt-3 text-base font-semibold">
+   439→                      {feature.title}
+   440→                    </CardTitle>
+   441→                  </CardHeader>
+   442→                  <CardContent>
+   443→                    <CardDescription className="text-sm leading-relaxed">
+   444→                      {feature.description}
+   445→                    </CardDescription>
+   446→                  </CardContent>
+   447→                </Card>
+   448→              ))}
+   449→            </div>
+   450→          </div>
+   451→        </section>
+   452→
+   453→        {/* ─────────── 5. HOW IT WORKS ─────────── */}
+   454→        <section id="how-it-works" className="border-t border-border/50 bg-muted/30 py-20 sm:py-24">
+   455→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   456→            <SectionHeading
+   457→              badge="How It Works"
+   458→              title="From request to delivery in four steps"
+   459→              description="SwiftFreight streamlines the entire logistics process into a simple, intuitive workflow."
+   460→            />
+   461→            <div className="mt-14 grid gap-8 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
+   462→              {[
+   463→                {
+   464→                  step: '01',
+   465→                  icon: FileText,
+   466→                  title: 'Submit Request',
+   467→                  description:
+   468→                    'Customer submits a delivery or sourcing request through the platform with all required details.',
+   469→                },
+   470→                {
+   471→                  step: '02',
+   472→                  icon: Quote,
+   473→                  title: 'Get Quote',
+   474→                  description:
+   475→                    'Receive competitive quotations instantly. Compare pricing, timelines, and service levels at a glance.',
+   476→                },
+   477→                {
+   478→                  step: '03',
+   479→                  icon: Route,
+   480→                  title: 'Track & Monitor',
+   481→                  description:
+   482→                    'Real-time tracking from pickup to delivery. Get status updates at every checkpoint along the route.',
+   483→                },
+   484→                {
+   485→                  step: '04',
+   486→                  icon: CheckCircle2,
+   487→                  title: 'Delivered',
+   488→                  description:
+   489→                    'Proof of delivery with photos and digital signatures. Complete audit trail for every shipment.',
+   490→                },
+   491→              ].map((item, index) => (
+   492→                <div key={item.step} className="relative">
+   493→                  {/* Connector line */}
+   494→                  {index < 3 && (
+   495→                    <div
+   496→                      className="absolute top-8 left-[calc(50%+28px)] hidden h-px w-[calc(100%-56px)] bg-gradient-to-r from-primary/30 to-primary/5 lg:block"
+   497→                      aria-hidden="true"
+   498→                    />
+   499→                  )}
+   500→                  <div className="text-center">
+   501→                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/10 bg-background shadow-sm">
+   502→                      <item.icon className="h-6 w-6 text-primary" />
+   503→                    </div>
+   504→                    <div className="mt-2 text-xs font-bold uppercase tracking-widest text-primary/60">
+   505→                      Step {item.step}
+   506→                    </div>
+   507→                    <h3 className="mt-3 text-base font-semibold text-foreground">
+   508→                      {item.title}
+   509→                    </h3>
+   510→                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+   511→                      {item.description}
+   512→                    </p>
+   513→                  </div>
+   514→                </div>
+   515→              ))}
+   516→            </div>
+   517→          </div>
+   518→        </section>
+   519→
+   520→        {/* ─────────── 6. CUSTOMER TYPES ─────────── */}
+   521→        <section className="py-20 sm:py-24">
+   522→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   523→            <SectionHeading
+   524→              badge="For Everyone"
+   525→              title="Built for every logistics stakeholder"
+   526→              description="Whether you run a courier company, drive a truck, or ship goods — SwiftFreight has a role for you."
+   527→            />
+   528→            <div className="mt-14 grid gap-5 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+   529→              {[
+   530→                {
+   531→                  icon: Building2,
+   532→                  title: 'Courier Companies',
+   533→                  description:
+   534→                    'Manage your entire fleet, drivers, and deliveries from a single dashboard with multi-branch support.',
+   535→                },
+   536→                {
+   537→                  icon: Users,
+   538→                  title: 'Independent Drivers',
+   539→                  description:
+   540→                    'Accept delivery assignments, update shipment status, and manage your earnings — all from your phone.',
+   541→                },
+   542→                {
+   543→                  icon: Warehouse,
+   544→                  title: 'Warehouse Partners',
+   545→                  description:
+   546→                    'Receive incoming parcels, organize storage, and coordinate outbound dispatches seamlessly.',
+   547→                },
+   548→                {
+   549→                  icon: Search,
+   550→                  title: 'Sourcing Agents',
+   551→                  description:
+   552→                    'Help customers source products from South Africa with built-in request and quotation management.',
+   553→                },
+   554→                {
+   555→                  icon: Car,
+   556→                  title: 'Trailer Owners',
+   557→                  description:
+   558→                    'List your vehicles for hire, track utilization, and manage maintenance schedules.',
+   559→                },
+   560→                {
+   561→                  icon: Package,
+   562→                  title: 'Customers',
+   563→                  description:
+   564→                    'Submit delivery requests, track parcels in real-time, and receive notifications every step of the way.',
+   565→                },
+   566→              ].map((type) => (
+   567→                <Card
+   568→                  key={type.title}
+   569→                  className="group border-border/50 bg-background transition-all duration-300 hover:border-primary/20 hover:shadow-md"
+   570→                >
+   571→                  <CardContent className="flex items-start gap-4 p-5">
+   572→                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+   573→                      <type.icon className="h-5 w-5" />
+   574→                    </div>
+   575→                    <div>
+   576→                      <h3 className="text-sm font-semibold text-foreground">
+   577→                        {type.title}
+   578→                      </h3>
+   579→                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+   580→                        {type.description}
+   581→                      </p>
+   582→                    </div>
+   583→                  </CardContent>
+   584→                </Card>
+   585→              ))}
+   586→            </div>
+   587→          </div>
+   588→        </section>
+   589→
+   590→        {/* ─────────── 7. BENEFITS SECTION ─────────── */}
+   591→        <section className="border-t border-border/50 bg-muted/30 py-20 sm:py-24">
+   592→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   593→            <SectionHeading
+   594→              badge="Benefits"
+   595→              title="Why companies choose SwiftFreight"
+   596→              description="Real operational improvements that translate directly to your bottom line."
+   597→            />
+   598→            <div className="mt-14 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
+   599→              {[
+   600→                {
+   601→                  icon: FileText,
+   602→                  title: 'Reduce Paperwork',
+   603→                  description:
+   604→                    'Digital workflows replace manual processes. No more lost forms, delayed approvals, or manual data entry.',
+   605→                  stat: '80%',
+   606→                  statLabel: 'less paperwork',
+   607→                },
+   608→                {
+   609→                  icon: Zap,
+   610→                  title: 'Faster Deliveries',
+   611→                  description:
+   612→                    'Smart dispatch reduces transit times by optimizing driver and vehicle assignments automatically.',
+   613→                  stat: '3x',
+   614→                  statLabel: 'faster dispatch',
+   615→                },
+   616→                {
+   617→                  icon: Eye,
+   618→                  title: 'Complete Visibility',
+   619→                  description:
+   620→                    'Track everything in real-time. Customers, operators, and management all share the same live view.',
+   621→                  stat: '100%',
+   622→                  statLabel: 'visibility',
+   623→                },
+   624→                {
+   625→                  icon: TrendingUp,
+   626→                  title: 'Scale Easily',
+   627→                  description:
+   628→                    'From 1 to 1,000 deliveries per day — SwiftFreight grows with your business without missing a beat.',
+   629→                  stat: '10x',
+   630→                  statLabel: 'growth capacity',
+   631→                },
+   632→              ].map((benefit) => (
+   633→                <div key={benefit.title} className="text-center">
+   634→                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+   635→                    <benefit.icon className="h-6 w-6" />
+   636→                  </div>
+   637→                  <div className="mt-4 text-3xl font-bold tracking-tight text-primary">
+   638→                    {benefit.stat}
+   639→                  </div>
+   640→                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+   641→                    {benefit.statLabel}
+   642→                  </div>
+   643→                  <h3 className="mt-4 text-base font-semibold text-foreground">
+   644→                    {benefit.title}
+   645→                  </h3>
+   646→                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+   647→                    {benefit.description}
+   648→                  </p>
+   649→                </div>
+   650→              ))}
+   651→            </div>
+   652→          </div>
+   653→        </section>
+   654→
+   655→        {/* ─────────── 8. PRICING SECTION ─────────── */}
+   656→        <section id="pricing" className="py-20 sm:py-24">
+   657→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   658→            <SectionHeading
+   659→              badge="Pricing"
+   660→              title="Simple, transparent pricing"
+   661→              description="No hidden fees. No per-delivery charges. Choose the plan that fits your operation."
+   662→            />
+   663→            <div className="mt-14 grid gap-6 sm:mt-16 lg:grid-cols-3 lg:gap-8">
+   664→              {[
+   665→                {
+   666→                  name: 'Starter',
+   667→                  price: 'M299',
+   668→                  period: '/month',
+   669→                  description: 'Perfect for small operations getting started with digital logistics.',
+   670→                  features: [
+   671→                    '1 company workspace',
+   672→                    'Up to 5 users',
+   673→                    'Delivery management',
+   674→                    'Basic tracking',
+   675→                    'Driver management',
+   676→                    'Email support',
+   677→                  ],
+   678→                  cta: 'Get Started',
+   679→                  highlighted: false,
+   680→                },
+   681→                {
+   682→                  name: 'Professional',
+   683→                  price: 'M799',
+   684→                  period: '/month',
+   685→                  description: 'For growing companies that need advanced tools and analytics.',
+   686→                  features: [
+   687→                    '1 company workspace',
+   688→                    'Up to 25 users',
+   689→                    'Advanced dispatch',
+   690→                    'Real-time GPS tracking',
+   691→                    'Fleet management',
+   692→                    'Analytics dashboard',
+   693→                    'Communication hub',
+   694→                    'Priority support',
+   695→                  ],
+   696→                  cta: 'Get Started',
+   697→                  highlighted: true,
+   698→                },
+   699→                {
+   700→                  name: 'Enterprise',
+   701→                  price: 'M1,999',
+   702→                  period: '/month',
+   703→                  description: 'Full-featured platform for large-scale logistics operations.',
+   704→                  features: [
+   705→                    'Multiple companies',
+   706→                    'Unlimited users',
+   707→                    'AI-powered dispatch',
+   708→                    'Sourcing services',
+   709→                    'Custom analytics',
+   710→                    'API access',
+   711→                    'White-label option',
+   712→                    'Dedicated account manager',
+   713→                    'SLA guarantee',
+   714→                  ],
+   715→                  cta: 'Contact Sales',
+   716→                  highlighted: false,
+   717→                },
+   718→              ].map((plan) => (
+   719→                <Card
+   720→                  key={plan.name}
+   721→                  className={`relative flex flex-col border transition-all duration-300 ${
+   722→                    plan.highlighted
+   723→                      ? 'border-primary bg-background shadow-xl shadow-primary/10 scale-[1.02] lg:scale-105'
+   724→                      : 'border-border/50 bg-background hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5'
+   725→                  }`}
+   726→                >
+   727→                  {plan.highlighted && (
+   728→                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+   729→                      <Badge className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-md">
+   730→                        <Star className="mr-1 h-3 w-3" />
+   731→                        Most Popular
+   732→                      </Badge>
+   733→                    </div>
+   734→                  )}
+   735→                  <CardHeader className="pb-2 pt-8 sm:pt-10">
+   736→                    <CardTitle className="text-lg font-semibold text-foreground">
+   737→                      {plan.name}
+   738→                    </CardTitle>
+   739→                    <CardDescription className="mt-1 text-sm">
+   740→                      {plan.description}
+   741→                    </CardDescription>
+   742→                    <div className="mt-4 flex items-baseline gap-1">
+   743→                      <span className="text-4xl font-bold tracking-tight text-foreground">
+   744→                        {plan.price}
+   745→                      </span>
+   746→                      <span className="text-sm text-muted-foreground">
+   747→                        {plan.period}
+   748→                      </span>
+   749→                    </div>
+   750→                  </CardHeader>
+   751→                  <CardContent className="flex flex-1 flex-col pt-2">
+   752→                    <ul className="flex-1 space-y-3">
+   753→                      {plan.features.map((feature) => (
+   754→                        <li key={feature} className="flex items-start gap-2.5">
+   755→                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+   756→                          <span className="text-sm text-muted-foreground">
+   757→                            {feature}
+   758→                          </span>
+   759→                        </li>
+   760→                      ))}
+   761→                    </ul>
+   762→                    <Button
+   763→                      className={`mt-8 h-11 w-full font-semibold ${
+   764→                        plan.highlighted
+   765→                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90'
+   766→                          : 'bg-background text-foreground border border-border hover:bg-muted'
+   767→                      }`}
+   768→                      onClick={() => setView('register')}
+   769→                    >
+   770→                      {plan.cta}
+   771→                      <ArrowRight className="ml-1.5 h-4 w-4" />
+   772→                    </Button>
+   773→                  </CardContent>
+   774→                </Card>
+   775→              ))}
+   776→            </div>
+   777→          </div>
+   778→        </section>
+   779→
+   780→        {/* ─────────── 9. FAQ SECTION ─────────── */}
+   781→        <section id="faq" className="border-t border-border/50 bg-muted/30 py-20 sm:py-24">
+   782→          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+   783→            <SectionHeading
+   784→              badge="FAQ"
+   785→              title="Frequently asked questions"
+   786→              description="Everything you need to know about SwiftFreight. Can't find the answer? Contact our team."
+   787→            />
+   788→            <Accordion
+   789→              type="single"
+   790→              collapsible
+   791→              className="mt-12 w-full"
+   792→            >
+   793→              {[
+   794→                {
+   795→                  q: 'How long does it take to get started?',
+   796→                  a: 'You can sign up and start using SwiftFreight within minutes. Our onboarding wizard guides you through setting up your company, adding users, and configuring your first delivery routes. Most companies are fully operational within a day.',
+   797→                },
+   798→                {
+   799→                  q: 'Is there a free trial available?',
+   800→                  a: 'Yes! We offer a 14-day free trial on all plans with full access to features. No credit card required to start. You can upgrade or downgrade at any time during or after the trial.',
+   801→                },
+   802→                {
+   803→                  q: 'Does SwiftFreight work offline?',
+   804→                  a: 'SwiftFreight is a cloud-based platform, but our driver app supports offline mode. Drivers can update delivery statuses, capture proof of delivery photos, and collect signatures even without internet. Data syncs automatically when connectivity is restored.',
+   805→                },
+   806→                {
+   807→                  q: 'Can I use SwiftFreight for cross-border deliveries?',
+   808→                  a: 'Absolutely. SwiftFreight is built with cross-border logistics in mind, especially for the Lesotho–South Africa corridor. Our sourcing services module handles customs documentation, agent coordination, and border crossing tracking.',
+   809→                },
+   810→                {
+   811→                  q: 'How does multi-tenant support work?',
+   812→                  a: 'Each company on SwiftFreight gets its own completely isolated workspace. Your data, users, vehicles, and deliveries are fully separated from other companies. Enterprise plans can manage multiple company workspaces from a single account.',
+   813→                },
+   814→                {
+   815→                  q: 'What payment methods do you accept?',
+   816→                  a: 'We accept bank transfers, M-Pesa, and major credit/debit cards. All payments are processed securely. Enterprise customers can also arrange invoicing with net-30 payment terms.',
+   817→                },
+   818→                {
+   819→                  q: 'Can I integrate SwiftFreight with my existing systems?',
+   820→                  a: 'Yes. Our Professional and Enterprise plans include API access, allowing you to integrate SwiftFreight with your existing accounting, ERP, or e-commerce systems. We also offer webhook support for real-time event notifications.',
+   821→                },
+   822→                {
+   823→                  q: 'What kind of support do you provide?',
+   824→                  a: 'Starter plans include email support with 24-hour response times. Professional plans get priority email and chat support. Enterprise customers receive a dedicated account manager, phone support, and guaranteed SLA response times.',
+   825→                },
+   826→              ].map((item, index) => (
+   827→                <AccordionItem
+   828→                  key={index}
+   829→                  value={`faq-${index}`}
+   830→                  className="border-border/50"
+   831→                >
+   832→                  <AccordionTrigger className="text-left text-sm font-medium text-foreground hover:no-underline sm:text-base">
+   833→                    {item.q}
+   834→                  </AccordionTrigger>
+   835→                  <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
+   836→                    {item.a}
+   837→                  </AccordionContent>
+   838→                </AccordionItem>
+   839→              ))}
+   840→            </Accordion>
+   841→          </div>
+   842→        </section>
+   843→
+   844→        {/* ─────────── 10. CONTACT SECTION ─────────── */}
+   845→        <section id="contact" className="py-20 sm:py-24">
+   846→          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   847→            <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 sm:px-12 sm:py-20 lg:px-20 lg:py-24">
+   848→              {/* Background decoration */}
+   849→              <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+   850→                <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-white/5 blur-2xl" />
+   851→                <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-white/5 blur-2xl" />
+   852→                <svg
+   853→                  className="absolute inset-0 h-full w-full opacity-[0.04]"
+   854→                  xmlns="http://www.w3.org/2000/svg"
+   855→                >
+   856→                  <defs>
+   857→                    <pattern
+   858→                      id="contact-grid"
+   859→                      width="40"
+   860→                      height="40"
+   861→                      patternUnits="userSpaceOnUse"
+   862→                    >
+   863→                      <path
+   864→                        d="M 40 0 L 0 0 0 40"
+   865→                        fill="none"
+   866→                        stroke="white"
+   867→                        strokeWidth="0.5"
+   868→                      />
+   869→                    </pattern>
+   870→                  </defs>
+   871→                  <rect width="100%" height="100%" fill="url(#contact-grid)" />
+   872→                </svg>
+   873→              </div>
+   874→
+   875→              <div className="relative grid gap-12 lg:grid-cols-2 lg:gap-16">
+   876→                {/* Left - CTA */}
+   877→                <div className="flex flex-col justify-center text-white">
+   878→                  <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+   879→                    Ready to Transform Your Logistics?
+   880→                  </h2>
+   881→                  <p className="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">
+   882→                    Join the growing network of logistics companies in Lesotho
+   883→                    already using SwiftFreight to streamline their operations.
+   884→                  </p>
+   885→                  <div className="mt-8 space-y-4">
+   886→                    <div className="flex items-center gap-3 text-white/90">
+   887→                      <Mail className="h-5 w-5 shrink-0 text-white/70" />
+   888→                      <span>info@swiftfreight.ls</span>
+   889→                    </div>
+   890→                    <div className="flex items-center gap-3 text-white/90">
+   891→                      <Phone className="h-5 w-5 shrink-0 text-white/70" />
+   892→                      <span>+266 2234 5678</span>
+   893→                    </div>
+   894→                    <div className="flex items-center gap-3 text-white/90">
+   895→                      <MapPinned className="h-5 w-5 shrink-0 text-white/70" />
+   896→                      <span>Kingsway Road, Maseru, Lesotho</span>
+   897→                    </div>
+   898→                  </div>
+   899→                </div>
+   900→
+   901→                {/* Right - Form */}
+   902→                <div>
+   903→                  {contactSubmitted ? (
+   904→                    <div className="flex h-full min-h-[300px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/10 p-8 text-center backdrop-blur-sm">
+   905→                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+   906→                        <CheckCircle2 className="h-7 w-7 text-white" />
+   907→                      </div>
+   908→                      <h3 className="mt-4 text-lg font-semibold text-white">
+   909→                        Message Sent!
+   910→                      </h3>
+   911→                      <p className="mt-2 text-sm text-white/70">
+   912→                        We&apos;ll get back to you within 24 hours.
+   913→                      </p>
+   914→                    </div>
+   915→                  ) : (
+   916→                    <form
+   917→                      onSubmit={handleContactSubmit}
+   918→                      className="space-y-4 rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-sm sm:p-8"
+   919→                    >
+   920→                      <div className="space-y-2">
+   921→                        <label
+   922→                          htmlFor="contact-name"
+   923→                          className="text-sm font-medium text-white/80"
+   924→                        >
+   925→                          Full Name
+   926→                        </label>
+   927→                        <Input
+   928→                          id="contact-name"
+   929→                          type="text"
+   930→                          placeholder="John Mokoena"
+   931→                          required
+   932→                          value={contactName}
+   933→                          onChange={(e) => setContactName(e.target.value)}
+   934→                          className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/30"
+   935→                        />
+   936→                      </div>
+   937→                      <div className="space-y-2">
+   938→                        <label
+   939→                          htmlFor="contact-email"
+   940→                          className="text-sm font-medium text-white/80"
+   941→                        >
+   942→                          Email Address
+   943→                        </label>
+   944→                        <Input
+   945→                          id="contact-email"
+   946→                          type="email"
+   947→                          placeholder="john@company.co.ls"
+   948→                          required
+   949→                          value={contactEmail}
+   950→                          onChange={(e) => setContactEmail(e.target.value)}
+   951→                          className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/30"
+   952→                        />
+   953→                      </div>
+   954→                      <div className="space-y-2">
+   955→                        <label
+   956→                          htmlFor="contact-message"
+   957→                          className="text-sm font-medium text-white/80"
+   958→                        >
+   959→                          Message
+   960→                        </label>
+   961→                        <Textarea
+   962→                          id="contact-message"
+   963→                          placeholder="Tell us about your logistics needs..."
+   964→                          required
+   965→                          rows={4}
+   966→                          value={contactMessage}
+   967→                          onChange={(e) => setContactMessage(e.target.value)}
+   968→                          className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/30"
+   969→                        />
+   970→                      </div>
+   971→                      <Button
+   972→                        type="submit"
+   973→                        className="h-11 w-full bg-white font-semibold text-primary shadow-lg hover:bg-white/90"
+   974→                      >
+   975→                        <Send className="mr-2 h-4 w-4" />
+   976→                        Send Message
+   977→                      </Button>
+   978→                    </form>
+   979→                  )}
+   980→                </div>
+   981→              </div>
+   982→            </div>
+   983→          </div>
+   984→        </section>
+   985→      </main>
+   986→
+   987→      {/* ─────────── 11. FOOTER ─────────── */}
+   988→      <footer className="mt-auto border-t border-border/50 bg-muted/30">
+   989→        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+   990→          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+   991→            {/* Brand */}
+   992→            <div className="lg:col-span-2">
+   993→              <div className="flex items-center gap-2">
+   994→                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+   995→                  <Truck className="h-4.5 w-4.5 text-primary-foreground" />
+   996→                </div>
+   997→                <span className="text-lg font-bold tracking-tight text-foreground">
+   998→                  Swift<span className="gradient-text">Freight</span>
+   999→                </span>
+  1000→              </div>
+  1001→              <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+  1002→                The intelligent logistics operating system for Lesotho and
+  1003→                Southern Africa. Connecting every link in the supply chain.
+  1004→              </p>
+  1005→              {/* Social Links */}
+  1006→              <div className="mt-5 flex gap-3">
+  1007→                {['Twitter', 'LinkedIn', 'Facebook'].map((social) => (
+  1008→                  <button
+  1009→                    key={social}
+  1010→                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/50 bg-background text-muted-foreground transition-colors hover:border-primary/20 hover:text-primary"
+  1011→                    aria-label={social}
+  1012→                  >
+  1013→                    <span className="text-xs font-semibold">
+  1014→                      {social[0]}
+  1015→                    </span>
+  1016→                  </button>
+  1017→                ))}
+  1018→              </div>
+  1019→            </div>
+  1020→
+  1021→            {/* Product */}
+  1022→            <div>
+  1023→              <h4 className="text-sm font-semibold text-foreground">Product</h4>
+  1024→              <ul className="mt-4 space-y-2.5">
+  1025→                {['Features', 'Pricing', 'Integrations', 'Changelog', 'Roadmap'].map(
+  1026→                  (link) => (
+  1027→                    <li key={link}>
+  1028→                      <button
+  1029→                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1030→                        onClick={() => {
+  1031→                          if (link === 'Pricing') scrollTo('#pricing');
+  1032→                          if (link === 'Features') scrollTo('#features');
+  1033→                        }}
+  1034→                      >
+  1035→                        {link}
+  1036→                      </button>
+  1037→                    </li>
+  1038→                  )
+  1039→                )}
+  1040→              </ul>
+  1041→            </div>
+  1042→
+  1043→            {/* Company */}
+  1044→            <div>
+  1045→              <h4 className="text-sm font-semibold text-foreground">Company</h4>
+  1046→              <ul className="mt-4 space-y-2.5">
+  1047→                {['About', 'Careers', 'Blog', 'Contact'].map((link) => (
+  1048→                  <li key={link}>
+  1049→                    <button
+  1050→                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1051→                      onClick={() => {
+  1052→                        if (link === 'Contact') scrollTo('#contact');
+  1053→                      }}
+  1054→                    >
+  1055→                      {link}
+  1056→                    </button>
+  1057→                  </li>
+  1058→                ))}
+  1059→              </ul>
+  1060→            </div>
+  1061→
+  1062→            {/* Resources & Legal */}
+  1063→            <div>
+  1064→              <h4 className="text-sm font-semibold text-foreground">Resources</h4>
+  1065→              <ul className="mt-4 space-y-2.5">
+  1066→                {['Documentation', 'Help Center', 'API Reference'].map(
+  1067→                  (link) => (
+  1068→                    <li key={link}>
+  1069→                      <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+  1070→                        {link}
+  1071→                      </span>
+  1072→                    </li>
+  1073→                  )
+  1074→                )}
+  1075→              </ul>
+  1076→              <h4 className="mt-6 text-sm font-semibold text-foreground">Legal</h4>
+  1077→              <ul className="mt-4 space-y-2.5">
+  1078→                {['Privacy Policy', 'Terms of Service'].map((link) => (
+  1079→                  <li key={link}>
+  1080→                    <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+  1081→                      {link}
+  1082→                    </span>
+  1083→                  </li>
+  1084→                ))}
+  1085→              </ul>
+  1086→            </div>
+  1087→          </div>
+  1088→
+  1089→          {/* Bottom bar */}
+  1090→          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 sm:flex-row">
+  1091→            <p className="text-sm text-muted-foreground">
+  1092→              &copy; 2025 SwiftFreight. All rights reserved.
+  1093→            </p>
+  1094→            <p className="text-sm text-muted-foreground">
+  1095→              Built with care in Maseru, Lesotho
+  1096→            </p>
+  1097→          </div>
+  1098→        </div>
+  1099→      </footer>
+  1100→    </div>
+  1101→  );
+  1102→}

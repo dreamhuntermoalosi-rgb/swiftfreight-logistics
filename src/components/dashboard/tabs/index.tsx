@@ -17,6 +17,7 @@ import { DispatchTab as DispatchTabReal } from './dispatch-tab';
 import { SourcingTab as SourcingTabReal } from './sourcing-tab';
 import { MessagesTab as MessagesTabReal } from './messages-tab';
 import { SettingsTab as SettingsTabReal } from './settings-tab';
+import { InvoicesTab as InvoicesTabReal } from './invoices-tab';
 
 /**
  * Tab component barrel file.
@@ -36,6 +37,7 @@ export const DispatchTab = DispatchTabReal;
 export const SourcingTab = SourcingTabReal;
 export const MessagesTab = MessagesTabReal;
 export const ReportsTab = ReportsTabReal;
+export const InvoicesTab = InvoicesTabReal;
 export const SettingsTab = SettingsTabReal;
 
 // Map for dynamic lookup
@@ -50,5 +52,6 @@ export const tabComponentMap: Record<DashboardTab, React.ComponentType> = {
   sourcing: SourcingTab,
   messages: MessagesTab,
   reports: ReportsTab,
+  invoices: InvoicesTab,
   settings: SettingsTab,
 };

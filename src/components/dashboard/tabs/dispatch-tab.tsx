@@ -173,7 +173,7 @@ export function DispatchTab() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
           </span>
-          <span className="text-sm font-medium text-green-700 dark:text-green-400">Live</span>
+          <span className="text-sm font-semibold text-green-700 dark:text-green-400">Live</span>
         </div>
       </div>
 
@@ -186,7 +186,7 @@ export function DispatchTab() {
           { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package },
         ].map(stat => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className={`${stat.bg} border-0`}>
+            <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -257,7 +257,7 @@ export function DispatchTab() {
                           key={d.id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                          className="flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -292,7 +292,7 @@ export function DispatchTab() {
                           key={d.id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                          className="flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export function DispatchTab() {
               <ScrollArea className="max-h-[240px]">
                 <div className="space-y-2">
                   {filteredDrivers.slice(0, 10).map(d => (
-                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 transition-colors hover:bg-muted/50">
+                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm">
                       <div className="relative">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
                           {d.name.split(' ').map(n => n[0]).join('')}

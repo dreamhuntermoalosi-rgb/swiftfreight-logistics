@@ -28,8 +28,15 @@ import {
   MessageSquare,
   CreditCard,
   Shield,
+  ArrowUpRight,
+  Plus,
+  Search,
+  Phone,
+  ClipboardCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -48,8 +55,8 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { analyticsData, deliveries, notifications, statusLabels, statusColors } from '@/lib/mock-data';
-import { useNavStore } from '@/lib/store';
+import { analyticsData, deliveries, notifications, statusLabels, statusColors, customers } from '@/lib/mock-data';
+import { useAuthStore, useNavStore } from '@/lib/store';
 import type { Delivery } from '@/lib/types';
 
 // ============ Chart Configs ============
@@ -84,6 +91,10 @@ const PIE_COLORS: Record<string, string> = {
   'Request Received': '#94a3b8',
   Cancelled: '#ef4444',
   Returned: '#f43f5e',
+};
+
+const spendingChartConfig: ChartConfig = {
+  spent: { label: 'Spent (M)', color: '#16a34a' },
 };
 
 // ============ Helpers ============
@@ -128,18 +139,22 @@ function KpiCard({
   prefix = '',
   suffix = '',
   isNegative = false,
+  iconBg = 'bg-emerald-50 dark:bg-emerald-950/50',
+  iconColor = 'text-emerald-600',
 }: {
   title: string;
   value: string;
-  growth: number;
+  growth?: number;
   icon: React.ComponentType<{ className?: string }>;
   prefix?: string;
   suffix?: string;
   isNegative?: boolean;
+  iconBg?: string;
+  iconColor?: string;
 }) {
-  const isPositive = growth >= 0;
+  const isPositive = growth !== undefined && growth >= 0;
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden border-l-4 border-l-primary/30 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -148,25 +163,27 @@ function KpiCard({
               {prefix}{value}{suffix}
             </p>
           </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-            <Icon className="h-6 w-6 text-emerald-600" />
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 ${iconBg}`}>
+            <Icon className={`h-6 w-6 ${iconColor}`} />
           </div>
         </div>
-        <div className="mt-3 flex items-center gap-1.5">
-          {isPositive ? (
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-          ) : (
-            <TrendingDown className={`h-3.5 w-3.5 ${isNegative ? 'text-red-500' : 'text-emerald-600'}`} />
-          )}
-          <span
-            className={`text-sm font-medium ${
-              isNegative ? (isPositive ? 'text-red-500' : 'text-emerald-600') : 'text-emerald-600'
-            }`}
-          >
-            {isPositive ? '+' : ''}{growth}%
-          </span>
-          <span className="text-xs text-muted-foreground">vs last period</span>
-        </div>
+        {growth !== undefined && (
+          <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
+            {isPositive ? (
+              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+            ) : (
+              <TrendingDown className={`h-3.5 w-3.5 ${isNegative ? 'text-red-500' : 'text-emerald-600'}`} />
+            )}
+            <span
+              className={`text-sm font-semibold ${
+                isNegative ? (isPositive ? 'text-red-500' : 'text-emerald-600') : 'text-emerald-600'
+              }`}
+            >
+              {isPositive ? '+' : ''}{growth}%
+            </span>
+            <span className="text-xs text-muted-foreground">vs last period</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -205,12 +222,416 @@ function OverviewLoadingSkeleton() {
   );
 }
 
-// ============ Overview Tab ============
-export function OverviewTab() {
+// ============ Customer Overview ============
+function CustomerOverview() {
+  const { currentUser } = useAuthStore();
+  const { setDashboardTab } = useNavStore();
+
+  // Find customer matching the logged-in user
+  const customerRecord = useMemo(() => {
+    return customers.find((c) => c.name === currentUser?.name) || customers[0];
+  }, [currentUser]);
+
+  const customerDeliveries = useMemo(
+    () => deliveries.filter((d) => d.customerId === customerRecord.id),
+    [customerRecord.id]
+  );
+
+  const activeShipments = useMemo(
+    () => customerDeliveries.filter((d) => d.status !== 'delivered' && d.status !== 'cancelled' && d.status !== 'returned'),
+    [customerDeliveries]
+  );
+
+  const deliveredShipments = useMemo(
+    () => customerDeliveries.filter((d) => d.status === 'delivered'),
+    [customerDeliveries]
+  );
+
+  const totalSpent = useMemo(
+    () => customerDeliveries.reduce((sum, d) => sum + (d.paidAmount || 0), 0),
+    [customerDeliveries]
+  );
+
+  const recentShipments = useMemo(
+    () => [...customerDeliveries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5),
+    [customerDeliveries]
+  );
+
+  // Mock spending by month (last 6 months)
+  const spendingByMonth = useMemo(() => {
+    const now = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = date.toLocaleString('default', { month: 'short' });
+      const monthDeliveries = customerDeliveries.filter((d) => {
+        const dDate = new Date(d.createdAt);
+        return dDate.getMonth() === date.getMonth() && dDate.getFullYear() === date.getFullYear();
+      });
+      const spent = monthDeliveries.reduce((s, d) => s + (d.paidAmount || 0), 0);
+      months.push({ month: monthLabel, spent: spent || Math.floor(Math.random() * 3000 + 500) });
+    }
+    return months;
+  }, [customerDeliveries]);
+
+  const today = new Date().toLocaleDateString('default', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const firstName = currentUser?.name?.split(' ')[0] || 'Customer';
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}!</h1>
+        <p className="text-muted-foreground">{today}</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <KpiCard
+          title="Active Shipments"
+          value={activeShipments.length.toString()}
+          icon={Package}
+          iconBg="bg-amber-50 dark:bg-amber-950/50"
+          iconColor="text-amber-600"
+        />
+        <KpiCard
+          title="Delivered"
+          value={deliveredShipments.length.toString()}
+          icon={CheckCircle2}
+          iconBg="bg-green-50 dark:bg-green-950/50"
+          iconColor="text-green-600"
+        />
+        <KpiCard
+          title="Total Spent"
+          value={formatCurrency(totalSpent)}
+          icon={DollarSign}
+          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
+          iconColor="text-emerald-600"
+        />
+        <KpiCard
+          title="Avg Delivery Time"
+          value="3.2"
+          suffix=" days"
+          icon={Clock}
+          iconBg="bg-teal-50 dark:bg-teal-950/50"
+          iconColor="text-teal-600"
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+            onClick={() => setDashboardTab('deliveries')}
+          >
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+                <Plus className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="font-medium">New Shipment</p>
+                <p className="text-xs text-muted-foreground">Create a delivery request</p>
+              </div>
+              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+            onClick={() => setDashboardTab('tracking')}
+          >
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
+                <Search className="h-5 w-5 text-teal-600" />
+              </div>
+              <div>
+                <p className="font-medium">Track a Parcel</p>
+                <p className="text-xs text-muted-foreground">Look up your shipment</p>
+              </div>
+              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+            onClick={() => setDashboardTab('sourcing')}
+          >
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50">
+                <Truck className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-medium">Request Sourcing</p>
+                <p className="text-xs text-muted-foreground">Source products from SA</p>
+              </div>
+              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Recent Shipments + Spending Chart */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Shipments */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Recent Shipments</CardTitle>
+            <CardDescription>Your latest delivery activity</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="max-h-96 overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Tracking #</TableHead>
+                    <TableHead className="hidden text-xs sm:table-cell">Route</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="hidden text-xs md:table-cell">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentShipments.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                        No shipments yet
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {recentShipments.map((d) => (
+                    <TableRow key={d.id} className="cursor-pointer">
+                      <TableCell className="max-w-[130px] truncate font-mono text-xs">
+                        {d.trackingNumber}
+                      </TableCell>
+                      <TableCell className="hidden max-w-[120px] truncate text-xs sm:table-cell">
+                        {d.pickup.city} → {d.destination.city}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={`text-[10px] ${statusColors[d.status] || ''}`}
+                        >
+                          {statusLabels[d.status] || d.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden text-xs md:table-cell">
+                        {d.quotedAmount ? formatCurrency(d.quotedAmount) : '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Spending Overview */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Spending Overview</CardTitle>
+            <CardDescription>Your monthly delivery spend</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={spendingChartConfig} className="h-[280px] w-full">
+              <BarChart data={spendingByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  className="text-xs"
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(v: number) => `M${v}`}
+                  className="text-xs"
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar
+                  dataKey="spent"
+                  fill="#16a34a"
+                  opacity={0.85}
+                  radius={[4, 4, 0, 0]}
+                  barSize={36}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ============ Driver Overview ============
+function DriverOverview() {
+  const { currentUser } = useAuthStore();
+
+  const today = new Date().toLocaleDateString('default', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const firstName = currentUser?.name?.split(' ')[0] || 'Driver';
+
+  // Mock driver stats
+  const todayJobs = 4;
+  const completedThisWeek = 18;
+  const monthlyEarnings = 'M12,450';
+  const rating = 4.6;
+
+  // Mock today's deliveries
+  const todayDeliveries = useMemo(
+    () =>
+      deliveries
+        .filter((d) => d.driverName === currentUser?.name && d.status !== 'delivered' && d.status !== 'cancelled')
+        .slice(0, 5),
+    [currentUser]
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome, {firstName}!</h1>
+        <p className="text-muted-foreground">{today}</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <KpiCard
+          title="Today&apos;s Jobs"
+          value={todayJobs.toString()}
+          icon={ClipboardCheck}
+          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
+          iconColor="text-emerald-600"
+        />
+        <KpiCard
+          title="Completed This Week"
+          value={completedThisWeek.toString()}
+          icon={CheckCircle2}
+          iconBg="bg-green-50 dark:bg-green-950/50"
+          iconColor="text-green-600"
+        />
+        <KpiCard
+          title="This Month&apos;s Earnings"
+          value={monthlyEarnings}
+          icon={DollarSign}
+          iconBg="bg-amber-50 dark:bg-amber-950/50"
+          iconColor="text-amber-600"
+        />
+        <KpiCard
+          title="Rating"
+          value={rating.toString()}
+          icon={Star}
+          iconBg="bg-yellow-50 dark:bg-yellow-950/50"
+          iconColor="text-yellow-500"
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+                <Truck className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="font-medium">Update Status</p>
+                <p className="text-xs text-muted-foreground">Update delivery progress</p>
+              </div>
+              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
+                <Phone className="h-5 w-5 text-teal-600" />
+              </div>
+              <div>
+                <p className="font-medium">Contact Dispatcher</p>
+                <p className="text-xs text-muted-foreground">Message or call dispatch</p>
+              </div>
+              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Today's Deliveries */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Today&apos;s Assigned Deliveries</CardTitle>
+          <CardDescription>Deliveries assigned to you</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="max-h-96 overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Tracking #</TableHead>
+                  <TableHead className="text-xs">Customer</TableHead>
+                  <TableHead className="hidden text-xs sm:table-cell">Route</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {todayDeliveries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                      No deliveries assigned for today
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  todayDeliveries.map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell className="max-w-[130px] truncate font-mono text-xs">
+                        {d.trackingNumber}
+                      </TableCell>
+                      <TableCell className="max-w-[120px] truncate text-xs">
+                        {d.customerName}
+                      </TableCell>
+                      <TableCell className="hidden max-w-[120px] truncate text-xs sm:table-cell">
+                        {d.pickup.city} → {d.destination.city}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={`text-[10px] ${statusColors[d.status] || ''}`}
+                        >
+                          {statusLabels[d.status] || d.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ============ Company (Staff) Overview ============
+function CompanyOverview() {
   const { selectDelivery, setDashboardTab } = useNavStore();
 
   const recentDeliveries = useMemo(() => deliveries.slice(0, 5), []);
-  const totalDrivers = analyticsData.activeDrivers + 18; // 60 total
+  const totalDrivers = analyticsData.activeDrivers + 18;
 
   const handleDeliveryClick = (delivery: Delivery) => {
     selectDelivery(delivery.id);
@@ -219,7 +640,7 @@ export function OverviewTab() {
 
   return (
     <div className="space-y-6">
-      {/* ── Top KPI Cards ── */}
+      {/* Top KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard
           title="Total Revenue"
@@ -247,7 +668,7 @@ export function OverviewTab() {
         />
       </div>
 
-      {/* ── Middle Row: Revenue Chart + Status Pie ── */}
+      {/* Middle Row: Revenue Chart + Status Pie */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue & Deliveries Combo Chart */}
         <Card>
@@ -347,7 +768,7 @@ export function OverviewTab() {
         </Card>
       </div>
 
-      {/* ── Bottom Row: 3 Columns ── */}
+      {/* Bottom Row: 3 Columns */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Deliveries */}
         <Card className="lg:col-span-1">
@@ -494,7 +915,7 @@ export function OverviewTab() {
         </Card>
       </div>
 
-      {/* ── Activity Feed ── */}
+      {/* Activity Feed */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Activity Feed</CardTitle>
@@ -527,4 +948,15 @@ export function OverviewTab() {
       </Card>
     </div>
   );
+}
+
+// ============ Overview Tab (Router) ============
+export function OverviewTab() {
+  const { currentUser } = useAuthStore();
+  const isCustomer = currentUser?.role === 'customer';
+  const isDriver = currentUser?.role === 'driver';
+
+  if (isCustomer) return <CustomerOverview />;
+  if (isDriver) return <DriverOverview />;
+  return <CompanyOverview />;
 }

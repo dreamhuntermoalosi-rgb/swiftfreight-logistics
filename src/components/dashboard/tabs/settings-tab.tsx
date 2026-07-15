@@ -155,7 +155,7 @@ export function SettingsTab() {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors whitespace-nowrap ${
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-all duration-150 whitespace-nowrap ${
                     activeSection === item.id
                       ? 'bg-primary/10 font-medium text-primary'
                       : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
@@ -182,7 +182,7 @@ export function SettingsTab() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="relative">
+                    <div className="relative group/avatar">
                       <Avatar className="h-20 w-20">
                         <AvatarFallback className="bg-primary/10 text-xl font-bold text-primary">
                           {getInitials(profileForm.name || 'U')}
@@ -191,7 +191,7 @@ export function SettingsTab() {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full"
+                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full opacity-0 transition-opacity duration-200 group-hover/avatar:opacity-100"
                         onClick={() => toast.info('Avatar upload coming soon')}
                       >
                         <Camera className="h-3.5 w-3.5" />
@@ -374,7 +374,7 @@ export function SettingsTab() {
                     { key: 'marketing' as const, label: 'Marketing Emails', desc: 'Receive promotional emails and offers', icon: Zap },
                   ].map((item, i) => (
                     <div key={item.key}>
-                      {i > 0 && <Separator className="my-3" />}
+                      {i > 0 && <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
@@ -532,28 +532,28 @@ export function SettingsTab() {
                   <CardDescription>Irreversible and destructive actions</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50">
+                  <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 transition-colors duration-200 hover:bg-destructive/5">
                     <div>
                       <p className="text-sm font-medium text-red-600 dark:text-red-400">Delete Account</p>
                       <p className="text-xs text-muted-foreground">
                         Permanently delete your account and all associated data. This action cannot be undone.
                       </p>
                     </div>
-                    <Button variant="destructive" className="gap-2 shrink-0" onClick={() => setDeleteDialogOpen(true)}>
+                    <Button variant="destructive" className="gap-2 shrink-0 transition-all duration-200 hover:bg-destructive/90" onClick={() => setDeleteDialogOpen(true)}>
                       <Trash2 className="h-4 w-4" />
                       Delete Account
                     </Button>
                   </div>
 
                   {currentUser?.role === 'company_owner' && (
-                    <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50">
+                    <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 transition-colors duration-200 hover:bg-destructive/5">
                       <div>
                         <p className="text-sm font-medium text-red-600 dark:text-red-400">Deactivate Company</p>
                         <p className="text-xs text-muted-foreground">
                           Deactivate {userCompany?.name || 'your company'} and all operations. This can be reversed within 30 days.
                         </p>
                       </div>
-                      <Button variant="destructive" className="gap-2 shrink-0" onClick={() => setDeactivateDialogOpen(true)}>
+                      <Button variant="destructive" className="gap-2 shrink-0 transition-all duration-200 hover:bg-destructive/90" onClick={() => setDeactivateDialogOpen(true)}>
                         <Building2 className="h-4 w-4" />
                         Deactivate
                       </Button>

@@ -163,7 +163,7 @@ export function CustomersTab() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -173,12 +173,12 @@ export function CustomersTab() {
               <p className="text-xl font-bold">{customers.length}</p>
               <p className="flex items-center text-xs text-green-600">
                 <TrendingUp className="mr-1 h-3 w-3" />
-                +15.7% this month
+                <span className="font-semibold">+15.7%</span> this month
               </p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -188,12 +188,12 @@ export function CustomersTab() {
               <p className="text-xl font-bold">{formatCurrency(totalRevenue)}</p>
               <p className="flex items-center text-xs text-green-600">
                 <ArrowUpRight className="mr-1 h-3 w-3" />
-                +12.5% this month
+                <span className="font-semibold">+12.5%</span> this month
               </p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30">
               <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />

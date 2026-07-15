@@ -210,12 +210,12 @@ export function TrackingTab() {
             {/* Status Banner */}
             <div className={`rounded-xl p-6 ${
               delivery.status === 'delivered'
-                ? 'bg-green-600 text-white'
+                ? 'bg-gradient-to-br from-green-600 to-emerald-700 text-white'
                 : delivery.status === 'cancelled'
-                  ? 'bg-red-600 text-white'
+                  ? 'bg-gradient-to-br from-red-600 to-rose-700 text-white'
                   : delivery.status === 'returned'
-                    ? 'bg-rose-600 text-white'
-                    : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                    ? 'bg-gradient-to-br from-rose-600 to-pink-700 text-white'
+                    : 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800'
             }`}>
               <div className="flex items-center gap-4">
                 <div className={`shrink-0 ${
@@ -277,7 +277,7 @@ export function TrackingTab() {
                   {/* Progress fill */}
                   {currentStepIndex >= 0 && (
                     <div
-                      className="absolute top-3 left-4 h-1 bg-green-500 rounded-full transition-all duration-500"
+                      className="absolute top-3 left-4 h-1 rounded-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 transition-all duration-500"
                       style={{ width: `calc(${(currentStepIndex / (PROGRESS_STATUSES.length - 1)) * 100}% - ${currentStepIndex === 0 ? 0 : 32}px)` }}
                     />
                   )}
@@ -289,9 +289,9 @@ export function TrackingTab() {
                       const isTerminalFailed = ['cancelled', 'returned'].includes(delivery.status);
                       return (
                         <div key={status} className="flex flex-col items-center" style={{ width: `${100 / PROGRESS_STATUSES.length}%` }}>
-                          <div className={`relative z-10 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          <div className={`relative z-10 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                             isCurrent && !isTerminalFailed
-                              ? 'bg-green-500 border-green-500 shadow-lg shadow-green-500/30'
+                              ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/30 scale-110'
                               : isCompleted
                                 ? 'bg-green-500 border-green-500'
                                 : 'bg-background border-muted-foreground/30'

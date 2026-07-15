@@ -56,7 +56,7 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { notifications as mockNotifications, roleLabels } from '@/lib/mock-data';
+import { notifications as mockNotifications, roleLabels, companies } from '@/lib/mock-data';
 import type { DashboardTab, UserRole, NotificationType } from '@/lib/types';
 import { tabComponentMap } from '@/components/dashboard/tabs';
 
@@ -140,6 +140,7 @@ const staffNavItems: NavItem[] = [
   { tab: 'fleet', label: 'Fleet', icon: Truck },
   { tab: 'dispatch', label: 'Dispatch', icon: Radio },
   { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
+  { tab: 'invoices', label: 'Invoices', icon: Receipt },
   { tab: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
@@ -154,7 +155,7 @@ const customerNavItems: NavItem[] = [
   { tab: 'tracking', label: 'Track Parcel', icon: MapPin },
   { tab: 'sourcing', label: 'Sourcing Requests', icon: ShoppingBag },
   { tab: 'messages', label: 'Messages', icon: MessageSquare },
-  { tab: 'reports', label: 'Invoices', icon: Receipt },
+  { tab: 'invoices', label: 'Invoices', icon: Receipt },
 ];
 
 function getNavItemsForRole(role: UserRole): NavItem[] {
@@ -188,8 +189,29 @@ const tabTitles: Record<DashboardTab, string> = {
   sourcing: 'Sourcing',
   messages: 'Messages',
   reports: 'Reports',
+  invoices: 'Invoices',
   settings: 'Settings',
 };
+
+function getTabTitleForRole(tab: DashboardTab, role: UserRole): string {
+  if (role === 'customer') {
+    const map: Partial<Record<DashboardTab, string>> = {
+      deliveries: 'My Shipments',
+      tracking: 'Track Parcel',
+      sourcing: 'Sourcing Requests',
+      invoices: 'Invoices',
+    };
+    return map[tab] ?? tabTitles[tab];
+  }
+  if (role === 'driver') {
+    const map: Partial<Record<DashboardTab, string>> = {
+      deliveries: 'My Jobs',
+      fleet: 'My Vehicle',
+    };
+    return map[tab] ?? tabTitles[tab];
+  }
+  return tabTitles[tab];
+}
 
 // ============ SIDEBAR NAV CONTENT ============
 function SidebarNavContent({
@@ -227,19 +249,22 @@ function SidebarNavContent({
   return (
     <div className="flex h-full flex-col">
       {/* Logo area */}
-      <div className="flex h-16 items-center gap-3 border-b px-4">
+      <div className="relative flex h-16 items-center gap-3 border-b px-4">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Truck className="h-5 w-5" />
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-bold leading-tight">SwiftFreight</span>
-          <span className="text-[11px] leading-tight text-muted-foreground">
-            Mountain Express
-          </span>
+          {currentUser?.companyId && (
+            <span className="text-[11px] leading-tight text-muted-foreground">
+              {companies.find((c) => c.id === currentUser.companyId)?.name ?? 'My Company'}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Gradient border below logo */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <ScrollArea className="flex-1 px-3 py-3">
         <nav className="space-y-1" aria-label="Main navigation">
           {navItems.map((item) => {
@@ -251,13 +276,16 @@ function SidebarNavContent({
               <button
                 key={item.tab}
                 onClick={() => handleNavClick(item.tab)}
-                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'border-l-2 border-primary bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
                 }`}
                 aria-current={isActive ? 'page' : undefined}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+                )}
                 <Icon
                   className={`h-5 w-5 shrink-0 ${
                     isActive
@@ -284,13 +312,16 @@ function SidebarNavContent({
       <div className="space-y-1 border-t px-3 py-3">
         <button
           onClick={() => handleNavClick('settings')}
-          className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
             dashboardTab === 'settings'
-              ? 'border-l-2 border-primary bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
           }`}
         >
-          <Settings className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-foreground" />
+          {dashboardTab === 'settings' && (
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+          )}
+          <Settings className={`h-5 w-5 shrink-0 ${dashboardTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
           <span className="flex-1 text-left">Settings</span>
         </button>
         <button
@@ -525,7 +556,9 @@ function DashboardHeader() {
   const isMobile = useIsMobile();
   const { setSidebarOpen } = useNavStore();
 
-  const title = tabTitles[dashboardTab] ?? 'Dashboard';
+  const { currentUser } = useAuthStore();
+  const role = currentUser?.role ?? 'customer';
+  const title = getTabTitleForRole(dashboardTab, role);
 
   const handleQuickTrack = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -623,7 +656,7 @@ function TabRenderer({ tab }: { tab: DashboardTab }) {
 // ============ MAIN DASHBOARD LAYOUT ============
 export function DashboardLayout() {
   const isMobile = useIsMobile();
-  const { dashboardTab, sidebarOpen, setSidebarOpen } = useNavStore();
+  const { dashboardTab, sidebarOpen, setSidebarOpen, setDashboardTab } = useNavStore();
   const { currentUser } = useAuthStore();
   const { notifications } = useNotificationStore();
 
@@ -645,6 +678,18 @@ export function DashboardLayout() {
       }
     }
   }, [currentUser, notifications.length]);
+
+  // Set default tab for role on login
+  useEffect(() => {
+    if (currentUser) {
+      const navItems = getNavItemsForRole(currentUser.role);
+      const currentTab = useNavStore.getState().dashboardTab;
+      const validTabs = navItems.map((n) => n.tab);
+      if (!validTabs.includes(currentTab)) {
+        setDashboardTab(navItems[0].tab);
+      }
+    }
+  }, [currentUser, setDashboardTab]);
 
   // Close mobile sidebar on tab change
   useEffect(() => {
@@ -675,7 +720,9 @@ export function DashboardLayout() {
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        {/* Gradient top-border accent */}
+        <div className="h-1 bg-gradient-to-r from-primary via-emerald to-teal shrink-0" />
+        <main className="flex-1 scroll-smooth overflow-y-auto p-4 md:p-6">
           <TabRenderer tab={dashboardTab} />
         </main>
       </div>

@@ -40,6 +40,21 @@ const vehicleTypeLabels: Record<Vehicle['type'], string> = {
   pickup: 'Pickup',
 };
 
+const vehicleTypeAccentColors: Record<Vehicle['type'], { border: string; dot: string }> = {
+  motorcycle: { border: 'border-l-blue-400', dot: 'bg-blue-400' },
+  van: { border: 'border-l-teal-400', dot: 'bg-teal-400' },
+  truck: { border: 'border-l-emerald-400', dot: 'bg-emerald-400' },
+  trailer: { border: 'border-l-purple-400', dot: 'bg-purple-400' },
+  pickup: { border: 'border-l-amber-400', dot: 'bg-amber-400' },
+};
+
+const vehicleStatusDots: Record<Vehicle['status'], string> = {
+  available: 'bg-green-500',
+  in_use: 'bg-blue-500',
+  maintenance: 'bg-amber-500',
+  out_of_service: 'bg-red-500',
+};
+
 const vehicleStatusConfig: Record<Vehicle['status'], { label: string; className: string }> = {
   available: { label: 'Available', className: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
   in_use: { label: 'In Use', className: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
@@ -179,7 +194,7 @@ export function FleetTab() {
 
       {/* Fleet Overview Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-primary/10 p-3">
               <Truck className="h-5 w-5 text-primary" />
@@ -190,7 +205,7 @@ export function FleetTab() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -201,7 +216,7 @@ export function FleetTab() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
               <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -212,7 +227,7 @@ export function FleetTab() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/30">
               <Wrench className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -237,17 +252,20 @@ export function FleetTab() {
             filtered.map((vehicle) => {
               const statusCfg = vehicleStatusConfig[vehicle.status];
               const company = companies.find((c) => c.id === vehicle.companyId);
+              const accentColors = vehicleTypeAccentColors[vehicle.type] || { border: 'border-l-gray-400', dot: 'bg-gray-400' };
+              const statusDot = vehicleStatusDots[vehicle.status] || 'bg-gray-400';
               const insDays = vehicle.insuranceExpiry ? getDaysUntil(vehicle.insuranceExpiry) : null;
               const licDays = vehicle.licenseExpiry ? getDaysUntil(vehicle.licenseExpiry) : null;
 
               return (
-                <Card key={vehicle.id} className="transition-shadow hover:shadow-md">
+                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${accentColors.border}`}>
                   <CardContent className="p-4 space-y-3">
                     {/* Header: Type icon + Plate + Status */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                        <div className="relative rounded-lg bg-primary/10 p-2 text-primary">
                           {vehicleTypeIcons[vehicle.type]}
+                          <span className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${statusDot}`} />
                         </div>
                         <div>
                           <p className="font-mono text-lg font-bold tracking-wide">{vehicle.plateNumber}</p>
@@ -256,7 +274,8 @@ export function FleetTab() {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="secondary" className={statusCfg.className}>
+                      <Badge variant="secondary" className={`${statusCfg.className} gap-1.5`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
                         {statusCfg.label}
                       </Badge>
                     </div>
@@ -317,7 +336,7 @@ export function FleetTab() {
                         <Wrench className="h-3.5 w-3.5" />
                         <span>Next service: {formatDate(vehicle.nextServiceDate)}</span>
                         {getDaysUntil(vehicle.nextServiceDate) <= 7 && (
-                          <Badge variant="secondary" className="ml-auto bg-amber-50 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+                          <Badge variant="secondary" className="ml-auto bg-amber-50 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400 animate-pulse">
                             Due soon
                           </Badge>
                         )}
