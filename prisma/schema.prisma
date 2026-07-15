@@ -1,0 +1,280 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ PLATFORM ============
+model PlatformConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  updatedAt   DateTime @updatedAt
+}
+
+// ============ COMPANIES (Tenants) ============
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  plan        String   @default("starter") // starter, professional, enterprise
+  email       String
+  phone       String
+  address     String
+  city        String
+  country     String   @default("Lesotho")
+  isActive    Boolean  @default(true)
+  maxUsers    Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  vehicles    Vehicle[]
+  drivers     DriverProfile[]
+  deliveries  Delivery[]
+}
+
+// ============ USERS ============
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  phone       String?
+  avatar      String?
+  role        String   @default("customer")
+  isActive    Boolean  @default(true)
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sentMessages    Message[]          @relation("SentMessages")
+  receivedMessages Message[]        @relation("ReceivedMessages")
+  notifications   Notification[]
+  customerProfile CustomerProfile?
+  driverProfile   DriverProfile?
+  sourcingRequests SourcingRequest[] @relation("CustomerSourcing")
+  sourcingQuoted   SourcingRequest[] @relation("AgentSourcing")
+}
+
+// ============ CUSTOMER PROFILES ============
+model CustomerProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  address         String
+  city            String
+  country         String   @default("Lesotho")
+  totalShipments  Int      @default(0)
+  totalSpent      Float    @default(0)
+  rating          Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  deliveries Delivery[]
+  invoices  Invoice[]
+}
+
+// ============ DRIVER PROFILES ============
+model DriverProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id])
+  companyId           String
+  company             Company  @relation(fields: [companyId], references: [id])
+  licenseNumber       String
+  licenseExpiry       DateTime?
+  status              String   @default("available") // available, on_trip, off_duty, suspended
+  rating              Float    @default(0)
+  totalDeliveries     Int      @default(0)
+  successfulDeliveries Int     @default(0)
+  currentVehicleId    String?
+  location            String?
+  joinedAt            DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// ============ VEHICLES ============
+model Vehicle {
+  id              String   @id @default(cuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id])
+  plateNumber     String
+  type            String   // motorcycle, van, truck, trailer, pickup
+  make            String
+  model           String
+  year            Int
+  color           String
+  status          String   @default("available") // available, in_use, maintenance, out_of_service
+  fuelType        String   @default("diesel")
+  capacity        Float
+  currentMileage  Int      @default(0)
+  insuranceExpiry DateTime?
+  licenseExpiry   DateTime?
+  lastServiceDate DateTime?
+  nextServiceDate DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  deliveries Delivery[]
+}
+
+// ============ DELIVERIES ============
+model Delivery {
+  id                String   @id @default(cuid())
+  trackingNumber    String   @unique
+  status            String   @default("request_received")
+  priority          String   @default("standard") // standard, express, urgent
+  customerId        String
+  customerName      String
+  customerProfile   CustomerProfile? @relation(fields: [customerId], references: [id])
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id])
+  driverId          String?
+  driverName        String?
+  vehicleId         String?
+  vehicle           Vehicle? @relation(fields: [vehicleId], references: [id])
+  vehiclePlate      String?
+  pickupName        String
+  pickupPhone       String
+  pickupAddress     String
+  pickupCity        String
+  pickupCountry     String
+  destName          String
+  destPhone         String
+  destAddress       String
+  destCity          String
+  destCountry       String
+  packageDesc       String
+  packageWeight     Float
+  packageDimensions String?
+  declaredValue     Float?
+  quotedAmount      Float?
+  paidAmount        Float?
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  rating            Float?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  timeline         DeliveryTimeline[]
+  quotations       Quotation[]
+  invoice          Invoice?
+  messages         Message[]
+}
+
+// ============ DELIVERY TIMELINE ============
+model DeliveryTimeline {
+  id          String   @id @default(cuid())
+  deliveryId  String
+  delivery    Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  status      String
+  timestamp   DateTime @default(now())
+  location    String
+  description String
+  performedBy String?
+}
+
+// ============ QUOTATIONS ============
+model Quotation {
+  id             String   @id @default(cuid())
+  deliveryId     String
+  delivery       Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  amount         Float
+  currency       String   @default("M")
+  estimatedDays  Int
+  validUntil     DateTime
+  status         String   @default("pending") // pending, accepted, rejected, expired
+  createdAt      DateTime @default(now())
+}
+
+// ============ INVOICES ============
+model Invoice {
+  id          String   @id @default(cuid())
+  deliveryId     String   @unique
+  delivery       Delivery  @relation(fields: [deliveryId], references: [id])
+  customerId     String
+  customerName   String
+  customerProfile CustomerProfile? @relation(fields: [customerId], references: [id])
+  amount      Float
+  currency    String   @default("M")
+  status      String   @default("pending") // paid, pending, overdue
+  dueDate     DateTime
+  createdAt   DateTime @default(now())
+}
+
+// ============ MESSAGES ============
+model Message {
+  id           String   @id @default(cuid())
+  senderId     String
+  sender       User     @relation("SentMessages", fields: [senderId], references: [id])
+  recipientId  String
+  recipient    User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  deliveryId   String?
+  delivery     Delivery? @relation(fields: [deliveryId], references: [id])
+  content      String
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+// ============ NOTIFICATIONS ============
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // delivery_update, new_message, quote_received, payment, system, alert
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+// ============ SOURCING REQUESTS ============
+model SourcingRequest {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    User     @relation("CustomerSourcing", fields: [customerId], references: [id])
+  productName String
+  description String?
+  imageUrl    String?
+  storeName   String?
+  productLink String?
+  budget      Float?
+  deadline    DateTime?
+  location    String
+  status      String   @default("pending") // pending, quoted, accepted, purchased, delivered, cancelled
+  agentId     String?
+  agent       User?    @relation("AgentSourcing", fields: [agentId], references: [id])
+  quotedPrice Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============ TRAILER MARKETPLACE (Future Ready) ============
+model TrailerListing {
+  id          String   @id @default(cuid())
+  ownerId     String
+  type        String   // trailer, truck, van
+  make        String
+  model       String
+  year        Int
+  capacity    Float
+  dailyRate   Float
+  currency    String   @default("M")
+  location    String
+  isAvailable Boolean  @default(true)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

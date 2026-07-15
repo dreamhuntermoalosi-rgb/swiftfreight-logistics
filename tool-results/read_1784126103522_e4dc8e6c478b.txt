@@ -1,0 +1,459 @@
+     1→import type {
+     2→  User, Company, Delivery, Driver, Customer, Vehicle, Notification,
+     3→  Message, SourcingRequest, DeliveryTimeline, AnalyticsData, Invoice, Quotation
+     4→} from './types';
+     5→
+     6→// ============ HELPER FUNCTIONS ============
+     7→const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+     8→const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+     9→const pickN = <T>(arr: T[], n: number): T[] => {
+    10→  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    11→  return shuffled.slice(0, n);
+    12→};
+    13→const daysAgo = (d: number) => new Date(Date.now() - d * 86400000).toISOString();
+    14→const hoursAgo = (h: number) => new Date(Date.now() - h * 3600000).toISOString();
+    15→const futureDate = (d: number) => new Date(Date.now() + d * 86400000).toISOString().split('T')[0];
+    16→const pastDate = (d: number) => new Date(Date.now() - d * 86400000).toISOString().split('T')[0];
+    17→
+    18→// ============ LESOTHO DATA ============
+    19→const basothoNames = [
+    20→  'Thabo Mokoena', 'Mpho Letsie', 'Keketso Mohale', 'Tumelo Nkoe', 'Lebo Mosotho',
+    21→  'Mmathapelo Mphatsoe', 'Teboho Tlalane', 'Palesa Moahloli', 'Mokhethi Makhetha', 'Limpho Seeiso',
+    22→  'Tseliso Monyake', 'Nthabeleng Motsamai', 'Kabelo Khabo', 'Mphoeleng Khetsi', 'Mareka Ramaila',
+    23→  'Tsepang Makhaola', 'Malerato Phakoe', 'Mosiuoa Tsiame', 'Nthofeela Mojela', 'Rethabile Nthinya',
+    24→  'Thato Mosweu', 'Bokang Tsekiso', 'Kamohelo Mabote', 'Mpho Sekhonyana', 'Tshepo Matela',
+    25→  'Lineo Molise', 'Mpeoa Mahao', 'Matsatsi Mokhosi', 'Kopano Tjiane', 'Reitumetse Mokhele',
+    26→  'Litšebo Ntšekhe', 'Tlalane Morolong', 'Makhosi Molibeli', 'Rapelang Makhakhe', 'Khotsofalang Lepota',
+    27→  'Mamello Sekhoko', 'Nthabiseng Moletsane', 'Tšepo Makhakhe', 'Matseliso Motaung', 'Kabelo Taole',
+    28→  'Puleng Phasumane', 'Mphokang Khetheng', 'Tlhokomelo Molise', 'Mahlomola Letsie', 'Kopano Mahlo',
+    29→  'Rethabile Tsosane', 'Mpho Mabitso', 'Thabiso Mokone', 'Nteboheleng Hlalele', 'Mosiuoa Maphike',
+    30→  'Mphatsoe Fako', 'Kabelo Mokhethi', 'Mareka Sephelane', 'Lehlohonolo Molia', 'Bokang Mosotho',
+    31→  'Tšepang Khatala', 'Lineo Pholo', 'Thato Tšeole', 'Matsatsi Nkuebe', 'Rapelang Mokhosi',
+    32→];
+    33→
+    34→const lesothoCities = [
+    35→  'Maseru', 'Mafeteng', 'Mohales Hoek', 'Quthing', 'Butha Buthe',
+    36→  'Leribe', 'Berea', 'Mokhotlong', 'Thaba Tseka', 'Qacha\'s Nek',
+    37→];
+    38→const lesothoDistricts = ['Maseru', 'Mafeteng', 'Mohales Hoek', 'Quthing', 'Butha Buthe', 'Leribe', 'Berea', 'Mokhotlong', 'Thaba Tseka', 'Qachas Nek'];
+    39→const saCities = ['Johannesburg', 'Cape Town', 'Durban', 'Pretoria', 'Bloemfontein', 'Port Elizabeth', 'East London', 'Polokwane', 'Nelspruit', 'Kimberley'];
+    40→const streets = [
+    41→  'Kingsway Road', 'Main Street', 'Airport Road', 'Pioneer Road', 'Moshoeshoe Road',
+    42→  'Constitution Road', 'Victory Road', 'Independence Avenue', 'Matsieng Road', 'Semonkong Road',
+    43→];
+    44→
+    45→const deliveryStatuses = ['request_received', 'awaiting_quote', 'quote_accepted', 'collected', 'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery', 'delivered', 'returned', 'cancelled'] as const;
+    46→const weights = [0.5, 1, 2, 3, 5, 8, 10, 15, 20, 25, 30, 50, 75, 100, 150, 200, 500];
+    47→const priorities = ['standard', 'express', 'urgent'] as const;
+    48→const vehicleMakes = ['Toyota', 'Isuzu', 'Mitsubishi', 'Ford', 'Nissan', 'Hino', 'Mercedes', 'VW'];
+    49→const vehicleModels: Record<string, string[]> = {
+    50→  'Toyota': ['Hilux', 'Quantum', 'Corolla', 'Land Cruiser', 'Dyn'],
+    51→  'Isuzu': ['KB', 'NPR', 'FSR', 'NQR'],
+    52→  'Mitsubishi': ['Canter', 'L200', 'Rosa'],
+    53→  'Ford': ['Transit', 'Ranger', 'Cargo'],
+    54→  'Nissan': ['UD', 'Hardbody', 'NV350'],
+    55→  'Hino': ['Dutro', 'Ranger', '500'],
+    56→  'Mercedes': ['Sprinter', 'Actros', 'Atego'],
+    57→  'VW': ['Caddy', 'Crafter', 'Amarok'],
+    58→};
+    59→const colors = ['White', 'Silver', 'Black', 'Blue', 'Red', 'Green', 'Grey'];
+    60→const vehicleTypes = ['motorcycle', 'van', 'truck', 'trailer', 'pickup'] as const;
+    61→
+    62→const productNames = [
+    63→  'Samsung Galaxy S24', 'iPhone 15 Pro', 'Dell Laptop', 'HP Monitor', 'Office Chair',
+    64→  'Standing Desk', 'Printer Toner', 'Networking Switch', 'Solar Panel', 'Water Pump',
+    65→  'Agricultural Seeds', 'Fertilizer 50kg', 'Cement 50kg Bags', 'Steel Rebar', 'PVC Pipes',
+    66→  'Electrical Wire', 'LED Lights Bulk', 'Power Tools Set', 'Safety Equipment', 'Medical Supplies',
+    67→  'School Textbooks', 'Uniforms Bundle', 'Kitchen Appliances', 'Building Materials', 'Auto Parts',
+    68→];
+    69→
+    70→const storeNames = [
+    71→  'Takealot', 'Leratong Wholesale', 'Metro Cash & Carry', 'Shoprite', 'Pick n Pay',
+    72→  'Game Stores', ' Builders Warehouse', 'China Mall JHB', 'Hi-Fi Corporation', 'Incredible Connection',
+    73→];
+    74→
+    75→// ============ COMPANIES ============
+    76→export const companies: Company[] = [
+    77→  {
+    78→    id: 'comp-001', name: 'Mountain Express', slug: 'mountain-express', plan: 'enterprise',
+    79→    email: 'info@mountainexpress.co.ls', phone: '+266 2231 0001',
+    80→    address: '12 Kingsway Road', city: 'Maseru', country: 'Lesotho',
+    81→    isActive: true, maxUsers: 200, createdAt: daysAgo(730),
+    82→  },
+    83→  {
+    84→    id: 'comp-002', name: 'Lesotho Swift Logistics', slug: 'lesotho-swift', plan: 'professional',
+    85→    email: 'ops@lesothoswift.co.ls', phone: '+266 2231 0002',
+    86→    address: '45 Pioneer Road', city: 'Maseru', country: 'Lesotho',
+    87→    isActive: true, maxUsers: 50, createdAt: daysAgo(540),
+    88→  },
+    89→  {
+    90→    id: 'comp-003', name: 'Highland Haulage', slug: 'highland-haulage', plan: 'starter',
+    91→    email: 'contact@highlandhaulage.co.ls', phone: '+266 2231 0003',
+    92→    address: '8 Moshoeshoe Road', city: 'Mafeteng', country: 'Lesotho',
+    93→    isActive: true, maxUsers: 20, createdAt: daysAgo(365),
+    94→  },
+    95→];
+    96→
+    97→// ============ USERS (DEMO ACCOUNTS) ============
+    98→export const demoUsers: User[] = [
+    99→  { id: 'user-sa', email: 'admin@swiftfreight.com', name: 'SwiftFreight Admin', role: 'super_admin', isActive: true, createdAt: daysAgo(730) },
+   100→  { id: 'user-co1', email: 'thabo@mountainexpress.co.ls', name: 'Thabo Mokoena', role: 'company_owner', companyId: 'comp-001', isActive: true, createdAt: daysAgo(730) },
+   101→  { id: 'user-om1', email: 'mpheleki@mountainexpress.co.ls', name: 'Mpho Letsie', role: 'operations_manager', companyId: 'comp-001', isActive: true, createdAt: daysAgo(700) },
+   102→  { id: 'user-di1', email: 'kmosotho@mountainexpress.co.ls', name: 'Keketso Mohale', role: 'dispatcher', companyId: 'comp-001', isActive: true, createdAt: daysAgo(600) },
+   103→  { id: 'user-fm1', email: 'tnkoe@mountainexpress.co.ls', name: 'Tumelo Nkoe', role: 'fleet_manager', companyId: 'comp-001', isActive: true, createdAt: daysAgo(650) },
+   104→  { id: 'user-drv1', email: 'lmosotho@mountainexpress.co.ls', name: 'Lebo Mosotho', role: 'driver', companyId: 'comp-001', isActive: true, createdAt: daysAgo(500) },
+   105→  { id: 'user-cust1', email: 'mampho@email.co.ls', name: 'Mmathapelo Mphatsoe', role: 'customer', isActive: true, createdAt: daysAgo(300) },
+   106→  { id: 'user-cust2', email: 'teboho@email.co.ls', name: 'Teboho Tlalane', role: 'customer', isActive: true, createdAt: daysAgo(200) },
+   107→  { id: 'user-src1', email: 'palesa@sourcing.ls', name: 'Palesa Moahloli', role: 'sourcing_agent', companyId: 'comp-001', isActive: true, createdAt: daysAgo(400) },
+   108→  { id: 'user-wh1', email: 'warehouse@highlandhaulage.co.ls', name: 'Mokhethi Makhetha', role: 'warehouse_partner', companyId: 'comp-003', isActive: true, createdAt: daysAgo(250) },
+   109→];
+   110→
+   111→// ============ CUSTOMERS ============
+   112→export const customers: Customer[] = basothoNames.slice(0, 300).map((name, i) => ({
+   113→  id: `cust-${String(i + 1).padStart(4, '0')}`,
+   114→  userId: `user-cust-${i}`,
+   115→  name,
+   116→  email: name.toLowerCase().replace(/\s/g, '.') + `@email.co.ls`,
+   117→  phone: `+266 ${rand(2000, 7999)} ${rand(1000, 9999)}`,
+   118→  address: `${rand(1, 500)} ${pick(streets)}`,
+   119→  city: pick(lesothoCities),
+   120→  country: 'Lesotho',
+   121→  totalShipments: rand(1, 45),
+   122→  totalSpent: rand(50, 25000),
+   123→  rating: (3 + Math.random() * 2).toFixed(1) as unknown as number,
+   124→  joinedAt: daysAgo(rand(30, 700)),
+   125→}));
+   126→
+   127→// ============ VEHICLES ============
+   128→let vehicleCounter = 0;
+   129→export const vehicles: Vehicle[] = [];
+   130→const vehicleCounts = [15, 14, 11]; // per company
+   131→vehicleCounts.forEach((count, ci) => {
+   132→  for (let v = 0; v < count; v++) {
+   133→    const type = pick(vehicleTypes);
+   134→    const make = pick(vehicleMakes);
+   135→    const models = vehicleModels[make] || ['Model X'];
+   136→    const statuses: Vehicle['status'][] = ['available', 'in_use', 'maintenance', 'out_of_service'];
+   137→    const statusWeights = [0.35, 0.4, 0.15, 0.1];
+   138→    let r = Math.random(), status: Vehicle['status'] = 'available';
+   139→    let cumulative = 0;
+   140→    for (let s = 0; s < statuses.length; s++) {
+   141→      cumulative += statusWeights[s];
+   142→      if (r <= cumulative) { status = statuses[s]; break; }
+   143→    }
+   144→    const fuelTypes: Vehicle['fuelType'][] = ['petrol', 'diesel', 'diesel', 'diesel', 'petrol'];
+   145→    vehicleCounter++;
+   146→    vehicles.push({
+   147→      id: `veh-${String(vehicleCounter).padStart(4, '0')}`,
+   148→      companyId: companies[ci].id,
+   149→      plateNumber: `LP ${rand(100, 999)} ${String.fromCharCode(65 + rand(0, 25))}${String.fromCharCode(65 + rand(0, 25))} ${rand(100, 999)}`,
+   150→      type, make, model: pick(models), year: rand(2015, 2024),
+   151→      color: pick(colors), status, fuelType: pick(fuelTypes),
+   152→      capacity: type === 'motorcycle' ? rand(10, 50) : type === 'van' ? rand(500, 2000) : type === 'pickup' ? rand(500, 1500) : rand(2000, 15000),
+   153→      currentMileage: rand(10000, 250000),
+   154→      insuranceExpiry: futureDate(rand(30, 365)),
+   155→      licenseExpiry: futureDate(rand(30, 365)),
+   156→      lastServiceDate: pastDate(rand(5, 60)),
+   157→      nextServiceDate: futureDate(rand(10, 90)),
+   158→      createdAt: daysAgo(rand(100, 700)),
+   159→    });
+   160→  }
+   161→});
+   162→
+   163→// ============ DRIVERS ============
+   164→export const drivers: Driver[] = basothoNames.slice(0, 60).map((name, i) => {
+   165→  const companyId = i < 22 ? 'comp-001' : i < 42 ? 'comp-002' : 'comp-003';
+   166→  const statuses: Driver['status'][] = ['available', 'on_trip', 'off_duty', 'suspended'];
+   167→  const sw = [0.3, 0.4, 0.25, 0.05];
+   168→  let r = Math.random(), status: Driver['status'] = 'available';
+   169→  let cum = 0;
+   170→  for (let s = 0; s < statuses.length; s++) { cum += sw[s]; if (r <= cum) { status = statuses[s]; break; } }
+   171→  const totalDel = rand(20, 800);
+   172→  return {
+   173→    id: `drv-${String(i + 1).padStart(3, '0')}`,
+   174→    userId: `user-drv-${i}`,
+   175→    companyId,
+   176→    name,
+   177→    phone: `+266 ${rand(2000, 7999)} ${rand(1000, 9999)}`,
+   178→    email: name.toLowerCase().replace(/\s/g, '.') + `@driver.co.ls`,
+   179→    licenseNumber: `LD${rand(100000, 999999)}`,
+   180→    licenseExpiry: futureDate(rand(30, 730)),
+   181→    status,
+   182→    rating: (3.2 + Math.random() * 1.8).toFixed(1) as unknown as number,
+   183→    totalDeliveries: totalDel,
+   184→    successfulDeliveries: Math.floor(totalDel * (0.85 + Math.random() * 0.14)),
+   185→    currentVehicleId: status === 'on_trip' ? `veh-${String(rand(1, 40)).padStart(4, '0')}` : undefined,
+   186→    currentVehiclePlate: status === 'on_trip' ? `LP ${rand(100, 999)} AB ${rand(100, 999)}` : undefined,
+   187→    location: status === 'on_trip' ? pick(lesothoCities) : undefined,
+   188→    joinedAt: daysAgo(rand(60, 600)),
+   189→  };
+   190→});
+   191→
+   192→// ============ DELIVERIES ============
+   193→const statusWeights: [string, number][] = [
+   194→  ['delivered', 0.35], ['in_transit', 0.15], ['collected', 0.1], ['at_warehouse', 0.08],
+   195→  ['quote_accepted', 0.07], ['out_for_delivery', 0.08], ['awaiting_quote', 0.05],
+   196→  ['at_border', 0.05], ['request_received', 0.03], ['cancelled', 0.02], ['returned', 0.02],
+   197→];
+   198→
+   199→function getWeightedStatus(): Delivery['status'] {
+   200→  let r = Math.random(), cum = 0;
+   201→  for (const [status, weight] of statusWeights) {
+   202→    cum += weight;
+   203→    if (r <= cum) return status as Delivery['status'];
+   204→  }
+   205→  return 'request_received';
+   206→}
+   207→
+   208→export const deliveries: Delivery[] = [];
+   209→for (let i = 0; i < 500; i++) {
+   210→  const status = getWeightedStatus();
+   211→  const company = pick(companies);
+   212→  const customer = pick(customers);
+   213→  const driver = pick(drivers.filter(d => d.companyId === company.id));
+   214→  const vehicle = pick(vehicles.filter(v => v.companyId === company.id));
+   215→  const isLocal = Math.random() > 0.35;
+   216→  const fromCity = isLocal ? pick(saCities) : pick(lesothoCities);
+   217→  const toCity = isLocal ? pick(lesothoCities) : pick(lesothoCities);
+   218→  const priority = pick(priorities);
+   219→  const weight = pick(weights);
+   220→  const amount = Math.round((weight * (priority === 'urgent' ? 25 : priority === 'express' ? 18 : 12) + rand(20, 200)));
+   221→  const createdAtDays = rand(0, 90);
+   222→
+   223→  deliveries.push({
+   224→    id: `del-${String(i + 1).padStart(5, '0')}`,
+   225→    trackingNumber: `SF${String(2025000 + i).padStart(8, '0')}LS`,
+   226→    status,
+   227→    priority,
+   228→    customerId: customer.id,
+   229→    customerName: customer.name,
+   230→    companyId: company.id,
+   231→    companyName: company.name,
+   232→    driverId: !['request_received', 'awaiting_quote'].includes(status) ? driver.id : undefined,
+   233→    driverName: !['request_received', 'awaiting_quote'].includes(status) ? driver.name : undefined,
+   234→    vehicleId: !['request_received', 'awaiting_quote', 'quote_accepted'].includes(status) ? vehicle.id : undefined,
+   235→    vehiclePlate: !['request_received', 'awaiting_quote', 'quote_accepted'].includes(status) ? vehicle.plateNumber : undefined,
+   236→    pickup: { name: customer.name, phone: customer.phone, address: `${rand(1, 500)} ${pick(streets)}`, city: fromCity, country: isLocal ? 'South Africa' : 'Lesotho' },
+   237→    destination: { name: customer.name, phone: customer.phone, address: `${rand(1, 500)} ${pick(streets)}`, city: toCity, country: isLocal ? 'Lesotho' : 'Lesotho' },
+   238→    packageDescription: pick(productNames) + (Math.random() > 0.5 ? ` x${rand(1, 10)}` : ''),
+   239→    packageWeight: weight,
+   240→    quotedAmount: amount,
+   241→    paidAmount: !['request_received', 'awaiting_quote'].includes(status) ? amount : undefined,
+   242→    estimatedDelivery: futureDate(rand(1, 14)),
+   243→    actualDelivery: status === 'delivered' ? pastDate(rand(0, 5)) : undefined,
+   244→    createdAt: daysAgo(createdAtDays),
+   245→    updatedAt: hoursAgo(rand(1, createdAtDays * 24)),
+   246→    rating: status === 'delivered' ? (3 + Math.random() * 2).toFixed(1) as unknown as number : undefined,
+   247→  });
+   248→}
+   249→
+   250→// ============ TIMELINES ============
+   251→export function getDeliveryTimeline(delivery: Delivery): DeliveryTimeline[] {
+   252→  const statusOrder: Delivery['status'][] = ['request_received', 'awaiting_quote', 'quote_accepted', 'collected', 'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery', 'delivered'];
+   253→  const currentIdx = statusOrder.indexOf(delivery.status);
+   254→  if (currentIdx < 0) return [];
+   255→  const timelines: DeliveryTimeline[] = [];
+   256→  const createdDate = new Date(delivery.createdAt);
+   257→  const locations = [delivery.pickup.city, 'Maseru Hub', delivery.destination.city];
+   258→  const descriptions: Record<string, string> = {
+   259→    request_received: 'Delivery request has been received and is being reviewed',
+   260→    awaiting_quote: 'Quote is being prepared based on package details',
+   261→    quote_accepted: 'Customer has accepted the quotation',
+   262→    collected: 'Package has been collected from the pickup location',
+   263→    at_warehouse: 'Package arrived at the sorting warehouse',
+   264→    in_transit: 'Package is now in transit to destination',
+   265→    at_border: 'Package is processing at the border crossing',
+   266→    out_for_delivery: 'Package is out for final delivery',
+   267→    delivered: 'Package has been successfully delivered',
+   268→  };
+   269→
+   270→  for (let i = 0; i <= Math.min(currentIdx, statusOrder.length - 1); i++) {
+   271→    const status = statusOrder[i];
+   272→    const offset = Math.floor((i / (currentIdx + 1)) * Math.min(createdAtDays(new Date(delivery.createdAt)), 120));
+   273→    timelines.push({
+   274→      id: `tl-${delivery.id}-${i}`,
+   275→      deliveryId: delivery.id,
+   276→      status,
+   277→      timestamp: new Date(createdDate.getTime() + offset * 3600000).toISOString(),
+   278→      location: i < locations.length ? locations[i] : delivery.destination.city,
+   279→      description: descriptions[status] || 'Status updated',
+   280→      performedBy: delivery.driverName || 'System',
+   281→    });
+   282→  }
+   283→  return timelines;
+   284→}
+   285→
+   286→function createdAtDays(date: Date): number {
+   287→  return Math.floor((Date.now() - date.getTime()) / 86400000);
+   288→}
+   289→
+   290→// ============ NOTIFICATIONS ============
+   291→export const notifications: Notification[] = [
+   292→  { id: 'not-1', userId: 'user-co1', type: 'delivery_update', title: 'Delivery Completed', message: 'SF2025001005LS has been delivered successfully to Maseru', isRead: false, link: 'del-00100', createdAt: hoursAgo(1) },
+   293→  { id: 'not-2', userId: 'user-co1', type: 'new_message', title: 'New Message', message: 'Thabo sent you a message about delivery SF2025001098LS', isRead: false, createdAt: hoursAgo(2) },
+   294→  { id: 'not-3', userId: 'user-co1', type: 'quote_received', title: 'Quote Request', message: 'New quote request from Palesa Moahloli for Samsung Galaxy S24', isRead: false, createdAt: hoursAgo(3) },
+   295→  { id: 'not-4', userId: 'user-co1', type: 'system', title: 'Driver License Expiring', message: 'Lebo Mosotho\'s license expires in 15 days', isRead: false, link: 'drivers', createdAt: hoursAgo(5) },
+   296→  { id: 'not-5', userId: 'user-co1', type: 'payment', title: 'Payment Received', message: 'M350.00 received for delivery SF2025000876LS', isRead: true, createdAt: hoursAgo(8) },
+   297→  { id: 'not-6', userId: 'user-co1', type: 'alert', title: 'Vehicle Maintenance Due', message: 'Vehicle LP 456 AB 789 is due for service in 3 days', isRead: true, link: 'fleet', createdAt: hoursAgo(12) },
+   298→  { id: 'not-7', userId: 'user-co1', type: 'delivery_update', title: 'Border Crossing', message: '3 deliveries are currently at the Maseru border post', isRead: true, createdAt: hoursAgo(18) },
+   299→  { id: 'not-8', userId: 'user-co1', type: 'new_message', title: 'New Sourcing Request', message: 'Mmathapelo Mphatsoe requested sourcing for Dell Laptop', isRead: true, createdAt: hoursAgo(24) },
+   300→  { id: 'not-9', userId: 'user-co1', type: 'system', title: 'Monthly Report Ready', message: 'Your June 2025 performance report is ready for review', isRead: true, createdAt: hoursAgo(36) },
+   301→  { id: 'not-10', userId: 'user-co1', type: 'delivery_update', title: 'Delivery Delayed', message: 'SF2025001045LS delayed at border - customs clearance pending', isRead: true, createdAt: hoursAgo(48) },
+   302→];
+   303→
+   304→// ============ MESSAGES ============
+   305→export const messages: Message[] = [
+   306→  { id: 'msg-1', senderId: 'user-cust1', senderName: 'Mmathapelo Mphatsoe', recipientId: 'user-co1', recipientName: 'Thabo Mokoena', deliveryId: 'del-00100', content: 'Hi, when will my package arrive? The tracking shows it\'s at the border.', isRead: true, createdAt: hoursAgo(2) },
+   307→  { id: 'msg-2', senderId: 'user-co1', senderName: 'Thabo Mokoena', recipientId: 'user-cust1', recipientName: 'Mmathapelo Mphatsoe', deliveryId: 'del-00100', content: 'It should clear customs by tomorrow morning. We\'ll update you once it\'s through.', isRead: true, createdAt: hoursAgo(1.5) },
+   308→  { id: 'msg-3', senderId: 'user-cust1', senderName: 'Mmathapelo Mphatsoe', recipientId: 'user-co1', recipientName: 'Thabo Mokoena', deliveryId: 'del-00100', content: 'Thank you! Please keep me updated.', isRead: true, createdAt: hoursAgo(1) },
+   309→  { id: 'msg-4', senderId: 'user-cust2', senderName: 'Teboho Tlalane', recipientId: 'user-co1', recipientName: 'Thabo Mokoena', content: 'I need a quote for 20 bags of cement from Johannesburg to Mafeteng.', isRead: false, createdAt: hoursAgo(4) },
+   310→  { id: 'msg-5', senderId: 'user-drv1', senderName: 'Lebo Mosotho', recipientId: 'user-di1', recipientName: 'Keketso Mohale', content: 'I\'ve picked up the 3 packages from the warehouse. Heading to Butha Buthe now.', isRead: true, createdAt: hoursAgo(3) },
+   311→  { id: 'msg-6', senderId: 'user-di1', senderName: 'Keketso Mohale', recipientId: 'user-drv1', recipientName: 'Lebo Mosotho', content: 'Great! Please send photo confirmation when you arrive. Watch out for road construction near Pitseng.', isRead: true, createdAt: hoursAgo(2.5) },
+   312→  { id: 'msg-7', senderId: 'user-src1', senderName: 'Palesa Moahloli', recipientId: 'user-co1', recipientName: 'Thabo Mokoena', content: 'Found the Samsung Galaxy S24 at Takealot for M8,999. Shall I proceed with the purchase?', isRead: false, createdAt: hoursAgo(5) },
+   313→  { id: 'msg-8', senderId: 'user-om1', senderName: 'Mpho Letsie', recipientId: 'user-fm1', recipientName: 'Tumelo Nkoe', content: 'We need to schedule maintenance for 3 trucks this week. Can you check availability?', isRead: true, createdAt: hoursAgo(6) },
+   314→];
+   315→
+   316→// ============ SOURCING REQUESTS ============
+   317→export const sourcingRequests: SourcingRequest[] = [
+   318→  { id: 'src-001', customerId: 'cust-0001', customerName: 'Thabo Mokoena', productName: 'Samsung Galaxy S24', description: '256GB, Black color', storeName: 'Takealot', productLink: 'https://takealot.com/samsung-s24', budget: 9500, deadline: futureDate(7), location: 'Maseru', status: 'quoted', agentId: 'user-src1', agentName: 'Palesa Moahloli', quotedPrice: 8999, createdAt: daysAgo(2), updatedAt: daysAgo(1) },
+   319→  { id: 'src-002', customerId: 'cust-0005', customerName: 'Tumelo Nkoe', productName: 'Dell Latitude 5540', description: '16GB RAM, 512GB SSD', storeName: 'Incredible Connection', budget: 18000, deadline: futureDate(14), location: 'Maseru', status: 'pending', createdAt: daysAgo(1), updatedAt: daysAgo(1) },
+   320→  { id: 'src-003', customerId: 'cust-0012', customerName: 'Lineo Molise', productName: 'Solar Panel 400W', description: 'Monocrystalline, with mounting brackets', storeName: 'China Mall JHB', budget: 5000, deadline: futureDate(10), location: 'Mafeteng', status: 'accepted', agentId: 'user-src1', agentName: 'Palesa Moahloli', quotedPrice: 4200, createdAt: daysAgo(5), updatedAt: daysAgo(2) },
+   321→  { id: 'src-004', customerId: 'cust-0018', customerName: 'Matsatsi Mokhosi', productName: 'Cement 50kg Bags x20', description: 'PPC or equivalent brand', storeName: 'Builders Warehouse', budget: 4000, deadline: futureDate(5), location: 'Leribe', status: 'purchased', agentId: 'user-src1', agentName: 'Palesa Moahloli', quotedPrice: 3800, createdAt: daysAgo(7), updatedAt: daysAgo(3) },
+   322→  { id: 'src-005', customerId: 'cust-0025', customerName: 'Rapelang Makhakhe', productName: 'HP LaserJet Printer', description: 'M404dn, with extra toner', storeName: 'Hi-Fi Corporation', budget: 8000, deadline: futureDate(21), location: 'Quthing', status: 'quoted', agentId: 'user-src1', agentName: 'Palesa Moahloli', quotedPrice: 7200, createdAt: daysAgo(3), updatedAt: daysAgo(1) },
+   323→  { id: 'src-006', customerId: 'cust-0031', customerName: 'Mamello Sekhoko', productName: 'Standing Desk Electric', description: 'Adjustable height, 150x75cm', storeName: 'Takealot', budget: 6000, deadline: futureDate(14), location: 'Butha Buthe', status: 'pending', createdAt: hoursAgo(6), updatedAt: hoursAgo(6) },
+   324→];
+   325→
+   326→// ============ INVOICES ============
+   327→export const invoices: Invoice[] = deliveries.filter(d => d.paidAmount).slice(0, 50).map((d, i) => ({
+   328→  id: `inv-${String(i + 1).padStart(5, '0')}`,
+   329→  deliveryId: d.id,
+   330→  customerId: d.customerId,
+   331→  customerName: d.customerName,
+   332→  amount: d.paidAmount!,
+   333→  currency: 'M',
+   334→  status: Math.random() > 0.2 ? 'paid' : Math.random() > 0.5 ? 'pending' : 'overdue',
+   335→  dueDate: futureDate(rand(-10, 30)),
+   336→  createdAt: d.createdAt,
+   337→}));
+   338→
+   339→// ============ QUOTATIONS ============
+   340→export const quotations: Quotation[] = deliveries.filter(d => ['awaiting_quote', 'quote_accepted'].includes(d.status)).slice(0, 20).map((d, i) => ({
+   341→  id: `quo-${String(i + 1).padStart(4, '0')}`,
+   342→  deliveryId: d.id,
+   343→  amount: d.quotedAmount || 0,
+   344→  currency: 'M',
+   345→  estimatedDays: d.priority === 'urgent' ? 2 : d.priority === 'express' ? 4 : 7,
+   346→  validUntil: futureDate(3),
+   347→  status: d.status === 'quote_accepted' ? 'accepted' : 'pending',
+   348→  createdAt: d.createdAt,
+   349→}));
+   350→
+   351→// ============ ANALYTICS ============
+   352→export const analyticsData: AnalyticsData = {
+   353→  totalRevenue: 245680,
+   354→  revenueGrowth: 12.5,
+   355→  totalDeliveries: 1248,
+   356→  deliveriesGrowth: 8.3,
+   357→  onTimeRate: 94.6,
+   358→  onTimeGrowth: 2.1,
+   359→  avgRating: 4.3,
+   360→  avgRatingGrowth: 0.2,
+   361→  activeDrivers: 42,
+   362→  totalCustomers: 312,
+   363→  customersGrowth: 15.7,
+   364→  revenueByMonth: [
+   365→    { month: 'Jan', revenue: 18200, deliveries: 85 },
+   366→    { month: 'Feb', revenue: 21500, deliveries: 98 },
+   367→    { month: 'Mar', revenue: 19800, deliveries: 91 },
+   368→    { month: 'Apr', revenue: 24300, deliveries: 112 },
+   369→    { month: 'May', revenue: 22100, deliveries: 105 },
+   370→    { month: 'Jun', revenue: 26800, deliveries: 124 },
+   371→    { month: 'Jul', revenue: 28500, deliveries: 132 },
+   372→    { month: 'Aug', revenue: 31200, deliveries: 145 },
+   373→    { month: 'Sep', revenue: 27600, deliveries: 128 },
+   374→    { month: 'Oct', revenue: 29400, deliveries: 136 },
+   375→    { month: 'Nov', revenue: 33100, deliveries: 153 },
+   376→    { month: 'Dec', revenue: 35600, deliveries: 164 },
+   377→  ],
+   378→  deliveriesByStatus: [
+   379→    { status: 'Delivered', count: 175 },
+   380→    { status: 'In Transit', count: 45 },
+   381→    { status: 'Collected', count: 28 },
+   382→    { status: 'At Warehouse', count: 22 },
+   383→    { status: 'Out for Delivery', count: 35 },
+   384→    { status: 'Quote Accepted', count: 18 },
+   385→    { status: 'Awaiting Quote', count: 12 },
+   386→    { status: 'At Border', count: 15 },
+   387→    { status: 'Request Received', count: 8 },
+   388→    { status: 'Cancelled', count: 5 },
+   389→    { status: 'Returned', count: 4 },
+   390→  ],
+   391→  topRoutes: [
+   392→    { route: 'Johannesburg → Maseru', count: 245, revenue: 78500 },
+   393→    { route: 'Cape Town → Maseru', count: 128, revenue: 45200 },
+   394→    { route: 'Durban → Maseru', count: 95, revenue: 32100 },
+   395→    { route: 'Maseru → Mafeteng', count: 180, revenue: 28400 },
+   396→    { route: 'Pretoria → Leribe', count: 85, revenue: 22500 },
+   397→    { route: 'Bloemfontein → Maseru', count: 72, revenue: 18900 },
+   398→  ],
+   399→  driverPerformance: drivers.slice(0, 10).map(d => ({
+   400→    name: d.name,
+   401→    deliveries: d.totalDeliveries,
+   402→    rating: d.rating as unknown as number,
+   403→    onTime: Math.round(85 + Math.random() * 14),
+   404→  })),
+   405→  fleetUtilization: [
+   406→    { type: 'Trucks', total: 18, available: 5, inUse: 10, maintenance: 3 },
+   407→    { type: 'Vans', total: 12, available: 4, inUse: 6, maintenance: 2 },
+   408→    { type: 'Pickups', total: 6, available: 2, inUse: 3, maintenance: 1 },
+   409→    { type: 'Trailers', total: 4, available: 1, inUse: 2, maintenance: 1 },
+   410→  ],
+   411→};
+   412→
+   413→// ============ HELPER EXPORTS ============
+   414→export const statusLabels: Record<string, string> = {
+   415→  request_received: 'Request Received',
+   416→  awaiting_quote: 'Awaiting Quote',
+   417→  quote_accepted: 'Quote Accepted',
+   418→  collected: 'Collected',
+   419→  at_warehouse: 'At Warehouse',
+   420→  in_transit: 'In Transit',
+   421→  at_border: 'At Border',
+   422→  out_for_delivery: 'Out for Delivery',
+   423→  delivered: 'Delivered',
+   424→  returned: 'Returned',
+   425→  cancelled: 'Cancelled',
+   426→};
+   427→
+   428→export const statusColors: Record<string, string> = {
+   429→  request_received: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+   430→  awaiting_quote: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+   431→  quote_accepted: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+   432→  collected: 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+   433→  at_warehouse: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+   434→  in_transit: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+   435→  at_border: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+   436→  out_for_delivery: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+   437→  delivered: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+   438→  returned: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+   439→  cancelled: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+   440→};
+   441→
+   442→export const priorityColors: Record<string, string> = {
+   443→  standard: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+   444→  express: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
+   445→  urgent: 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+   446→};
+   447→
+   448→export const roleLabels: Record<string, string> = {
+   449→  super_admin: 'Super Admin',
+   450→  company_owner: 'Company Owner',
+   451→  operations_manager: 'Operations Manager',
+   452→  dispatcher: 'Dispatcher',
+   453→  fleet_manager: 'Fleet Manager',
+   454→  driver: 'Driver',
+   455→  customer: 'Customer',
+   456→  sourcing_agent: 'Sourcing Agent',
+   457→  trailer_owner: 'Trailer Owner',
+   458→  warehouse_partner: 'Warehouse Partner',
+   459→};

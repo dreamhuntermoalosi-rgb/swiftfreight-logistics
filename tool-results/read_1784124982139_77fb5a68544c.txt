@@ -1,0 +1,797 @@
+     1→'use client';
+     2→
+     3→import React, { useCallback, useEffect, useMemo } from 'react';
+     4→import dynamic from 'next/dynamic';
+     5→import { useTheme } from 'next-themes';
+     6→import {
+     7→  LayoutDashboard,
+     8→  Package,
+     9→  MapPin,
+    10→  MessageSquare,
+    11→  Users,
+    12→  UserCog,
+    13→  Truck,
+    14→  Radio,
+    15→  ShoppingBag,
+    16→  BarChart3,
+    17→  Settings,
+    18→  LogOut,
+    19→  Menu,
+    20→  Search,
+    21→  Bell,
+    22→  Sun,
+    23→  Moon,
+    24→  ClipboardList,
+    25→  Receipt,
+    26→  ChevronRight,
+    27→  PackageCheck,
+    28→  CreditCard,
+    29→  AlertTriangle,
+    30→  Info,
+    31→  Zap,
+    32→  User as UserIcon,
+    33→} from 'lucide-react';
+    34→import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
+    35→import { Button } from '@/components/ui/button';
+    36→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    37→import { Badge } from '@/components/ui/badge';
+    38→import { Input } from '@/components/ui/input';
+    39→import {
+    40→  Sheet,
+    41→  SheetContent,
+    42→  SheetTrigger,
+    43→  SheetTitle,
+    44→} from '@/components/ui/sheet';
+    45→import {
+    46→  DropdownMenu,
+    47→  DropdownMenuContent,
+    48→  DropdownMenuItem,
+    49→  DropdownMenuLabel,
+    50→  DropdownMenuSeparator,
+    51→  DropdownMenuTrigger,
+    52→} from '@/components/ui/dropdown-menu';
+    53→import { ScrollArea } from '@/components/ui/scroll-area';
+    54→import { Separator } from '@/components/ui/separator';
+    55→import {
+    56→  Breadcrumb,
+    57→  BreadcrumbList,
+    58→  BreadcrumbItem,
+    59→  BreadcrumbPage,
+    60→  BreadcrumbSeparator,
+    61→} from '@/components/ui/breadcrumb';
+    62→import { Card, CardContent } from '@/components/ui/card';
+    63→import { Skeleton } from '@/components/ui/skeleton';
+    64→import { useIsMobile } from '@/hooks/use-mobile';
+    65→import { notifications as mockNotifications, roleLabels } from '@/lib/mock-data';
+    66→import type { DashboardTab, UserRole, NotificationType } from '@/lib/types';
+    67→
+    68→// ============ TYPES ============
+    69→interface NavItem {
+    70→  tab: DashboardTab;
+    71→  label: string;
+    72→  icon: React.ElementType;
+    73→}
+    74→
+    75→// ============ HELPERS ============
+    76→function getInitials(name: string): string {
+    77→  return name
+    78→    .split(' ')
+    79→    .map((w) => w[0])
+    80→    .join('')
+    81→    .toUpperCase()
+    82→    .slice(0, 2);
+    83→}
+    84→
+    85→function getTimeAgo(dateStr: string): string {
+    86→  const now = Date.now();
+    87→  const then = new Date(dateStr).getTime();
+    88→  const diffMs = now - then;
+    89→  const diffMins = Math.floor(diffMs / 60000);
+    90→  const diffHours = Math.floor(diffMs / 3600000);
+    91→  const diffDays = Math.floor(diffMs / 86400000);
+    92→
+    93→  if (diffMins < 1) return 'Just now';
+    94→  if (diffMins < 60) return `${diffMins}m ago`;
+    95→  if (diffHours < 24) return `${diffHours}h ago`;
+    96→  if (diffDays < 7) return `${diffDays}d ago`;
+    97→  return `${Math.floor(diffDays / 7)}w ago`;
+    98→}
+    99→
+   100→function getNotificationIcon(type: NotificationType) {
+   101→  switch (type) {
+   102→    case 'delivery_update':
+   103→      return PackageCheck;
+   104→    case 'new_message':
+   105→      return MessageSquare;
+   106→    case 'quote_received':
+   107→      return CreditCard;
+   108→    case 'payment':
+   109→      return CreditCard;
+   110→    case 'alert':
+   111→      return AlertTriangle;
+   112→    case 'system':
+   113→    default:
+   114→      return Info;
+   115→  }
+   116→}
+   117→
+   118→function getNotificationIconColor(type: NotificationType) {
+   119→  switch (type) {
+   120→    case 'delivery_update':
+   121→      return 'text-emerald-500';
+   122→    case 'new_message':
+   123→      return 'text-primary';
+   124→    case 'quote_received':
+   125→    case 'payment':
+   126→      return 'text-teal-500';
+   127→    case 'alert':
+   128→      return 'text-amber-500';
+   129→    case 'system':
+   130→    default:
+   131→      return 'text-muted-foreground';
+   132→  }
+   133→}
+   134→
+   135→// ============ NAV CONFIGURATION ============
+   136→const commonNavItems: NavItem[] = [
+   137→  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
+   138→  { tab: 'deliveries', label: 'Deliveries', icon: Package },
+   139→  { tab: 'tracking', label: 'Tracking', icon: MapPin },
+   140→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   141→];
+   142→
+   143→const staffNavItems: NavItem[] = [
+   144→  { tab: 'customers', label: 'Customers', icon: Users },
+   145→  { tab: 'drivers', label: 'Drivers', icon: UserCog },
+   146→  { tab: 'fleet', label: 'Fleet', icon: Truck },
+   147→  { tab: 'dispatch', label: 'Dispatch', icon: Radio },
+   148→  { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
+   149→  { tab: 'reports', label: 'Reports', icon: BarChart3 },
+   150→];
+   151→
+   152→const driverNavItems: NavItem[] = [
+   153→  { tab: 'deliveries', label: 'My Jobs', icon: ClipboardList },
+   154→  { tab: 'fleet', label: 'My Vehicle', icon: Truck },
+   155→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   156→];
+   157→
+   158→const customerNavItems: NavItem[] = [
+   159→  { tab: 'deliveries', label: 'My Shipments', icon: Package },
+   160→  { tab: 'tracking', label: 'Track Parcel', icon: MapPin },
+   161→  { tab: 'sourcing', label: 'Sourcing Requests', icon: ShoppingBag },
+   162→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   163→  { tab: 'reports', label: 'Invoices', icon: Receipt },
+   164→];
+   165→
+   166→function getNavItemsForRole(role: UserRole): NavItem[] {
+   167→  const staffRoles: UserRole[] = [
+   168→    'company_owner',
+   169→    'operations_manager',
+   170→    'dispatcher',
+   171→    'fleet_manager',
+   172→    'super_admin',
+   173→  ];
+   174→  if (staffRoles.includes(role)) {
+   175→    return [...commonNavItems, ...staffNavItems];
+   176→  }
+   177→  if (role === 'driver') {
+   178→    return driverNavItems;
+   179→  }
+   180→  if (role === 'customer') {
+   181→    return customerNavItems;
+   182→  }
+   183→  return commonNavItems;
+   184→}
+   185→
+   186→const tabTitles: Record<DashboardTab, string> = {
+   187→  overview: 'Overview',
+   188→  deliveries: 'Deliveries',
+   189→  tracking: 'Tracking',
+   190→  customers: 'Customers',
+   191→  drivers: 'Drivers',
+   192→  fleet: 'Fleet',
+   193→  dispatch: 'Dispatch',
+   194→  sourcing: 'Sourcing',
+   195→  messages: 'Messages',
+   196→  reports: 'Reports',
+   197→  settings: 'Settings',
+   198→};
+   199→
+   200→// ============ PLACEHOLDER ============
+   201→function ComingSoonPlaceholder({ title }: { title: string }) {
+   202→  return (
+   203→    <Card className="border-dashed">
+   204→      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+   205→        <div className="mb-4 rounded-full bg-primary/10 p-4">
+   206→          <Zap className="h-8 w-8 text-primary" />
+   207→        </div>
+   208→        <h3 className="mb-2 text-lg font-semibold">{title}</h3>
+   209→        <p className="max-w-sm text-sm text-muted-foreground">
+   210→          This section is being built and will be available soon. Check back later for updates.
+   211→        </p>
+   212→        <Skeleton className="mt-6 h-48 w-full max-w-2xl rounded-lg" />
+   213→      </CardContent>
+   214→    </Card>
+   215→  );
+   216→}
+   217→
+   218→// ============ LAZY TAB COMPONENTS ============
+   219→function createLazyTab(
+   220→  importFn: () => Promise<Record<string, unknown>>,
+   221→  exportName: string,
+   222→  fallbackTitle: string
+   223→) {
+   224→  return dynamic(
+   225→    () =>
+   226→      importFn()
+   227→        .then((m) => ({ default: m[exportName] as React.ComponentType }))
+   228→        .catch(() => ({
+   229→          default: () => <ComingSoonPlaceholder title={fallbackTitle} />,
+   230→        })),
+   231→    {
+   232→      loading: () => (
+   233→        <div className="space-y-4">
+   234→          <Skeleton className="h-8 w-48" />
+   235→          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+   236→            {[1, 2, 3].map((i) => (
+   237→              <Skeleton key={i} className="h-32 rounded-lg" />
+   238→            ))}
+   239→          </div>
+   240→        </div>
+   241→      ),
+   242→      ssr: false,
+   243→    }
+   244→  );
+   245→}
+   246→
+   247→const OverviewTab = createLazyTab(
+   248→  () => import('@/components/dashboard/tabs/overview-tab'),
+   249→  'OverviewTab',
+   250→  'Overview'
+   251→);
+   252→const DeliveriesTab = createLazyTab(
+   253→  () => import('@/components/dashboard/tabs/deliveries-tab'),
+   254→  'DeliveriesTab',
+   255→  'Deliveries'
+   256→);
+   257→const TrackingTab = createLazyTab(
+   258→  () => import('@/components/dashboard/tabs/tracking-tab'),
+   259→  'TrackingTab',
+   260→  'Tracking'
+   261→);
+   262→const CustomersTab = createLazyTab(
+   263→  () => import('@/components/dashboard/tabs/customers-tab'),
+   264→  'CustomersTab',
+   265→  'Customers'
+   266→);
+   267→const DriversTab = createLazyTab(
+   268→  () => import('@/components/dashboard/tabs/drivers-tab'),
+   269→  'DriversTab',
+   270→  'Drivers'
+   271→);
+   272→const FleetTab = createLazyTab(
+   273→  () => import('@/components/dashboard/tabs/fleet-tab'),
+   274→  'FleetTab',
+   275→  'Fleet'
+   276→);
+   277→const DispatchTab = createLazyTab(
+   278→  () => import('@/components/dashboard/tabs/dispatch-tab'),
+   279→  'DispatchTab',
+   280→  'Dispatch'
+   281→);
+   282→const SourcingTab = createLazyTab(
+   283→  () => import('@/components/dashboard/tabs/sourcing-tab'),
+   284→  'SourcingTab',
+   285→  'Sourcing'
+   286→);
+   287→const MessagesTab = createLazyTab(
+   288→  () => import('@/components/dashboard/tabs/messages-tab'),
+   289→  'MessagesTab',
+   290→  'Messages'
+   291→);
+   292→const ReportsTab = createLazyTab(
+   293→  () => import('@/components/dashboard/tabs/reports-tab'),
+   294→  'ReportsTab',
+   295→  'Reports'
+   296→);
+   297→const SettingsTab = createLazyTab(
+   298→  () => import('@/components/dashboard/tabs/settings-tab'),
+   299→  'SettingsTab',
+   300→  'Settings'
+   301→);
+   302→
+   303→const tabComponentMap: Record<DashboardTab, React.ComponentType> = {
+   304→  overview: OverviewTab,
+   305→  deliveries: DeliveriesTab,
+   306→  tracking: TrackingTab,
+   307→  customers: CustomersTab,
+   308→  drivers: DriversTab,
+   309→  fleet: FleetTab,
+   310→  dispatch: DispatchTab,
+   311→  sourcing: SourcingTab,
+   312→  messages: MessagesTab,
+   313→  reports: ReportsTab,
+   314→  settings: SettingsTab,
+   315→};
+   316→
+   317→// ============ SIDEBAR NAV CONTENT ============
+   318→function SidebarNavContent({
+   319→  onNavigate,
+   320→}: {
+   321→  onNavigate?: () => void;
+   322→}) {
+   323→  const { dashboardTab, setDashboardTab } = useNavStore();
+   324→  const { currentUser, logout } = useAuthStore();
+   325→  const { notifications, unreadCount } = useNotificationStore();
+   326→
+   327→  const role = currentUser?.role ?? 'customer';
+   328→  const navItems = getNavItemsForRole(role);
+   329→
+   330→  const handleNavClick = useCallback(
+   331→    (tab: DashboardTab) => {
+   332→      setDashboardTab(tab);
+   333→      onNavigate?.();
+   334→    },
+   335→    [setDashboardTab, onNavigate]
+   336→  );
+   337→
+   338→  const handleSignOut = useCallback(() => {
+   339→    logout();
+   340→    useNavStore.getState().setView('marketing');
+   341→    onNavigate?.();
+   342→  }, [logout, onNavigate]);
+   343→
+   344→  const initials = currentUser ? getInitials(currentUser.name) : '??';
+   345→  const displayName = currentUser?.name ?? 'Unknown User';
+   346→  const displayRole = currentUser ? roleLabels[currentUser.role] ?? currentUser.role : 'User';
+   347→
+   348→  return (
+   349→    <div className="flex h-full flex-col">
+   350→      {/* Logo area */}
+   351→      <div className="flex h-16 items-center gap-3 border-b px-4">
+   352→        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+   353→          <Truck className="h-5 w-5" />
+   354→        </div>
+   355→        <div className="flex flex-col">
+   356→          <span className="text-sm font-bold leading-tight">SwiftFreight</span>
+   357→          <span className="text-[11px] leading-tight text-muted-foreground">
+   358→            Mountain Express
+   359→          </span>
+   360→        </div>
+   361→      </div>
+   362→
+   363→      {/* Navigation */}
+   364→      <ScrollArea className="flex-1 px-3 py-3">
+   365→        <nav className="space-y-1" aria-label="Main navigation">
+   366→          {navItems.map((item) => {
+   367→            const Icon = item.icon;
+   368→            const isActive = dashboardTab === item.tab;
+   369→            const showBadge =
+   370→              item.tab === 'messages' && unreadCount > 0;
+   371→
+   372→            return (
+   373→              <button
+   374→                key={item.tab}
+   375→                onClick={() => handleNavClick(item.tab)}
+   376→                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+   377→                  isActive
+   378→                    ? 'border-l-2 border-primary bg-primary/10 text-primary'
+   379→                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+   380→                }`}
+   381→                aria-current={isActive ? 'page' : undefined}
+   382→              >
+   383→                <Icon
+   384→                  className={`h-5 w-5 shrink-0 ${
+   385→                    isActive
+   386→                      ? 'text-primary'
+   387→                      : 'text-muted-foreground group-hover:text-foreground'
+   388→                  }`}
+   389→                />
+   390→                <span className="flex-1 text-left">{item.label}</span>
+   391→                {showBadge && (
+   392→                  <Badge
+   393→                    variant="destructive"
+   394→                    className="h-5 min-w-5 justify-center px-1.5 text-[10px]"
+   395→                  >
+   396→                    {unreadCount > 9 ? '9+' : unreadCount}
+   397→                  </Badge>
+   398→                )}
+   399→              </button>
+   400→            );
+   401→          })}
+   402→        </nav>
+   403→      </ScrollArea>
+   404→
+   405→      {/* Bottom section */}
+   406→      <div className="border-t px-3 py-3 space-y-1">
+   407→        <button
+   408→          onClick={() => handleNavClick('settings')}
+   409→          className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+   410→            dashboardTab === 'settings'
+   411→              ? 'border-l-2 border-primary bg-primary/10 text-primary'
+   412→              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+   413→          }`}
+   414→        >
+   415→          <Settings className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-foreground" />
+   416→          <span className="flex-1 text-left">Settings</span>
+   417→        </button>
+   418→        <button
+   419→          onClick={handleSignOut}
+   420→          className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+   421→        >
+   422→          <LogOut className="h-5 w-5 shrink-0" />
+   423→          <span className="flex-1 text-left">Sign Out</span>
+   424→        </button>
+   425→      </div>
+   426→
+   427→      {/* User info card */}
+   428→      <div className="border-t px-3 py-3">
+   429→        <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2.5">
+   430→          <Avatar className="h-8 w-8">
+   431→            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+   432→              {initials}
+   433→            </AvatarFallback>
+   434→          </Avatar>
+   435→          <div className="flex-1 min-w-0">
+   436→            <p className="truncate text-sm font-medium leading-tight">
+   437→              {displayName}
+   438→            </p>
+   439→            <Badge variant="secondary" className="mt-0.5 text-[10px] px-1.5 py-0">
+   440→              {displayRole}
+   441→            </Badge>
+   442→          </div>
+   443→        </div>
+   444→      </div>
+   445→    </div>
+   446→  );
+   447→}
+   448→
+   449→// ============ NOTIFICATION DROPDOWN ============
+   450→function NotificationDropdown() {
+   451→  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+   452→    useNotificationStore();
+   453→  const { setDashboardTab } = useNavStore();
+   454→  const isMobile = useIsMobile();
+   455→
+   456→  const recentNotifications = useMemo(
+   457→    () => notifications.slice(0, 5),
+   458→    [notifications]
+   459→  );
+   460→
+   461→  const hasUnread = unreadCount > 0;
+   462→
+   463→  return (
+   464→    <DropdownMenu>
+   465→      <DropdownMenuTrigger asChild>
+   466→        <Button
+   467→          variant="ghost"
+   468→          size="icon"
+   469→          className="relative h-9 w-9"
+   470→          aria-label={`Notifications${hasUnread ? ` (${unreadCount} unread)` : ''}`}
+   471→        >
+   472→          <Bell className="h-[18px] w-[18px]" />
+   473→          {hasUnread && (
+   474→            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
+   475→              {unreadCount > 9 ? '9+' : unreadCount}
+   476→            </span>
+   477→          )}
+   478→        </Button>
+   479→      </DropdownMenuTrigger>
+   480→      <DropdownMenuContent
+   481→        align={isMobile ? 'end' : 'end'}
+   482→        className="w-80 p-0"
+   483→        sideOffset={8}
+   484→      >
+   485→        <div className="flex items-center justify-between border-b px-4 py-3">
+   486→          <DropdownMenuLabel className="p-0 text-sm font-semibold">
+   487→            Notifications
+   488→          </DropdownMenuLabel>
+   489→          {hasUnread && (
+   490→            <Button
+   491→              variant="ghost"
+   492→              size="sm"
+   493→              className="h-auto px-2 py-1 text-xs text-primary hover:text-primary"
+   494→              onClick={(e) => {
+   495→                e.stopPropagation();
+   496→                markAllAsRead();
+   497→              }}
+   498→            >
+   499→              Mark all as read
+   500→            </Button>
+   501→          )}
+   502→        </div>
+   503→        <ScrollArea className="max-h-72">
+   504→          {recentNotifications.length === 0 ? (
+   505→            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+   506→              <Bell className="mb-2 h-8 w-8 opacity-40" />
+   507→              <p className="text-sm">No notifications</p>
+   508→            </div>
+   509→          ) : (
+   510→            <div>
+   511→              {recentNotifications.map((notification) => {
+   512→                const IconComponent = getNotificationIcon(notification.type);
+   513→                const iconColor = getNotificationIconColor(notification.type);
+   514→                return (
+   515→                  <DropdownMenuItem
+   516→                    key={notification.id}
+   517→                    className="flex items-start gap-3 px-4 py-3 cursor-pointer"
+   518→                    onClick={() => markAsRead(notification.id)}
+   519→                  >
+   520→                    <div
+   521→                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted ${iconColor}`}
+   522→                    >
+   523→                      <IconComponent className="h-4 w-4" />
+   524→                    </div>
+   525→                    <div className="flex-1 min-w-0">
+   526→                      <div className="flex items-center gap-2">
+   527→                        <p className="truncate text-sm font-medium">
+   528→                          {notification.title}
+   529→                        </p>
+   530→                        {!notification.isRead && (
+   531→                          <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+   532→                        )}
+   533→                      </div>
+   534→                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+   535→                        {notification.message}
+   536→                      </p>
+   537→                      <p className="mt-1 text-[11px] text-muted-foreground/70">
+   538→                        {getTimeAgo(notification.createdAt)}
+   539→                      </p>
+   540→                    </div>
+   541→                  </DropdownMenuItem>
+   542→                );
+   543→              })}
+   544→            </div>
+   545→          )}
+   546→        </ScrollArea>
+   547→        {notifications.length > 0 && (
+   548→          <>
+   549→            <Separator />
+   550→            <div className="px-2 py-2">
+   551→              <Button
+   552→                variant="ghost"
+   553→                size="sm"
+   554→                className="w-full justify-center text-xs text-primary hover:text-primary"
+   555→                onClick={() => setDashboardTab('messages')}
+   556→              >
+   557→                View All Notifications
+   558→                <ChevronRight className="ml-1 h-3 w-3" />
+   559→              </Button>
+   560→            </div>
+   561→          </>
+   562→        )}
+   563→      </DropdownMenuContent>
+   564→    </DropdownMenu>
+   565→  );
+   566→}
+   567→
+   568→// ============ USER DROPDOWN ============
+   569→function UserDropdown() {
+   570→  const { currentUser, logout } = useAuthStore();
+   571→  const { setDashboardTab } = useNavStore();
+   572→
+   573→  const initials = currentUser ? getInitials(currentUser.name) : '??';
+   574→  const displayName = currentUser?.name ?? 'Unknown';
+   575→  const displayRole = currentUser
+   576→    ? roleLabels[currentUser.role] ?? currentUser.role
+   577→    : 'User';
+   578→
+   579→  const handleSignOut = useCallback(() => {
+   580→    logout();
+   581→    useNavStore.getState().setView('marketing');
+   582→  }, [logout]);
+   583→
+   584→  return (
+   585→    <DropdownMenu>
+   586→      <DropdownMenuTrigger asChild>
+   587→        <Button
+   588→          variant="ghost"
+   589→          className="relative flex h-9 items-center gap-2 rounded-full px-2"
+   590→        >
+   591→          <Avatar className="h-7 w-7">
+   592→            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+   593→              {initials}
+   594→            </AvatarFallback>
+   595→          </Avatar>
+   596→          <span className="hidden text-sm font-medium lg:inline-block">
+   597→            {displayName}
+   598→          </span>
+   599→        </Button>
+   600→      </DropdownMenuTrigger>
+   601→      <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
+   602→        <DropdownMenuLabel className="font-normal">
+   603→          <div className="flex flex-col space-y-1">
+   604→            <p className="text-sm font-medium leading-none">{displayName}</p>
+   605→            <p className="text-xs leading-none text-muted-foreground">
+   606→              {displayRole}
+   607→            </p>
+   608→          </div>
+   609→        </DropdownMenuLabel>
+   610→        <DropdownMenuSeparator />
+   611→        <DropdownMenuItem className="cursor-pointer">
+   612→          <UserIcon className="mr-2 h-4 w-4" />
+   613→          My Profile
+   614→        </DropdownMenuItem>
+   615→        <DropdownMenuItem
+   616→          className="cursor-pointer"
+   617→          onClick={() => setDashboardTab('settings')}
+   618→        >
+   619→          <Settings className="mr-2 h-4 w-4" />
+   620→          Settings
+   621→        </DropdownMenuItem>
+   622→        <DropdownMenuSeparator />
+   623→        <DropdownMenuItem
+   624→          className="cursor-pointer text-destructive focus:text-destructive"
+   625→          onClick={handleSignOut}
+   626→        >
+   627→          <LogOut className="mr-2 h-4 w-4" />
+   628→          Sign Out
+   629→        </DropdownMenuItem>
+   630→      </DropdownMenuContent>
+   631→    </DropdownMenu>
+   632→  );
+   633→}
+   634→
+   635→// ============ DASHBOARD HEADER ============
+   636→function DashboardHeader() {
+   637→  const { dashboardTab, setDashboardTab, setTrackingNumber, trackingNumber } =
+   638→    useNavStore();
+   639→  const { theme, setTheme } = useTheme();
+   640→  const isMobile = useIsMobile();
+   641→  const { setSidebarOpen, sidebarOpen } = useNavStore();
+   642→
+   643→  const title = tabTitles[dashboardTab] ?? 'Dashboard';
+   644→
+   645→  const handleQuickTrack = useCallback(
+   646→    (e: React.FormEvent<HTMLFormElement>) => {
+   647→      e.preventDefault();
+   648→      const val = trackingNumber.trim();
+   649→      if (val) {
+   650→        setDashboardTab('tracking');
+   651→      }
+   652→    },
+   653→    [trackingNumber, setDashboardTab]
+   654→  );
+   655→
+   656→  return (
+   657→    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-card px-4 md:px-6">
+   658→      {/* Left: hamburger + title + breadcrumb */}
+   659→      <div className="flex items-center gap-3 min-w-0">
+   660→        {isMobile && (
+   661→          <Button
+   662→            variant="ghost"
+   663→            size="icon"
+   664→            className="h-9 w-9 shrink-0"
+   665→            onClick={() => setSidebarOpen(true)}
+   666→            aria-label="Open menu"
+   667→          >
+   668→            <Menu className="h-5 w-5" />
+   669→          </Button>
+   670→        )}
+   671→        <div className="hidden md:block">
+   672→          <Breadcrumb>
+   673→            <BreadcrumbList>
+   674→              <BreadcrumbItem>
+   675→                <BreadcrumbPage className="text-sm font-medium">
+   676→                  {title}
+   677→                </BreadcrumbPage>
+   678→              </BreadcrumbItem>
+   679→            </BreadcrumbList>
+   680→          </Breadcrumb>
+   681→        </div>
+   682→        {isMobile && (
+   683→          <h1 className="text-sm font-semibold truncate">{title}</h1>
+   684→        )}
+   685→      </div>
+   686→
+   687→      {/* Right: spacer + search + theme + notifications + user */}
+   688→      <div className="ml-auto flex items-center gap-2">
+   689→        {/* Tracking search */}
+   690→        <form onSubmit={handleQuickTrack} className="hidden md:block">
+   691→          <div className="relative">
+   692→            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+   693→            <Input
+   694→              type="text"
+   695→              placeholder="Quick track..."
+   696→              value={trackingNumber}
+   697→              onChange={(e) => setTrackingNumber(e.target.value)}
+   698→              className="h-9 w-48 bg-muted/50 pl-8 text-sm lg:w-64"
+   699→            />
+   700→          </div>
+   701→        </form>
+   702→
+   703→        {/* Theme toggle */}
+   704→        <Button
+   705→          variant="ghost"
+   706→          size="icon"
+   707→          className="h-9 w-9"
+   708→          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+   709→          aria-label="Toggle theme"
+   710→        >
+   711→          <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+   712→          <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+   713→        </Button>
+   714→
+   715→        {/* Notifications */}
+   716→        <NotificationDropdown />
+   717→
+   718→        {/* User avatar */}
+   719→        <UserDropdown />
+   720→      </div>
+   721→    </header>
+   722→  );
+   723→}
+   724→
+   725→// ============ TAB RENDERER ============
+   726→function TabRenderer({ tab }: { tab: DashboardTab }) {
+   727→  const Component = tabComponentMap[tab];
+   728→  if (!Component) {
+   729→    return <ComingSoonPlaceholder title={tabTitles[tab] ?? 'Unknown'} />;
+   730→  }
+   731→  return <Component />;
+   732→}
+   733→
+   734→// ============ MAIN DASHBOARD LAYOUT ============
+   735→export function DashboardLayout() {
+   736→  const isMobile = useIsMobile();
+   737→  const { dashboardTab, sidebarOpen, setSidebarOpen } = useNavStore();
+   738→  const { currentUser } = useAuthStore();
+   739→  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+   740→    useNotificationStore();
+   741→
+   742→  // Initialize notification store with mock data on first render
+   743→  useEffect(() => {
+   744→    if (notifications.length === 0 && currentUser) {
+   745→      const userNotifs = mockNotifications.filter(
+   746→        (n) => n.userId === currentUser.id
+   747→      );
+   748→      if (userNotifs.length > 0) {
+   749→        const store = useNotificationStore.getState();
+   750→        // Only set if still empty (avoid race condition)
+   751→        if (store.notifications.length === 0) {
+   752→          const unread = userNotifs.filter((n) => !n.isRead).length;
+   753→          useNotificationStore.setState({
+   754→            notifications: userNotifs,
+   755→            unreadCount: unread,
+   756→          });
+   757→        }
+   758→      }
+   759→    }
+   760→  }, [currentUser, notifications.length]);
+   761→
+   762→  // Close mobile sidebar on nav change
+   763→  useEffect(() => {
+   764→    if (isMobile) {
+   765→      setSidebarOpen(false);
+   766→    }
+   767→  }, [dashboardTab, isMobile, setSidebarOpen]);
+   768→
+   769→  return (
+   770→    <div className="flex h-screen overflow-hidden bg-background">
+   771→      {/* Desktop sidebar */}
+   772→      {!isMobile && (
+   773→        <aside className="hidden w-64 shrink-0 border-r bg-card shadow-sm md:flex md:flex-col">
+   774→          <SidebarNavContent />
+   775→        </aside>
+   776→      )}
+   777→
+   778→      {/* Mobile sidebar (Sheet) */}
+   779→      {isMobile && (
+   780→        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+   781→          <SheetContent side="left" className="w-72 p-0">
+   782→            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+   783→            <SidebarNavContent onNavigate={() => setSidebarOpen(false)} />
+   784→          </SheetContent>
+   785→        </Sheet>
+   786→      )}
+   787→
+   788→      {/* Main content area */}
+   789→      <div className="flex flex-1 flex-col overflow-hidden">
+   790→        <DashboardHeader />
+   791→        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+   792→          <TabRenderer tab={dashboardTab} />
+   793→        </main>
+   794→      </div>
+   795→    </div>
+   796→  );
+   797→}
