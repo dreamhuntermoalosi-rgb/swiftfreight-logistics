@@ -395,7 +395,8 @@ export function ReportsTab() {
       {/* ── Charts Section ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue Trend */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-primary to-teal-400" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-emerald-600" />
@@ -435,7 +436,8 @@ export function ReportsTab() {
         </Card>
 
         {/* Delivery Volume */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-emerald-500" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-teal-500" />
@@ -457,7 +459,8 @@ export function ReportsTab() {
         </Card>
 
         {/* Delivery Success Rate */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-emerald-600" />
@@ -495,7 +498,8 @@ export function ReportsTab() {
       </div>
 
       {/* ── Driver Performance Table ── */}
-      <Card>
+      <Card className="relative overflow-hidden shadow-sm border">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-emerald-600" />
@@ -569,7 +573,8 @@ export function ReportsTab() {
       {/* ── Fleet Performance + Customer Insights ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Fleet Performance */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Truck className="h-4 w-4 text-emerald-600" />
@@ -634,7 +639,8 @@ export function ReportsTab() {
         </Card>
 
         {/* Customer Insights */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 via-pink-500 to-rose-400" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-emerald-600" />
@@ -700,7 +706,8 @@ export function ReportsTab() {
       {/* ── Revenue by Route + Delivery Time Distribution ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue by Route */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-emerald-600" />
@@ -740,7 +747,8 @@ export function ReportsTab() {
         </Card>
 
         {/* Delivery Time Distribution */}
-        <Card>
+        <Card className="relative overflow-hidden shadow-sm border">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-600" />
@@ -767,7 +775,8 @@ export function ReportsTab() {
       </div>
 
       {/* ── Delivery Volume by Day of Week ── */}
-      <Card>
+      <Card className="relative overflow-hidden shadow-sm border">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-primary to-teal-400" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-emerald-600" />
@@ -805,7 +814,8 @@ export function ReportsTab() {
       </Card>
 
       {/* ── Company Performance Comparison ── */}
-      <Card>
+      <Card className="relative overflow-hidden shadow-sm border">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-400" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-emerald-600" />
@@ -859,7 +869,8 @@ export function ReportsTab() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Border Post Performance Table */}
-          <Card>
+          <Card className="relative overflow-hidden shadow-sm border">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Border Post Performance</CardTitle>
               <CardDescription>Lesotho–South Africa border crossing metrics</CardDescription>
@@ -915,7 +926,8 @@ export function ReportsTab() {
           </Card>
 
           {/* Cross-Border Trend Chart */}
-          <Card>
+          <Card className="relative overflow-hidden shadow-sm border">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-emerald-500 to-teal-400" />
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-emerald-600" />

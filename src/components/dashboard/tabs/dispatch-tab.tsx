@@ -14,7 +14,19 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/store';
 import { deliveries, drivers, vehicles, statusLabels, statusColors, priorityColors } from '@/lib/mock-data';
-import { MapPlaceholder } from '@/components/dashboard/map-placeholder';
+import dynamic from 'next/dynamic';
+
+const DispatchMap = dynamic(() => import('@/components/dashboard/dispatch-map').then((m) => ({ default: m.DispatchMap })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-48 w-full items-center justify-center rounded-xl border bg-muted/50">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        Loading map...
+      </div>
+    </div>
+  ),
+});
 import {
   Radio, Truck, Users, MapPin, Package, Clock, Send, Search,
   Filter, AlertTriangle, ChevronRight, Zap, Printer, MessageSquare,
@@ -206,12 +218,13 @@ export function DispatchTab() {
           { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package },
         ].map(stat => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}>
+            <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden`}>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 to-teal-400/40" />
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
-                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                    <p className={`text-2xl font-bold ${stat.color} ${stat.label === 'In Transit' ? 'animate-shimmer bg-gradient-to-r from-blue-600 via-teal-600 to-blue-600 bg-[length:200%_100%] bg-clip-text text-transparent dark:from-blue-400 dark:via-teal-400 dark:to-blue-400' : ''}`}>{stat.value}</p>
                   </div>
                   <stat.icon className={`h-8 w-8 ${stat.color} opacity-60`} />
                 </div>
@@ -238,20 +251,9 @@ export function DispatchTab() {
       </div>
 
       {/* Live Map */}
-      <MapPlaceholder
-        className="mb-4"
-        height="h-48"
-        title="Live Operations Map"
-        subtitle="Real-time vehicle and delivery tracking across all routes"
-        markers={[
-          { label: 'Johannesburg Hub', type: 'warehouse' },
-          { label: 'Maseru HQ', type: 'warehouse' },
-          { label: 'Border Post', type: 'border' },
-          { label: 'LP 456 AB 789', type: 'driver' },
-          { label: 'LP 321 CD 456', type: 'driver' },
-          { label: 'Butha Buthe Delivery', type: 'destination' },
-        ]}
-      />
+      <div className="mb-4">
+        <DispatchMap />
+      </div>
 
       {/* Main Layout */}
       <div className="grid gap-4 lg:grid-cols-5">

@@ -1185,6 +1185,8 @@ export function MarketingWebsite() {
 
       {/* ─────────── 11. FOOTER ─────────── */}
       <footer className="mt-auto border-t border-border/50 bg-muted/30">
+        {/* Gradient line above footer */}
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             {/* Brand */}
@@ -1225,7 +1227,7 @@ export function MarketingWebsite() {
                   (link) => (
                     <li key={link}>
                       <button
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground relative after:absolute after:bottom-[-2px] after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
                         onClick={() => {
                           if (link === 'Pricing') scrollTo('#pricing');
                           if (link === 'Features') scrollTo('#features');
@@ -1246,7 +1248,7 @@ export function MarketingWebsite() {
                 {['About', 'Careers', 'Blog', 'Contact'].map((link) => (
                   <li key={link}>
                     <button
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground relative after:absolute after:bottom-[-2px] after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
                       onClick={() => {
                         if (link === 'Contact') scrollTo('#contact');
                       }}
@@ -1265,7 +1267,7 @@ export function MarketingWebsite() {
                 {['Documentation', 'Help Center', 'API Reference'].map(
                   (link) => (
                     <li key={link}>
-                      <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+                      <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer relative after:absolute after:bottom-[-2px] after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full">
                         {link}
                       </span>
                     </li>
@@ -1276,7 +1278,7 @@ export function MarketingWebsite() {
               <ul className="mt-4 space-y-2.5">
                 {['Privacy Policy', 'Terms of Service'].map((link) => (
                   <li key={link}>
-                    <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+                    <span className="text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer relative after:absolute after:bottom-[-2px] after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full">
                       {link}
                     </span>
                   </li>

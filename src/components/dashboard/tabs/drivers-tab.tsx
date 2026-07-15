@@ -14,10 +14,28 @@ import type { Driver } from '@/lib/types';
 import {
   Users, Phone, Mail, Star, MapPin, Search, Plus, Truck,
   AlertTriangle, Clock, UserCheck, Shield, ChevronUp, ChevronDown,
-  Package, TrendingUp, ArrowUpRight,
+  Package, TrendingUp, ArrowUpRight, Download,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 15;
+
+function exportCSV(data: Record<string, unknown>[], filename: string) {
+  if (data.length === 0) return;
+  const headers = Object.keys(data[0]);
+  const csv = [
+    headers.join(','),
+    ...data.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${data.length} records to ${filename}`);
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -56,6 +74,13 @@ const driverStatusDotColor: Record<Driver['status'], string> = {
   on_trip: 'bg-amber-500',
   off_duty: 'bg-red-500',
   suspended: 'bg-red-500',
+};
+
+const driverStatusBorderColor: Record<Driver['status'], string> = {
+  available: 'border-l-[3px] border-l-green-500',
+  on_trip: 'border-l-[3px] border-l-amber-500',
+  off_duty: 'border-l-[3px] border-l-gray-300 dark:border-l-gray-600',
+  suspended: 'border-l-[3px] border-l-red-500',
 };
 
 function isLicenseExpiringSoon(expiry?: string): boolean {
@@ -173,6 +198,28 @@ export function DriversTab() {
             className="pl-9"
           />
         </div>
+        <Button
+          variant="outline"
+          className="shrink-0 gap-2"
+          aria-label="Export drivers CSV"
+          onClick={() => {
+            const data = filtered.map((d) => ({
+              Name: d.name,
+              Phone: d.phone,
+              'License #': d.licenseNumber,
+              Status: d.status,
+              Rating: d.rating,
+              'Total Deliveries': d.totalDeliveries,
+              Successful: d.successfulDeliveries,
+              Vehicle: d.currentVehiclePlate || 'None',
+              Joined: formatDate(d.joinedAt),
+            }));
+            exportCSV(data, 'drivers.csv');
+          }}
+        >
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Filter by status" />
@@ -296,7 +343,7 @@ export function DriversTab() {
                     return (
                       <TableRow
                         key={driver.id}
-                        className={`cursor-pointer hover:bg-muted/50 transition-colors ${isLicenseExpiringSoon(driver.licenseExpiry) ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}
+                        className={`cursor-pointer hover:bg-muted/50 transition-all duration-150 ${isLicenseExpiringSoon(driver.licenseExpiry) ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''} ${driverStatusBorderColor[driver.status]}`}
                         onClick={() => setSelectedDriver(driver)}
                       >
                         <TableCell>

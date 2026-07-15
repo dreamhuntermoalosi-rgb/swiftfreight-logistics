@@ -50,7 +50,8 @@ import {
 } from '@/components/ui/pagination';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/store';
-import { invoices, deliveries, customers } from '@/lib/mock-data';
+import { invoices, deliveries, customers, companies } from '@/lib/mock-data';
+import { downloadInvoicePdf } from '@/components/dashboard/invoice-pdf';
 import type { Invoice } from '@/lib/types';
 
 // ============ Helpers ============
@@ -168,6 +169,15 @@ export function InvoicesTab() {
     }
   }
 
+  // Get the company for an invoice (via its delivery)
+  function getCompanyForInvoice(invoice: Invoice) {
+    const delivery = deliveries.find((d) => d.id === invoice.deliveryId);
+    if (delivery) {
+      return companies.find((c) => c.id === delivery.companyId) || companies[0];
+    }
+    return companies[0];
+  }
+
   // Mock itemized breakdown
   function getItemizedBreakdown(invoice: Invoice) {
     return [
@@ -216,7 +226,15 @@ export function InvoicesTab() {
             {isCustomer ? 'View and manage your invoices' : 'Manage all customer invoices'}
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info('Download all invoices feature coming soon')}>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+          if (filteredInvoices.length > 0) {
+            const first = filteredInvoices[0];
+            downloadInvoicePdf(first, getCompanyForInvoice(first));
+            toast.info('Generating PDFs... First invoice downloaded. Full batch download available in production.');
+          } else {
+            toast.error('No invoices to download.');
+          }
+        }}>
           <Download className="h-4 w-4" />
           Download All
         </Button>
@@ -377,7 +395,7 @@ export function InvoicesTab() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => toast.info('PDF download coming soon')}
+                            onClick={() => downloadInvoicePdf(inv, getCompanyForInvoice(inv))}
                             title="Download PDF"
                           >
                             <Download className="h-4 w-4" />
@@ -521,7 +539,7 @@ export function InvoicesTab() {
                   Pay Now
                 </Button>
               )}
-              <Button variant="outline" className="gap-2" onClick={() => toast.info('PDF download coming soon')}>
+              <Button variant="outline" className="gap-2" onClick={() => downloadInvoicePdf(selectedInvoice, getCompanyForInvoice(selectedInvoice))}>
                 <Download className="h-4 w-4" />
                 Download PDF
               </Button>

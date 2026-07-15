@@ -125,12 +125,12 @@ export function SettingsTab() {
   }
 
   const settingsNav = [
-    { id: 'profile', label: 'Profile', icon: User },
-    ...(isOwnerOrManager ? [{ id: 'company', label: 'Company', icon: Building2 }] : []),
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
+    { id: 'profile', label: 'Profile', icon: User, badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
+    ...(isOwnerOrManager ? [{ id: 'company', label: 'Company', icon: Building2, badge: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' }] : []),
+    { id: 'notifications', label: 'Notifications', icon: Bell, badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
+    { id: 'appearance', label: 'Appearance', icon: Palette, badge: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' },
+    { id: 'security', label: 'Security', icon: Shield, badge: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' },
+    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle, badge: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
   ];
 
   return (
@@ -161,8 +161,13 @@ export function SettingsTab() {
                       : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                   }`}
                 >
-                  <item.icon className="h-4 w-4 shrink-0" />
+                  <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${activeSection === item.id ? 'bg-primary/15' : ''}`}>
+                    <item.icon className="h-4 w-4 shrink-0" />
+                  </div>
                   {item.label}
+                  {item.badge && (
+                    <span className={`ml-auto h-2 w-2 rounded-full ${activeSection === item.id ? item.badge : 'bg-muted-foreground/20'}`} />
+                  )}
                 </button>
               ))}
             </nav>
@@ -535,16 +540,19 @@ export function SettingsTab() {
 
             {/* ── Danger Zone Section ── */}
             {activeSection === 'danger' && (
-              <Card className="border-red-200 dark:border-red-900/50">
+              <Card className="border-red-200 dark:border-red-900/50 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500" />
                 <CardHeader>
                   <CardTitle className="text-base text-red-600 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                      <AlertTriangle className="h-4 w-4" />
+                    </div>
                     Danger Zone
                   </CardTitle>
                   <CardDescription>Irreversible and destructive actions</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 transition-colors duration-200 hover:bg-destructive/5">
+                  <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 transition-colors duration-200 hover:bg-red-100/50 dark:hover:bg-red-950/30">
                     <div>
                       <p className="text-sm font-medium text-red-600 dark:text-red-400">Delete Account</p>
                       <p className="text-xs text-muted-foreground">
@@ -558,7 +566,7 @@ export function SettingsTab() {
                   </div>
 
                   {currentUser?.role === 'company_owner' && (
-                    <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 transition-colors duration-200 hover:bg-destructive/5">
+                    <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 transition-colors duration-200 hover:bg-red-100/50 dark:hover:bg-red-950/30">
                       <div>
                         <p className="text-sm font-medium text-red-600 dark:text-red-400">Deactivate Company</p>
                         <p className="text-xs text-muted-foreground">

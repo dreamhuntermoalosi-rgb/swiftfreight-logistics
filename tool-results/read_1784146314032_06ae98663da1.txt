@@ -1,0 +1,571 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useMemo } from 'react';
+     4→     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+     5→     5→import { Button } from '@/components/ui/button';
+     6→     6→import { Badge } from '@/components/ui/badge';
+     7→     7→import { Input } from '@/components/ui/input';
+     8→     8→import { Label } from '@/components/ui/label';
+     9→     9→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    10→    10→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+    11→    11→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    12→    12→import { ScrollArea } from '@/components/ui/scroll-area';
+    13→    13→import { Separator } from '@/components/ui/separator';
+    14→    14→import { toast } from 'sonner';
+    15→    15→import { useAuthStore } from '@/lib/store';
+    16→    16→import { deliveries, drivers, vehicles, statusLabels, statusColors, priorityColors } from '@/lib/mock-data';
+    17→    17→import { MapPlaceholder } from '@/components/dashboard/map-placeholder';
+    18→    18→import {
+    19→    19→  Radio, Truck, Users, MapPin, Package, Clock, Send, Search,
+    20→    20→  Filter, AlertTriangle, ChevronRight, Zap, Printer, MessageSquare,
+    21→    21→  UserPlus, Fuel, Star, Phone, CheckCircle
+    22→    22→} from 'lucide-react';
+    23→    23→import { motion, AnimatePresence } from 'framer-motion';
+    24→    24→
+    25→    25→// ── Helpers ──────────────────────────────────────────────────
+    26→    26→function timeAgo(dateStr: string): string {
+    27→    27→  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    28→    28→  if (seconds < 60) return 'just now';
+    29→    29→  const minutes = Math.floor(seconds / 60);
+    30→    30→  if (minutes < 60) return `${minutes}m ago`;
+    31→    31→  const hours = Math.floor(minutes / 60);
+    32→    32→  if (hours < 24) return `${hours}h ago`;
+    33→    33→  const days = Math.floor(hours / 24);
+    34→    34→  return `${days}d ago`;
+    35→    35→}
+    36→    36→
+    37→    37→function formatTime(dateStr: string): string {
+    38→    38→  return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    39→    39→}
+    40→    40→
+    41→    41→const vehicleTypeColors: Record<string, string> = {
+    42→    42→  motorcycle: 'border-l-blue-400',
+    43→    43→  van: 'border-l-emerald-400',
+    44→    44→  truck: 'border-l-orange-400',
+    45→    45→  trailer: 'border-l-purple-400',
+    46→    46→  pickup: 'border-l-teal-400',
+    47→    47→};
+    48→    48→
+    49→    49→const vehicleTypeIcons: Record<string, string> = {
+    50→    50→  motorcycle: '🏍️',
+    51→    51→  van: '🚐',
+    52→    52→  truck: '🚛',
+    53→    53→  trailer: '🚚',
+    54→    54→  pickup: '🛻',
+    55→    55→};
+    56→    56→
+    57→    57→// ── Main Component ──────────────────────────────────────────
+    58→    58→export function DispatchTab() {
+    59→    59→  const { currentUser } = useAuthStore();
+    60→    60→  const [deliveryTab, setDeliveryTab] = useState('pending');
+    61→    61→  const [driverSearch, setDriverSearch] = useState('');
+    62→    62→  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+    63→    63→  const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
+    64→    64→  const [assignDriver, setAssignDriver] = useState('');
+    65→    65→  const [assignVehicle, setAssignVehicle] = useState('');
+    66→    66→  const [localDeliveries, setLocalDeliveries] = useState(deliveries);
+    67→    67→
+    68→    68→  // Available drivers and vehicles
+    69→    69→  const availableDrivers = useMemo(() => drivers.filter(d => d.status === 'available'), []);
+    70→    70→  const availableVehicles = useMemo(() => vehicles.filter(v => v.status === 'available'), []);
+    71→    71→
+    72→    72→  const filteredDrivers = useMemo(() => {
+    73→    73→    if (!driverSearch) return availableDrivers;
+    74→    74→    const q = driverSearch.toLowerCase();
+    75→    75→    return availableDrivers.filter(
+    76→    76→      d => d.name.toLowerCase().includes(q) || d.phone.includes(q)
+    77→    77→    );
+    78→    78→  }, [availableDrivers, driverSearch]);
+    79→    79→
+    80→    80→  // Categorize deliveries
+    81→    81→  const pendingDeliveries = useMemo(() => {
+    82→    82→    const today = new Date().toDateString();
+    83→    83→    return localDeliveries.filter(d =>
+    84→    84→      !d.driverId &&
+    85→    85→      !['delivered', 'cancelled', 'returned'].includes(d.status)
+    86→    86→    ).slice(0, 28);
+    87→    87→  }, [localDeliveries]);
+    88→    88→
+    89→    89→  const inProgressDeliveries = useMemo(() => {
+    90→    90→    return localDeliveries.filter(d =>
+    91→    91→      d.driverId &&
+    92→    92→      ['collected', 'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery'].includes(d.status)
+    93→    93→    ).slice(0, 20);
+    94→    94→  }, [localDeliveries]);
+    95→    95→
+    96→    96→  const completedToday = useMemo(() => {
+    97→    97→    const today = new Date().toDateString();
+    98→    98→    return localDeliveries.filter(d =>
+    99→    99→      d.status === 'delivered' &&
+   100→   100→      new Date(d.actualDelivery || d.updatedAt).toDateString() === today
+   101→   101→    ).slice(0, 15);
+   102→   102→  }, [localDeliveries]);
+   103→   103→
+   104→   104→  const stats = useMemo(() => ({
+   105→   105→    pending: pendingDeliveries.length || 28,
+   106→   106→    inTransit: localDeliveries.filter(d => ['in_transit', 'at_border'].includes(d.status)).length || 45,
+   107→   107→    outForDelivery: localDeliveries.filter(d => d.status === 'out_for_delivery').length || 35,
+   108→   108→    completedToday: completedToday.length || 12,
+   109→   109→  }), [pendingDeliveries, inProgressDeliveries, completedToday, localDeliveries]);
+   110→   110→
+   111→   111→  function handleAssignClick(deliveryId: string) {
+   112→   112→    setSelectedDelivery(deliveryId);
+   113→   113→    setAssignDriver('');
+   114→   114→    setAssignVehicle('');
+   115→   115→    setAssignDialogOpen(true);
+   116→   116→  }
+   117→   117→
+   118→   118→  function handleConfirmAssign() {
+   119→   119→    if (!assignDriver || !assignVehicle) {
+   120→   120→      toast.error('Please select both a driver and a vehicle');
+   121→   121→      return;
+   122→   122→    }
+   123→   123→    const driver = drivers.find(d => d.id === assignDriver);
+   124→   124→    const vehicle = vehicles.find(v => v.id === assignVehicle);
+   125→   125→    setLocalDeliveries(prev => prev.map(d =>
+   126→   126→      d.id === selectedDelivery
+   127→   127→        ? { ...d, driverId: assignDriver, driverName: driver?.name, vehicleId: assignVehicle, vehiclePlate: vehicle?.plateNumber, status: 'collected' as const }
+   128→   128→        : d
+   129→   129→    ));
+   130→   130→    toast.success('Assignment Confirmed', {
+   131→   131→      description: `${driver?.name} assigned with ${vehicle?.plateNumber}`,
+   132→   132→    });
+   133→   133→    setAssignDialogOpen(false);
+   134→   134→    setSelectedDelivery(null);
+   135→   135→  }
+   136→   136→
+   137→   137→  function handleAutoAssign() {
+   138→   138→    const unassigned = localDeliveries.filter(d => !d.driverId && !['delivered', 'cancelled', 'returned'].includes(d.status));
+   139→   139→    if (unassigned.length === 0) {
+   140→   140→      toast.info('No unassigned deliveries to auto-assign');
+   141→   141→      return;
+   142→   142→    }
+   143→   143→    let count = 0;
+   144→   144→    const updated = localDeliveries.map(d => {
+   145→   145→      if (d.driverId || ['delivered', 'cancelled', 'returned'].includes(d.status)) return d;
+   146→   146→      if (count >= 5) return d;
+   147→   147→      const drv = availableDrivers[count % availableDrivers.length];
+   148→   148→      const veh = availableVehicles[count % availableVehicles.length];
+   149→   149→      if (!drv || !veh) return d;
+   150→   150→      count++;
+   151→   151→      return { ...d, driverId: drv.id, driverName: drv.name, vehicleId: veh.id, vehiclePlate: veh.plateNumber, status: 'collected' as const };
+   152→   152→    });
+   153→   153→    setLocalDeliveries(updated);
+   154→   154→    toast.success('Auto-Assign Complete', { description: `${count} deliveries have been assigned` });
+   155→   155→  }
+   156→   156→
+   157→   157→  function printManifest() {
+   158→   158→    const pendingDeliveries = localDeliveries.filter(d => d.status === 'pending' || d.status === 'in_progress').slice(0, 20);
+   159→   159→    const companyName = currentUser?.companyName || 'Unknown Company';
+   160→   160→    const html = `<!DOCTYPE html><html><head><title>Dispatch Manifest</title>
+   161→   161→    <style>body{font-family:system-ui,sans-serif;padding:40px;color:#111}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:13px}th{background:#f5f5f5;font-weight:600}h1{font-size:24px;margin:0}h2{font-size:14px;color:#666;margin-top:4px;margin-bottom:0}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #16a34a;padding-bottom:16px;margin-bottom:20px}.footer{margin-top:40px;font-size:12px;color:#888;text-align:center}</style>
+   162→   162→  </head><body>
+   163→   163→    <div class="header"><div><h1>SwiftFreight</h1><h2>Dispatch Manifest</h2></div><div style="text-align:right"><p>${new Date().toLocaleDateString('en-ZA', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div></div>
+   164→   164→    <p><strong>Company:</strong> ${companyName} | <strong>Total Shipments:</strong> ${pendingDeliveries.length}</p>
+   165→   165→    <table><thead><tr><th>Tracking #</th><th>Customer</th><th>Route</th><th>Priority</th><th>Driver</th><th>Vehicle</th><th>Status</th></tr></thead><tbody>${pendingDeliveries.map(d => `<tr><td>${d.trackingNumber}</td><td>${d.customerName}</td><td>${d.pickup.city} → ${d.destination.city}</td><td>${d.priority}</td><td>${d.driverName || 'Unassigned'}</td><td>${d.vehiclePlate || 'Unassigned'}</td><td>${d.status}</td></tr>`).join('')}</tbody></table>
+   166→   166→    <div class="footer">Generated by SwiftFreight Logistics OS — ${new Date().toLocaleString()}</div>
+   167→   167→  </body></html>`;
+   168→   168→    const win = window.open('', '_blank');
+   169→   169→    if (win) {
+   170→   170→      win.document.write(html);
+   171→   171→      win.document.close();
+   172→   172→      win.print();
+   173→   173→    }
+   174→   174→  }
+   175→   175→
+   176→   176→  const selDelivery = useMemo(() => localDeliveries.find(d => d.id === selectedDelivery), [selectedDelivery, localDeliveries]);
+   177→   177→
+   178→   178→  return (
+   179→   179→    <div className="space-y-4">
+   180→   180→      {/* Header */}
+   181→   181→      <div className="flex items-center justify-between">
+   182→   182→        <div className="flex items-center gap-3">
+   183→   183→          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+   184→   184→            <Radio className="h-5 w-5 text-primary" />
+   185→   185→          </div>
+   186→   186→          <div>
+   187→   187→            <h2 className="text-xl font-bold">Dispatch Centre</h2>
+   188→   188→            <p className="text-sm text-muted-foreground">Operations dispatch &amp; resource management</p>
+   189→   189→          </div>
+   190→   190→        </div>
+   191→   191→        <div className="flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 dark:bg-green-900/20">
+   192→   192→          <span className="relative flex h-3 w-3">
+   193→   193→            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+   194→   194→            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+   195→   195→          </span>
+   196→   196→          <span className="text-sm font-semibold text-green-700 dark:text-green-400">Live</span>
+   197→   197→        </div>
+   198→   198→      </div>
+   199→   199→
+   200→   200→      {/* Stats Row */}
+   201→   201→      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+   202→   202→        {[
+   203→   203→          { label: 'Pending Assignment', value: stats.pending, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Clock },
+   204→   204→          { label: 'In Transit', value: stats.inTransit, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', icon: Truck },
+   205→   205→          { label: 'Out for Delivery', value: stats.outForDelivery, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20', icon: MapPin },
+   206→   206→          { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package },
+   207→   207→        ].map(stat => (
+   208→   208→          <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+   209→   209→            <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}>
+   210→   210→              <CardContent className="p-4">
+   211→   211→                <div className="flex items-center justify-between">
+   212→   212→                  <div>
+   213→   213→                    <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+   214→   214→                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+   215→   215→                  </div>
+   216→   216→                  <stat.icon className={`h-8 w-8 ${stat.color} opacity-60`} />
+   217→   217→                </div>
+   218→   218→              </CardContent>
+   219→   219→            </Card>
+   220→   220→          </motion.div>
+   221→   221→        ))}
+   222→   222→      </div>
+   223→   223→
+   224→   224→      {/* Quick Actions */}
+   225→   225→      <div className="flex flex-wrap gap-2">
+   226→   226→        <Button onClick={handleAutoAssign} className="gap-2 bg-primary hover:bg-primary/90">
+   227→   227→          <Zap className="h-4 w-4" />
+   228→   228→          Auto-Assign
+   229→   229→        </Button>
+   230→   230→        <Button variant="outline" className="gap-2" onClick={printManifest}>
+   231→   231→          <Printer className="h-4 w-4" />
+   232→   232→          Print Manifests
+   233→   233→        </Button>
+   234→   234→        <Button variant="outline" className="gap-2" onClick={() => toast.info('Bulk Updates', { description: 'Sending bulk status updates to customers...' })}>
+   235→   235→          <Send className="h-4 w-4" />
+   236→   236→          Send Bulk Updates
+   237→   237→        </Button>
+   238→   238→      </div>
+   239→   239→
+   240→   240→      {/* Live Map */}
+   241→   241→      <MapPlaceholder
+   242→   242→        className="mb-4"
+   243→   243→        height="h-48"
+   244→   244→        title="Live Operations Map"
+   245→   245→        subtitle="Real-time vehicle and delivery tracking across all routes"
+   246→   246→        markers={[
+   247→   247→          { label: 'Johannesburg Hub', type: 'warehouse' },
+   248→   248→          { label: 'Maseru HQ', type: 'warehouse' },
+   249→   249→          { label: 'Border Post', type: 'border' },
+   250→   250→          { label: 'LP 456 AB 789', type: 'driver' },
+   251→   251→          { label: 'LP 321 CD 456', type: 'driver' },
+   252→   252→          { label: 'Butha Buthe Delivery', type: 'destination' },
+   253→   253→        ]}
+   254→   254→      />
+   255→   255→
+   256→   256→      {/* Main Layout */}
+   257→   257→      <div className="grid gap-4 lg:grid-cols-5">
+   258→   258→        {/* Left Column - Delivery Queue */}
+   259→   259→        <div className="lg:col-span-3">
+   260→   260→          <Card>
+   261→   261→            <CardHeader className="pb-3">
+   262→   262→              <CardTitle className="text-base">Delivery Queue</CardTitle>
+   263→   263→            </CardHeader>
+   264→   264→            <CardContent>
+   265→   265→              <Tabs value={deliveryTab} onValueChange={setDeliveryTab}>
+   266→   266→                <TabsList className="w-full">
+   267→   267→                  <TabsTrigger value="pending" className="flex-1">
+   268→   268→                    Pending
+   269→   269→                    {pendingDeliveries.length > 0 && (
+   270→   270→                      <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{pendingDeliveries.length}</Badge>
+   271→   271→                    )}
+   272→   272→                  </TabsTrigger>
+   273→   273→                  <TabsTrigger value="progress" className="flex-1">
+   274→   274→                    In Progress
+   275→   275→                    {inProgressDeliveries.length > 0 && (
+   276→   276→                      <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{inProgressDeliveries.length}</Badge>
+   277→   277→                    )}
+   278→   278→                  </TabsTrigger>
+   279→   279→                  <TabsTrigger value="completed" className="flex-1">
+   280→   280→                    Completed
+   281→   281→                  </TabsTrigger>
+   282→   282→                </TabsList>
+   283→   283→
+   284→   284→                {/* Pending Tab */}
+   285→   285→                <TabsContent value="pending" className="mt-3">
+   286→   286→                  <ScrollArea className="max-h-[480px]">
+   287→   287→                    <div className="space-y-2">
+   288→   288→                      {pendingDeliveries.length === 0 && (
+   289→   289→                        <div className="py-8 text-center text-sm text-muted-foreground">No pending deliveries</div>
+   290→   290→                      )}
+   291→   291→                      {pendingDeliveries.map(d => (
+   292→   292→                        <motion.div
+   293→   293→                          key={d.id}
+   294→   294→                          initial={{ opacity: 0, x: -10 }}
+   295→   295→                          animate={{ opacity: 1, x: 0 }}
+   296→   296→                          className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400' : 'border-l-emerald-400/40'}`}
+   297→   297→                        >
+   298→   298→                          <div className="min-w-0 flex-1">
+   299→   299→                            <div className="flex items-center gap-2">
+   300→   300→                              <code className="text-xs font-medium text-primary">{d.trackingNumber}</code>
+   301→   301→                              <Badge variant="outline" className={priorityColors[d.priority]}>{d.priority}</Badge>
+   302→   302→                            </div>
+   303→   303→                            <p className="truncate text-sm font-medium">{d.customerName}</p>
+   304→   304→                            <p className="text-xs text-muted-foreground">
+   305→   305→                              {d.pickup.city} <ChevronRight className="inline h-3 w-3" /> {d.destination.city}
+   306→   306→                            </p>
+   307→   307→                            <p className="text-xs text-muted-foreground">{d.packageWeight}kg • {d.packageDescription}</p>
+   308→   308→                          </div>
+   309→   309→                          <Button size="sm" className="shrink-0 gap-1" onClick={() => handleAssignClick(d.id)}>
+   310→   310→                            <UserPlus className="h-3.5 w-3.5" />
+   311→   311→                            Assign
+   312→   312→                          </Button>
+   313→   313→                        </motion.div>
+   314→   314→                      ))}
+   315→   315→                    </div>
+   316→   316→                  </ScrollArea>
+   317→   317→                </TabsContent>
+   318→   318→
+   319→   319→                {/* In Progress Tab */}
+   320→   320→                <TabsContent value="progress" className="mt-3">
+   321→   321→                  <ScrollArea className="max-h-[480px]">
+   322→   322→                    <div className="space-y-2">
+   323→   323→                      {inProgressDeliveries.length === 0 && (
+   324→   324→                        <div className="py-8 text-center text-sm text-muted-foreground">No deliveries in progress</div>
+   325→   325→                      )}
+   326→   326→                      {inProgressDeliveries.map(d => (
+   327→   327→                        <motion.div
+   328→   328→                          key={d.id}
+   329→   329→                          initial={{ opacity: 0, x: -10 }}
+   330→   330→                          animate={{ opacity: 1, x: 0 }}
+   331→   331→                          className="flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
+   332→   332→                        >
+   333→   333→                          <div className="min-w-0 flex-1">
+   334→   334→                            <div className="flex items-center gap-2">
+   335→   335→                              <code className="text-xs font-medium text-primary">{d.trackingNumber}</code>
+   336→   336→                              <Badge className={statusColors[d.status]}>{statusLabels[d.status]}</Badge>
+   337→   337→                            </div>
+   338→   338→                            <p className="truncate text-sm font-medium">{d.customerName}</p>
+   339→   339→                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+   340→   340→                              <Users className="h-3 w-3" />
+   341→   341→                              <span>{d.driverName}</span>
+   342→   342→                              <span>•</span>
+   343→   343→                              <Clock className="h-3 w-3" />
+   344→   344→                              <span>{timeAgo(d.updatedAt)}</span>
+   345→   345→                            </div>
+   346→   346→                          </div>
+   347→   347→                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+   348→   348→                            <Truck className="h-3.5 w-3.5" />
+   349→   349→                            <span className="font-mono">{d.vehiclePlate}</span>
+   350→   350→                          </div>
+   351→   351→                        </motion.div>
+   352→   352→                      ))}
+   353→   353→                    </div>
+   354→   354→                  </ScrollArea>
+   355→   355→                </TabsContent>
+   356→   356→
+   357→   357→                {/* Completed Today Tab */}
+   358→   358→                <TabsContent value="completed" className="mt-3">
+   359→   359→                  <ScrollArea className="max-h-[480px]">
+   360→   360→                    <div className="space-y-2">
+   361→   361→                      {completedToday.length === 0 && (
+   362→   362→                        <div className="py-8 text-center text-sm text-muted-foreground">No deliveries completed today</div>
+   363→   363→                      )}
+   364→   364→                      {completedToday.map(d => (
+   365→   365→                        <motion.div
+   366→   366→                          key={d.id}
+   367→   367→                          initial={{ opacity: 0, x: -10 }}
+   368→   368→                          animate={{ opacity: 1, x: 0 }}
+   369→   369→                          className="flex items-center gap-3 rounded-lg border p-3"
+   370→   370→                        >
+   371→   371→                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+   372→   372→                            <Package className="h-4 w-4 text-green-600 dark:text-green-400" />
+   373→   373→                          </div>
+   374→   374→                          <div className="min-w-0 flex-1">
+   375→   375→                            <div className="flex items-center gap-2">
+   376→   376→                              <code className="text-xs font-medium text-primary">{d.trackingNumber}</code>
+   377→   377→                              <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400">Delivered</Badge>
+   378→   378→                            </div>
+   379→   379→                            <p className="truncate text-sm">{d.customerName}</p>
+   380→   380→                          </div>
+   381→   381→                          <span className="text-xs text-muted-foreground">
+   382→   382→                            {d.actualDelivery ? formatTime(d.actualDelivery) : formatTime(d.updatedAt)}
+   383→   383→                          </span>
+   384→   384→                        </motion.div>
+   385→   385→                      ))}
+   386→   386→                    </div>
+   387→   387→                  </ScrollArea>
+   388→   388→                </TabsContent>
+   389→   389→              </Tabs>
+   390→   390→            </CardContent>
+   391→   391→          </Card>
+   392→   392→        </div>
+   393→   393→
+   394→   394→        {/* Right Column - Resource Panels */}
+   395→   395→        <div className="space-y-4 lg:col-span-2">
+   396→   396→          {/* Driver Availability */}
+   397→   397→          <Card>
+   398→   398→            <CardHeader className="pb-3">
+   399→   399→              <div className="flex items-center justify-between">
+   400→   400→                <CardTitle className="flex items-center gap-2 text-base">
+   401→   401→                  <Users className="h-4 w-4" />
+   402→   402→                  Available Drivers
+   403→   403→                </CardTitle>
+   404→   404→                <Badge variant="outline" className="text-green-600">{availableDrivers.length}</Badge>
+   405→   405→              </div>
+   406→   406→            </CardHeader>
+   407→   407→            <CardContent>
+   408→   408→              <div className="mb-3">
+   409→   409→                <div className="relative">
+   410→   410→                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+   411→   411→                  <Input
+   412→   412→                    placeholder="Search drivers..."
+   413→   413→                    className="pl-8"
+   414→   414→                    value={driverSearch}
+   415→   415→                    onChange={e => setDriverSearch(e.target.value)}
+   416→   416→                  />
+   417→   417→                </div>
+   418→   418→              </div>
+   419→   419→              <ScrollArea className="max-h-[240px]">
+   420→   420→                <div className="space-y-2">
+   421→   421→                  {filteredDrivers.slice(0, 10).map(d => (
+   422→   422→                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 bg-gradient-to-r from-emerald-50/50 to-transparent dark:from-emerald-900/10 dark:to-transparent transition-all duration-200 hover:shadow-sm">
+   423→   423→                      <div className="relative">
+   424→   424→                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+   425→   425→                          {d.name.split(' ').map(n => n[0]).join('')}
+   426→   426→                        </div>
+   427→   427→                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
+   428→   428→                      </div>
+   429→   429→                      <div className="min-w-0 flex-1">
+   430→   430→                        <p className="truncate text-sm font-medium">{d.name}</p>
+   431→   431→                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+   432→   432→                          <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />{d.rating}</span>
+   433→   433→                          <span>•</span>
+   434→   434→                          <span>{d.totalDeliveries} deliveries</span>
+   435→   435→                        </div>
+   436→   436→                      </div>
+   437→   437→                      <a href={`tel:${d.phone}`} className="text-muted-foreground hover:text-primary">
+   438→   438→                        <Phone className="h-4 w-4" />
+   439→   439→                      </a>
+   440→   440→                    </div>
+   441→   441→                  ))}
+   442→   442→                </div>
+   443→   443→              </ScrollArea>
+   444→   444→            </CardContent>
+   445→   445→          </Card>
+   446→   446→
+   447→   447→          {/* Vehicle Availability */}
+   448→   448→          <Card>
+   449→   449→            <CardHeader className="pb-3">
+   450→   450→              <div className="flex items-center justify-between">
+   451→   451→                <CardTitle className="flex items-center gap-2 text-base">
+   452→   452→                  <Truck className="h-4 w-4" />
+   453→   453→                  Available Vehicles
+   454→   454→                </CardTitle>
+   455→   455→                <Badge variant="outline" className="text-green-600">{availableVehicles.length}</Badge>
+   456→   456→              </div>
+   457→   457→            </CardHeader>
+   458→   458→            <CardContent>
+   459→   459→              <ScrollArea className="max-h-[240px]">
+   460→   460→                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+   461→   461→                  {availableVehicles.slice(0, 8).map(v => (
+   462→   462→                    <div
+   463→   463→                      key={v.id}
+   464→   464→                      className={`rounded-lg border border-l-4 p-2.5 ${vehicleTypeColors[v.type] || 'border-l-gray-400'}`}
+   465→   465→                    >
+   466→   466→                      <div className="flex items-center gap-2">
+   467→   467→                        <span className="text-lg">{vehicleTypeIcons[v.type] || '🚗'}</span>
+   468→   468→                        <div className="min-w-0 flex-1">
+   469→   469→                          <p className="font-mono text-xs font-bold">{v.plateNumber}</p>
+   470→   470→                          <p className="truncate text-xs text-muted-foreground">{v.make} {v.model}</p>
+   471→   471→                        </div>
+   472→   472→                      </div>
+   473→   473→                      <div className="mt-1.5 flex items-center gap-1.5">
+   474→   474→                        <Badge variant="outline" className="text-[10px] px-1.5">{v.type}</Badge>
+   475→   475→                        <span className="text-[10px] text-muted-foreground">{v.capacity}kg</span>
+   476→   476→                        <Fuel className="ml-auto h-3 w-3 text-muted-foreground" />
+   477→   477→                        <span className="text-[10px] text-muted-foreground">{v.fuelType}</span>
+   478→   478→                      </div>
+   479→   479→                    </div>
+   480→   480→                  ))}
+   481→   481→                </div>
+   482→   482→              </ScrollArea>
+   483→   483→            </CardContent>
+   484→   484→          </Card>
+   485→   485→        </div>
+   486→   486→      </div>
+   487→   487→
+   488→   488→      {/* Assign Dialog */}
+   489→   489→      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+   490→   490→        <DialogContent className="sm:max-w-md">
+   491→   491→          <DialogHeader>
+   492→   492→            <DialogTitle className="flex items-center gap-2">
+   493→   493→              <UserPlus className="h-5 w-5 text-primary" />
+   494→   494→              Assign Resources
+   495→   495→            </DialogTitle>
+   496→   496→          </DialogHeader>
+   497→   497→
+   498→   498→          {selDelivery && (
+   499→   499→            <div className="space-y-4">
+   500→   500→              {/* Delivery Info */}
+   501→   501→              <div className="rounded-lg bg-muted/50 p-3">
+   502→   502→                <p className="text-xs font-medium text-muted-foreground">Delivery</p>
+   503→   503→                <div className="mt-1 flex items-center gap-2">
+   504→   504→                  <code className="text-sm font-bold text-primary">{selDelivery.trackingNumber}</code>
+   505→   505→                  <Badge variant="outline" className={priorityColors[selDelivery.priority]}>{selDelivery.priority}</Badge>
+   506→   506→                </div>
+   507→   507→                <p className="mt-1 text-sm">{selDelivery.customerName}</p>
+   508→   508→                <p className="text-xs text-muted-foreground">
+   509→   509→                  {selDelivery.pickup.city} → {selDelivery.destination.city}
+   510→   510→                </p>
+   511→   511→                <p className="text-xs text-muted-foreground">{selDelivery.packageWeight}kg • {selDelivery.packageDescription}</p>
+   512→   512→              </div>
+   513→   513→
+   514→   514→              <Separator />
+   515→   515→
+   516→   516→              {/* Driver Select */}
+   517→   517→              <div className="space-y-2">
+   518→   518→                <Label>Select Driver</Label>
+   519→   519→                <Select value={assignDriver} onValueChange={setAssignDriver}>
+   520→   520→                  <SelectTrigger>
+   521→   521→                    <SelectValue placeholder="Choose a driver..." />
+   522→   522→                  </SelectTrigger>
+   523→   523→                  <SelectContent>
+   524→   524→                    {availableDrivers.map(d => (
+   525→   525→                      <SelectItem key={d.id} value={d.id}>
+   526→   526→                        <span className="flex items-center gap-2">
+   527→   527→                          <span className="h-2 w-2 rounded-full bg-green-500" />
+   528→   528→                          {d.name} — ★ {d.rating} ({d.totalDeliveries} deliveries)
+   529→   529→                        </span>
+   530→   530→                      </SelectItem>
+   531→   531→                    ))}
+   532→   532→                  </SelectContent>
+   533→   533→                </Select>
+   534→   534→              </div>
+   535→   535→
+   536→   536→              {/* Vehicle Select */}
+   537→   537→              <div className="space-y-2">
+   538→   538→                <Label>Select Vehicle</Label>
+   539→   539→                <Select value={assignVehicle} onValueChange={setAssignVehicle}>
+   540→   540→                  <SelectTrigger>
+   541→   541→                    <SelectValue placeholder="Choose a vehicle..." />
+   542→   542→                  </SelectTrigger>
+   543→   543→                  <SelectContent>
+   544→   544→                    {availableVehicles.map(v => (
+   545→   545→                      <SelectItem key={v.id} value={v.id}>
+   546→   546→                        <span className="flex items-center gap-2">
+   547→   547→                          {vehicleTypeIcons[v.type]}
+   548→   548→                          {v.plateNumber} — {v.make} {v.model} ({v.capacity}kg)
+   549→   549→                        </span>
+   550→   550→                      </SelectItem>
+   551→   551→                    ))}
+   552→   552→                  </SelectContent>
+   553→   553→                </Select>
+   554→   554→              </div>
+   555→   555→            </div>
+   556→   556→          )}
+   557→   557→
+   558→   558→          <DialogFooter>
+   559→   559→            <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
+   560→   560→            <Button onClick={handleConfirmAssign} className="gap-2">
+   561→   561→              <CheckCircle className="h-4 w-4" />
+   562→   562→              Confirm Assignment
+   563→   563→            </Button>
+   564→   564→          </DialogFooter>
+   565→   565→        </DialogContent>
+   566→   566→      </Dialog>
+   567→   567→    </div>
+   568→   568→  );
+   569→   569→}
+   570→   570→
+   571→   571→

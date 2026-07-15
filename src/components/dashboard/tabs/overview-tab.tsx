@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
   AreaChart,
   Area,
@@ -60,9 +61,9 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { analyticsData, deliveries, notifications, statusLabels, statusColors, customers } from '@/lib/mock-data';
+import { analyticsData, deliveries, notifications, statusLabels, statusColors, customers, sourcingRequests } from '@/lib/mock-data';
 import { useAuthStore, useNavStore } from '@/lib/store';
-import type { Delivery } from '@/lib/types';
+import type { Delivery, SourcingStatus } from '@/lib/types';
 
 // ============ Chart Configs ============
 const revenueChartConfig: ChartConfig = {
@@ -146,11 +147,11 @@ const weeklyEarnings = [
 ];
 
 const activityTypeColors: Record<string, { bg: string; text: string; border: string }> = {
-  delivery: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-l-emerald-500' },
-  alert: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-600 dark:text-amber-400', border: 'border-l-amber-500' },
-  payment: { bg: 'bg-teal-100 dark:bg-teal-900/40', text: 'text-teal-600 dark:text-teal-400', border: 'border-l-teal-500' },
-  system: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-l-muted-foreground/30' },
-  driver: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-l-primary' },
+  delivery: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-l-[3px] border-l-emerald-500' },
+  alert: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-600 dark:text-amber-400', border: 'border-l-[3px] border-l-amber-500' },
+  payment: { bg: 'bg-teal-100 dark:bg-teal-900/40', text: 'text-teal-600 dark:text-teal-400', border: 'border-l-[3px] border-l-teal-500' },
+  system: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500' },
+  driver: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-l-[3px] border-l-primary' },
 };
 
 function LiveActivityIcon({ iconName, className }: { iconName: string; className?: string }) {
@@ -1138,27 +1139,33 @@ function CompanyOverview() {
           <CardDescription>Recent events and notifications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="max-h-64 overflow-y-auto space-y-3">
-            {notifications.slice(0, 6).map((notif) => (
-              <div
-                key={notif.id}
-                className="flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
-              >
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                  {notifIcon(notif.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium leading-tight truncate">{notif.title}</p>
-                    <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(notif.createdAt)}</span>
+          <div className="max-h-64 overflow-y-auto space-y-1">
+            {notifications.slice(0, 6).map((notif, idx) => {
+              const notifBorder = notif.type === 'delivery_update' ? 'border-l-[3px] border-l-emerald-500' : notif.type === 'alert' ? 'border-l-[3px] border-l-amber-500' : 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500';
+              return (
+                <motion.div
+                  key={notif.id}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.25, delay: idx * 0.05, ease: 'easeOut' }}
+                  className={`flex items-start gap-3 rounded-lg p-2.5 ${notifBorder} transition-all duration-200 hover:bg-muted/40 hover:pl-3.5`}
+                >
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                    {notifIcon(notif.type)}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{notif.message}</p>
-                </div>
-                {!notif.isRead && (
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-                )}
-              </div>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium leading-tight truncate">{notif.title}</p>
+                      <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(notif.createdAt)}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{notif.message}</p>
+                  </div>
+                  {!notif.isRead && (
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -1212,22 +1219,225 @@ function CompanyOverview() {
         </CardHeader>
         <CardContent>
           <div className="max-h-[420px] overflow-y-auto space-y-1">
-            {liveActivities.map((activity) => {
+            {liveActivities.map((activity, idx) => {
               const colors = activityTypeColors[activity.type] || activityTypeColors.system;
               return (
-                <div
+                <motion.div
                   key={activity.id}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 border-l-2 ${colors.border} transition-colors hover:bg-muted/30`}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.25, delay: idx * 0.04, ease: 'easeOut' }}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 ${colors.border} transition-all duration-200 hover:bg-muted/40 hover:pl-4`}
                 >
                   <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colors.bg}`}>
                     <LiveActivityIcon iconName={activity.icon} className={colors.text} />
                   </div>
                   <p className="flex-1 text-sm leading-tight truncate min-w-0">{activity.message}</p>
                   <span className="text-[11px] text-muted-foreground shrink-0">{activity.time}</span>
-                </div>
+                </motion.div>
               );
             })}
           </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ============ Sourcing Agent Overview ============
+const sourcingStatusConfig: Record<SourcingStatus, { label: string; color: string }> = {
+  pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  quoted: { label: 'Quoted', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  purchased: { label: 'Purchased', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' },
+  delivered: { label: 'Delivered', color: 'bg-primary/10 text-primary' },
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+};
+
+function SourcingAgentOverview() {
+  const { currentUser, setDashboardTab } = useNavStore();
+
+  const activeRequests = sourcingRequests.filter((r) => r.status === 'pending' || r.status === 'quoted');
+
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const completedThisMonth = sourcingRequests.filter(
+    (r) => r.status === 'delivered' && r.createdAt >= thisMonthStart
+  );
+
+  const totalValueQuoted = sourcingRequests
+    .filter((r) => r.status === 'accepted')
+    .reduce((sum, r) => sum + (r.quotedPrice ?? 0), 0);
+
+  const recentRequests = [...sourcingRequests]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Welcome, {currentUser?.name?.split(' ')[0] || 'Agent'}!
+        </h1>
+        <p className="text-muted-foreground">Here&apos;s your sourcing dashboard for today.</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Active Requests - emerald */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Active Requests</p>
+                <p className="text-2xl font-bold tracking-tight">{activeRequests.length}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                <ClipboardCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 w-fit">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                {activeRequests.filter((r) => r.status === 'pending').length} pending
+              </span>
+              <span className="text-xs text-muted-foreground">•</span>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                {activeRequests.filter((r) => r.status === 'quoted').length} quoted
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Completed This Month - teal */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-teal-300 dark:hover:border-teal-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-teal-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Completed This Month</p>
+                <p className="text-2xl font-bold tracking-tight">{completedThisMonth.length}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
+                <CheckCircle2 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 px-2.5 py-1 w-fit">
+              <TrendingUp className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">This month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Value Quoted - primary */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Total Value Quoted</p>
+                <p className="text-2xl font-bold tracking-tight">{formatCurrency(totalValueQuoted)}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
+                <DollarSign className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
+              <span className="text-xs text-muted-foreground">For accepted requests</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Average Response Time - amber */}
+        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-amber-300 dark:hover:border-amber-700">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400" />
+          <CardContent className="p-4 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Avg Response Time</p>
+                <p className="text-2xl font-bold tracking-tight">2.4 hrs</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 w-fit">
+              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="text-xs font-semibold text-emerald-600">-12%</span>
+              <span className="text-xs text-muted-foreground">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-3">
+        <Button className="bg-green-600 text-white hover:bg-green-700" onClick={() => setDashboardTab('sourcing')}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Sourcing Request
+        </Button>
+        <Button variant="outline" onClick={() => setDashboardTab('sourcing')}>
+          <Clock className="mr-2 h-4 w-4" />
+          View Pending Requests
+        </Button>
+        <Button variant="outline" onClick={() => setDashboardTab('sourcing')}>
+          <Search className="mr-2 h-4 w-4" />
+          Search Products
+        </Button>
+      </div>
+
+      {/* Recent Sourcing Requests Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Recent Sourcing Requests</CardTitle>
+          <CardDescription>Your last 5 sourcing requests</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead className="hidden sm:table-cell">Customer</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Location</TableHead>
+                <TableHead className="hidden lg:table-cell text-right">Quoted Price</TableHead>
+                <TableHead className="hidden lg:table-cell">Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentRequests.map((req) => (
+                <TableRow key={req.id} className="cursor-pointer hover:bg-muted/50">
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{req.productName}</p>
+                      <p className="text-xs text-muted-foreground sm:hidden">{req.customerName}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell text-muted-foreground">{req.customerName}</TableCell>
+                  <TableCell>
+                    <Badge className={`border-0 text-[11px] ${sourcingStatusConfig[req.status].color}`} variant="secondary">
+                      {sourcingStatusConfig[req.status].label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">{req.location}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-right font-medium">
+                    {req.quotedPrice ? `M${req.quotedPrice.toLocaleString()}` : '—'}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell text-muted-foreground text-xs">
+                    {timeAgo(req.createdAt)}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {recentRequests.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                    No sourcing requests yet.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
@@ -1239,8 +1449,10 @@ export function OverviewTab() {
   const { currentUser } = useAuthStore();
   const isCustomer = currentUser?.role === 'customer';
   const isDriver = currentUser?.role === 'driver';
+  const isSourcingAgent = currentUser?.role === 'sourcing_agent';
 
   if (isCustomer) return <CustomerOverview />;
   if (isDriver) return <DriverOverview />;
+  if (isSourcingAgent) return <SourcingAgentOverview />;
   return <CompanyOverview />;
 }

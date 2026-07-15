@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { User, AppView, DashboardTab, Notification, Message, Delivery } from './types';
 
 // ============ AUTH STORE ============
@@ -11,14 +12,25 @@ interface AuthState {
   switchCompany: (companyId: string) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: false,
-  currentUser: null,
-  selectedCompanyId: null,
-  login: (user) => set({ isAuthenticated: true, currentUser: user, selectedCompanyId: user.companyId || null }),
-  logout: () => set({ isAuthenticated: false, currentUser: null, selectedCompanyId: null }),
-  switchCompany: (companyId) => set({ selectedCompanyId: companyId }),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      isAuthenticated: false,
+      currentUser: null,
+      selectedCompanyId: null,
+      login: (user) => set({ isAuthenticated: true, currentUser: user, selectedCompanyId: user.companyId || null }),
+      logout: () => set({ isAuthenticated: false, currentUser: null, selectedCompanyId: null }),
+      switchCompany: (companyId) => set({ selectedCompanyId: companyId }),
+    }),
+    {
+      name: 'swiftfreight-auth',
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        currentUser: state.currentUser,
+      }),
+    }
+  )
+);
 
 // ============ NAVIGATION STORE ============
 interface NavigationState {
@@ -35,19 +47,30 @@ interface NavigationState {
   setSidebarOpen: (open: boolean) => void;
 }
 
-export const useNavStore = create<NavigationState>((set) => ({
-  currentView: 'marketing',
-  dashboardTab: 'overview',
-  selectedDeliveryId: null,
-  trackingNumber: '',
-  sidebarOpen: true,
-  setView: (view) => set({ currentView: view }),
-  setDashboardTab: (tab) => set({ dashboardTab: tab, selectedDeliveryId: null }),
-  selectDelivery: (id) => set({ selectedDeliveryId: id }),
-  setTrackingNumber: (num) => set({ trackingNumber: num }),
-  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
-}));
+export const useNavStore = create<NavigationState>()(
+  persist(
+    (set) => ({
+      currentView: 'marketing',
+      dashboardTab: 'overview',
+      selectedDeliveryId: null,
+      trackingNumber: '',
+      sidebarOpen: true,
+      setView: (view) => set({ currentView: view }),
+      setDashboardTab: (tab) => set({ dashboardTab: tab, selectedDeliveryId: null }),
+      selectDelivery: (id) => set({ selectedDeliveryId: id }),
+      setTrackingNumber: (num) => set({ trackingNumber: num }),
+      toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+    }),
+    {
+      name: 'swiftfreight-nav',
+      partialize: (state) => ({
+        currentView: state.currentView,
+        dashboardTab: state.dashboardTab,
+      }),
+    }
+  )
+);
 
 // ============ NOTIFICATION STORE ============
 interface NotificationState {
@@ -101,14 +124,24 @@ interface DeliveryState {
   setFilter: (key: string, value: string) => void;
 }
 
-export const useDeliveryStore = create<DeliveryState>((set) => ({
-  deliveries: [],
-  filters: { status: 'all', priority: 'all', search: '', dateRange: 'all' },
-  setDeliveries: (deliveries) => set({ deliveries }),
-  updateDeliveryStatus: (id, status) =>
-    set((s) => ({
-      deliveries: s.deliveries.map((d) => (d.id === id ? { ...d, status } : d)),
-    })),
-  setFilter: (key, value) =>
-    set((s) => ({ filters: { ...s.filters, [key]: value } })),
-}));
+export const useDeliveryStore = create<DeliveryState>()(
+  persist(
+    (set) => ({
+      deliveries: [],
+      filters: { status: 'all', priority: 'all', search: '', dateRange: 'all' },
+      setDeliveries: (deliveries) => set({ deliveries }),
+      updateDeliveryStatus: (id, status) =>
+        set((s) => ({
+          deliveries: s.deliveries.map((d) => (d.id === id ? { ...d, status } : d)),
+        })),
+      setFilter: (key, value) =>
+        set((s) => ({ filters: { ...s.filters, [key]: value } })),
+    }),
+    {
+      name: 'swiftfreight-delivery-filters',
+      partialize: (state) => ({
+        filters: state.filters,
+      }),
+    }
+  )
+);

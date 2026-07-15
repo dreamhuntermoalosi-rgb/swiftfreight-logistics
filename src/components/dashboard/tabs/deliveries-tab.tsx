@@ -44,7 +44,7 @@ import {
   Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
   FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
-  Download,
+  Download, CheckCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -297,24 +297,33 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           {/* Timeline */}
           <div>
             <h3 className="text-sm font-semibold mb-4">Delivery Timeline</h3>
-            <div className="relative pl-6">
+            <div className="relative pl-8">
               {timeline.map((event, idx) => {
                 const isLast = idx === timeline.length - 1;
                 const isCurrent = idx === timeline.length - 1 && !['delivered', 'returned', 'cancelled'].includes(delivery.status);
+                const isCompleted = !isCurrent && !isLast;
+                const isFinal = ['delivered', 'returned', 'cancelled'].includes(delivery.status) && isLast;
+
                 return (
                   <div key={event.id} className="relative pb-6 last:pb-0">
                     {/* Connecting line */}
                     {!isLast && (
-                      <div className="absolute left-[-18px] top-6 bottom-0 w-px bg-green-200 dark:bg-green-800" />
+                      <div className="absolute left-[-20px] top-7 bottom-0 w-px bg-green-200 dark:bg-green-800" />
                     )}
-                    {/* Dot */}
-                    <div className={`absolute left-[-22px] top-1.5 h-3 w-3 rounded-full border-2 ${
-                      isCurrent
-                        ? 'bg-green-500 border-green-500 animate-pulse'
-                        : 'bg-green-500 border-green-500'
-                    }`} />
-                    <div className="ml-2">
-                      <p className="text-sm font-medium">{event.description}</p>
+                    {/* Status icon */}
+                    <div className="absolute left-[-24px] top-1">
+                      {isCompleted || isFinal ? (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500">
+                          <CheckCircle className="h-4 w-4 text-white" />
+                        </div>
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-green-500 bg-background">
+                          <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-1">
+                      <p className={`text-sm font-medium ${isCurrent ? 'text-green-700 dark:text-green-400' : ''}`}>{event.description}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{event.location}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-xs text-muted-foreground">{formatDateTime(event.timestamp)}</span>
@@ -890,7 +899,7 @@ export function DeliveriesTab() {
                       key={d.id}
                       className={`cursor-pointer transition-all duration-150 hover:bg-muted/50 ${
                         idx % 2 === 1 ? 'bg-muted/20' : ''
-                      } ${selected.has(d.id) ? 'bg-green-50/50 dark:bg-green-900/10' : ''} ${d.priority === 'urgent' ? 'border-l-2 border-l-red-400' : d.priority === 'express' ? 'border-l-2 border-l-amber-400' : ''}`}
+                      } ${selected.has(d.id) ? 'bg-green-50/50 dark:bg-green-900/10' : ''} ${d.priority === 'urgent' ? 'border-l-[3px] border-l-red-400' : d.priority === 'express' ? 'border-l-[3px] border-l-amber-400' : ''}`}
                       onClick={() => openDetail(d.id)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -913,7 +922,7 @@ export function DeliveriesTab() {
                       <TableCell className="text-sm">{d.packageWeight} kg</TableCell>
                       <TableCell>
                         <Badge className={`${statusColors[d.status] || ''} gap-1.5`} variant="secondary">
-                          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                          <span className={`h-1.5 w-1.5 rounded-full bg-current ${(d.status === 'in_transit' || d.status === 'out_for_delivery') ? 'animate-pulse' : ''}`} />
                           {statusLabels[d.status] || d.status}
                         </Badge>
                       </TableCell>
@@ -1018,9 +1027,10 @@ export function DeliveriesTab() {
                   transition={{ duration: 0.2 }}
                 >
                   <Card
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400 hover:border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400 hover:border-l-amber-400' : 'border-l-primary/30 hover:border-l-primary/50'}`}
+                    className={`group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400 hover:border-l-red-500' : d.priority === 'express' ? 'border-l-amber-400 hover:border-l-amber-500' : 'border-l-primary/30 hover:border-l-primary/60'} relative overflow-hidden`}
                     onClick={() => openDetail(d.id)}
                   >
+                    <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <span className="font-mono text-sm font-medium text-green-700 dark:text-green-400">

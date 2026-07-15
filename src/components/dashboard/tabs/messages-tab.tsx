@@ -376,17 +376,37 @@ export function MessagesTab() {
               </div>
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center text-center px-4">
-              <MessageSquare className="h-16 w-16 text-muted-foreground/20" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-1 flex-col items-center justify-center text-center px-4"
+            >
+              <div className="relative mb-2">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-teal-400/20 blur-2xl" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-emerald-50 to-teal-50 dark:from-primary/20 dark:via-emerald-950/40 dark:to-teal-950/40 border border-primary/10">
+                  <MessageSquare className="h-10 w-10 text-primary/40" />
+                </div>
+              </div>
               <h3 className="mt-4 text-lg font-semibold">Select a conversation</h3>
-              <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+              <p className="mt-1.5 max-w-xs text-sm text-muted-foreground leading-relaxed">
                 Choose a conversation from the list to start messaging
               </p>
-              <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <li>• View delivery updates in real-time</li>
-                <li>• Coordinate with drivers and warehouse teams</li>
+              <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                    <Package className="h-3 w-3" />
+                  </span>
+                  View delivery updates in real-time
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
+                    <Truck className="h-3 w-3" />
+                  </span>
+                  Coordinate with drivers and warehouse teams
+                </li>
               </ul>
-            </div>
+            </motion.div>
           )}
         </div>
 

@@ -1,0 +1,622 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+     5→import { Button } from '@/components/ui/button';
+     6→import { Badge } from '@/components/ui/badge';
+     7→import { Input } from '@/components/ui/input';
+     8→import { Label } from '@/components/ui/label';
+     9→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    10→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+    11→import { Switch } from '@/components/ui/switch';
+    12→import { Separator } from '@/components/ui/separator';
+    13→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    14→import { toast } from 'sonner';
+    15→import { useAuthStore } from '@/lib/store';
+    16→import { companies, roleLabels } from '@/lib/mock-data';
+    17→import { useTheme } from 'next-themes';
+    18→import {
+    19→  Settings, Bell, Shield, Palette, User, Building2, Mail,
+    20→  Phone, MessageSquare, Lock, Trash2, Zap, Sun, Moon, Monitor,
+    21→  AlertTriangle, ShieldCheck, Camera, Globe, MapPin, Check
+    22→} from 'lucide-react';
+    23→import { motion } from 'framer-motion';
+    24→
+    25→// ── Helpers ──────────────────────────────────────────────────
+    26→function getInitials(name: string): string {
+    27→  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    28→}
+    29→
+    30→const planColors: Record<string, string> = {
+    31→  starter: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    32→  professional: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    33→  enterprise: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    34→};
+    35→
+    36→// ── Main Component ──────────────────────────────────────────
+    37→export function SettingsTab() {
+    38→  const { currentUser, logout } = useAuthStore();
+    39→  const { theme, setTheme } = useTheme();
+    40→  const [activeSection, setActiveSection] = useState('profile');
+    41→  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    42→  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+    43→
+    44→  // Profile form state
+    45→  const [profileForm, setProfileForm] = useState({
+    46→    name: currentUser?.name || '',
+    47→    email: currentUser?.email || '',
+    48→    phone: currentUser?.phone || '',
+    49→  });
+    50→
+    51→  // Company form state
+    52→  const userCompany = currentUser?.companyId
+    53→    ? companies.find(c => c.id === currentUser.companyId)
+    54→    : null;
+    55→
+    56→  const [companyForm, setCompanyForm] = useState({
+    57→    name: userCompany?.name || '',
+    58→    email: userCompany?.email || '',
+    59→    phone: userCompany?.phone || '',
+    60→    address: userCompany?.address || '',
+    61→    city: userCompany?.city || '',
+    62→    country: userCompany?.country || '',
+    63→  });
+    64→
+    65→  // Notification preferences
+    66→  const [notifications, setNotifications] = useState({
+    67→    email: true,
+    68→    push: true,
+    69→    sms: false,
+    70→    deliveryUpdates: true,
+    71→    newMessages: true,
+    72→    marketing: false,
+    73→  });
+    74→
+    75→  // Password form
+    76→  const [passwordForm, setPasswordForm] = useState({
+    77→    current: '',
+    78→    newPassword: '',
+    79→    confirm: '',
+    80→  });
+    81→
+    82→  const isOwnerOrManager = currentUser?.role === 'company_owner' || currentUser?.role === 'operations_manager';
+    83→
+    84→  function handleSaveProfile() {
+    85→    toast.success('Profile Updated', { description: 'Your profile changes have been saved' });
+    86→  }
+    87→
+    88→  function handleSaveCompany() {
+    89→    toast.success('Company Updated', { description: 'Company settings have been saved' });
+    90→  }
+    91→
+    92→  function handleToggleNotification(key: keyof typeof notifications) {
+    93→    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    94→    toast.success('Preference Updated', {
+    95→      description: `${key.replace(/([A-Z])/g, ' $1').trim()} notification ${notifications[key] ? 'disabled' : 'enabled'}`,
+    96→    });
+    97→  }
+    98→
+    99→  function handleChangePassword() {
+   100→    if (!passwordForm.current || !passwordForm.newPassword || !passwordForm.confirm) {
+   101→      toast.error('Please fill in all password fields');
+   102→      return;
+   103→    }
+   104→    if (passwordForm.newPassword.length < 8) {
+   105→      toast.error('Password must be at least 8 characters');
+   106→      return;
+   107→    }
+   108→    if (passwordForm.newPassword !== passwordForm.confirm) {
+   109→      toast.error('New passwords do not match');
+   110→      return;
+   111→    }
+   112→    toast.success('Password Changed', { description: 'Your password has been updated successfully' });
+   113→    setPasswordForm({ current: '', newPassword: '', confirm: '' });
+   114→  }
+   115→
+   116→  function handleDeleteAccount() {
+   117→    toast.success('Account Deletion Requested', { description: 'Your account will be deleted within 30 days' });
+   118→    setDeleteDialogOpen(false);
+   119→    setTimeout(() => logout(), 1000);
+   120→  }
+   121→
+   122→  function handleDeactivateCompany() {
+   123→    toast.success('Company Deactivation Requested', { description: 'The company will be deactivated within 30 days' });
+   124→    setDeactivateDialogOpen(false);
+   125→  }
+   126→
+   127→  const settingsNav = [
+   128→    { id: 'profile', label: 'Profile', icon: User },
+   129→    ...(isOwnerOrManager ? [{ id: 'company', label: 'Company', icon: Building2 }] : []),
+   130→    { id: 'notifications', label: 'Notifications', icon: Bell },
+   131→    { id: 'appearance', label: 'Appearance', icon: Palette },
+   132→    { id: 'security', label: 'Security', icon: Shield },
+   133→    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
+   134→  ];
+   135→
+   136→  return (
+   137→    <div className="space-y-4">
+   138→      {/* Header */}
+   139→      <div className="flex items-center gap-3">
+   140→        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+   141→          <Settings className="h-5 w-5 text-primary" />
+   142→        </div>
+   143→        <div>
+   144→          <h2 className="text-xl font-bold">Settings</h2>
+   145→          <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
+   146→        </div>
+   147→      </div>
+   148→
+   149→      <div className="flex flex-col gap-4 lg:flex-row">
+   150→        {/* Settings Nav - vertical on desktop */}
+   151→        <Card className="w-full shrink-0 lg:w-56">
+   152→          <CardContent className="p-2">
+   153→            <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col">
+   154→              {settingsNav.map(item => (
+   155→                <button
+   156→                  key={item.id}
+   157→                  onClick={() => setActiveSection(item.id)}
+   158→                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-all duration-150 whitespace-nowrap ${
+   159→                    activeSection === item.id
+   160→                      ? 'bg-primary/10 font-medium text-primary'
+   161→                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+   162→                  }`}
+   163→                >
+   164→                  <item.icon className="h-4 w-4 shrink-0" />
+   165→                  {item.label}
+   166→                </button>
+   167→              ))}
+   168→            </nav>
+   169→          </CardContent>
+   170→        </Card>
+   171→
+   172→        {/* Settings Content */}
+   173→        <div className="flex-1">
+   174→          <motion.div key={activeSection} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15 }}>
+   175→
+   176→            {/* ── Profile Section ── */}
+   177→            {activeSection === 'profile' && (
+   178→              <Card>
+   179→                <CardHeader>
+   180→                  <CardTitle className="text-base">Profile Settings</CardTitle>
+   181→                  <CardDescription>Update your personal information</CardDescription>
+   182→                </CardHeader>
+   183→                <CardContent className="space-y-6">
+   184→                  <div className="flex items-center gap-4">
+   185→                    <div className="relative group/avatar">
+   186→                      <div className="rounded-full bg-gradient-to-br from-primary to-teal-500 p-[2px]">
+   187→                        <Avatar className="h-20 w-20">
+   188→                          <AvatarFallback className="bg-background text-xl font-bold text-primary">
+   189→                            {getInitials(profileForm.name || 'U')}
+   190→                          </AvatarFallback>
+   191→                        </Avatar>
+   192→                      </div>
+   193→                      <Button
+   194→                        size="icon"
+   195→                        variant="outline"
+   196→                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full opacity-0 translate-y-1 transition-all duration-200 group-hover/avatar:opacity-100 group-hover/avatar:translate-y-0"
+   197→                        onClick={() => toast.info('Avatar upload coming soon')}
+   198→                      >
+   199→                        <Camera className="h-3.5 w-3.5" />
+   200→                      </Button>
+   201→                    </div>
+   202→                    <div>
+   203→                      <h3 className="text-lg font-semibold">{profileForm.name || 'User'}</h3>
+   204→                      <Badge className={`mt-1 ${planColors[userCompany?.plan || 'starter']}`}>
+   205→                        {currentUser?.role ? roleLabels[currentUser.role] : 'User'}
+   206→                      </Badge>
+   207→                    </div>
+   208→                  </div>
+   209→
+   210→                  <Separator />
+   211→
+   212→                  <div className="grid gap-4 sm:grid-cols-2">
+   213→                    <div className="space-y-2">
+   214→                      <Label htmlFor="profile-name">Full Name</Label>
+   215→                      <Input
+   216→                        id="profile-name"
+   217→                        value={profileForm.name}
+   218→                        onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))}
+   219→                      />
+   220→                    </div>
+   221→                    <div className="space-y-2">
+   222→                      <Label htmlFor="profile-email">Email</Label>
+   223→                      <Input
+   224→                        id="profile-email"
+   225→                        type="email"
+   226→                        value={profileForm.email}
+   227→                        onChange={e => setProfileForm(f => ({ ...f, email: e.target.value }))}
+   228→                      />
+   229→                    </div>
+   230→                    <div className="space-y-2">
+   231→                      <Label htmlFor="profile-phone">Phone</Label>
+   232→                      <Input
+   233→                        id="profile-phone"
+   234→                        type="tel"
+   235→                        value={profileForm.phone}
+   236→                        onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))}
+   237→                      />
+   238→                    </div>
+   239→                    <div className="space-y-2">
+   240→                      <Label>Role</Label>
+   241→                      <Input
+   242→                        value={currentUser?.role ? roleLabels[currentUser.role] : 'User'}
+   243→                        disabled
+   244→                        className="bg-muted"
+   245→                      />
+   246→                    </div>
+   247→                  </div>
+   248→
+   249→                  {userCompany && (
+   250→                    <>
+   251→                      <Separator />
+   252→                      <div>
+   253→                        <Label className="text-muted-foreground">Company</Label>
+   254→                        <p className="mt-1 flex items-center gap-2 text-sm font-medium">
+   255→                          <Building2 className="h-4 w-4 text-primary" />
+   256→                          {userCompany.name}
+   257→                        </p>
+   258→                      </div>
+   259→                    </>
+   260→                  )}
+   261→
+   262→                  <div className="flex justify-end">
+   263→                    <Button onClick={handleSaveProfile} className="gap-2">
+   264→                      Save Changes
+   265→                    </Button>
+   266→                  </div>
+   267→                </CardContent>
+   268→              </Card>
+   269→            )}
+   270→
+   271→            {/* ── Company Section ── */}
+   272→            {activeSection === 'company' && userCompany && (
+   273→              <Card className="overflow-hidden">
+   274→                <CardHeader>
+   275→                  <CardTitle className="text-base">Company Settings</CardTitle>
+   276→                  <CardDescription>Manage your company information</CardDescription>
+   277→                </CardHeader>
+   278→                <CardContent className="space-y-6">
+   279→                  <div className="relative flex items-center justify-between rounded-lg border p-4">
+   280→                    <div className="absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-primary/40 to-teal-500/40" />
+   281→                    <div className="flex items-center gap-3 pl-2">
+   282→                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+   283→                        <Building2 className="h-6 w-6 text-primary" />
+   284→                      </div>
+   285→                      <div>
+   286→                        <h3 className="font-semibold">{companyForm.name}</h3>
+   287→                        <Badge className={`mt-1 capitalize ${planColors[userCompany.plan]}`}>
+   288→                          {userCompany.plan} Plan
+   289→                        </Badge>
+   290→                      </div>
+   291→                    </div>
+   292→                    <Button
+   293→                      variant="outline"
+   294→                      className="gap-2"
+   295→                      onClick={() => toast.info('Upgrade feature coming soon')}
+   296→                    >
+   297→                      <Zap className="h-4 w-4" />
+   298→                      Upgrade Plan
+   299→                    </Button>
+   300→                  </div>
+   301→
+   302→                  <Separator />
+   303→
+   304→                  <div className="grid gap-4 sm:grid-cols-2">
+   305→                    <div className="space-y-2">
+   306→                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Company Name</Label>
+   307→                      <Input
+   308→                        value={companyForm.name}
+   309→                        onChange={e => setCompanyForm(f => ({ ...f, name: e.target.value }))}
+   310→                      />
+   311→                    </div>
+   312→                    <div className="space-y-2">
+   313→                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-teal-500" />Business Email</Label>
+   314→                      <Input
+   315→                        type="email"
+   316→                        value={companyForm.email}
+   317→                        onChange={e => setCompanyForm(f => ({ ...f, email: e.target.value }))}
+   318→                      />
+   319→                    </div>
+   320→                    <div className="space-y-2">
+   321→                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Phone</Label>
+   322→                      <Input
+   323→                        type="tel"
+   324→                        value={companyForm.phone}
+   325→                        onChange={e => setCompanyForm(f => ({ ...f, phone: e.target.value }))}
+   326→                      />
+   327→                    </div>
+   328→                    <div className="space-y-2">
+   329→                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />Address</Label>
+   330→                      <Input
+   331→                        value={companyForm.address}
+   332→                        onChange={e => setCompanyForm(f => ({ ...f, address: e.target.value }))}
+   333→                      />
+   334→                    </div>
+   335→                    <div className="space-y-2">
+   336→                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-violet-500" />City</Label>
+   337→                      <Input
+   338→                        value={companyForm.city}
+   339→                        onChange={e => setCompanyForm(f => ({ ...f, city: e.target.value }))}
+   340→                      />
+   341→                    </div>
+   342→                    <div className="space-y-2">
+   343→                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Country</Label>
+   344→                      <Input
+   345→                        value={companyForm.country}
+   346→                        onChange={e => setCompanyForm(f => ({ ...f, country: e.target.value }))}
+   347→                      />
+   348→                    </div>
+   349→                  </div>
+   350→
+   351→                  <div className="flex justify-end">
+   352→                    <Button onClick={handleSaveCompany} className="gap-2">
+   353→                      Save Changes
+   354→                    </Button>
+   355→                  </div>
+   356→                </CardContent>
+   357→              </Card>
+   358→            )}
+   359→
+   360→            {/* ── Notifications Section ── */}
+   361→            {activeSection === 'notifications' && (
+   362→              <Card>
+   363→                <CardHeader>
+   364→                  <CardTitle className="text-base flex items-center gap-2">
+   365→                    <Bell className="h-4 w-4" />
+   366→                    Notification Preferences
+   367→                  </CardTitle>
+   368→                  <CardDescription>Choose how you want to be notified</CardDescription>
+   369→                </CardHeader>
+   370→                <CardContent className="space-y-1">
+   371→                  {[
+   372→                    { key: 'email' as const, label: 'Email Notifications', desc: 'Receive notifications via email', icon: Mail },
+   373→                    { key: 'push' as const, label: 'Push Notifications', desc: 'Receive push notifications in your browser', icon: Bell },
+   374→                    { key: 'sms' as const, label: 'SMS Notifications', desc: 'Receive notifications via text message', icon: Phone },
+   375→                    { key: 'deliveryUpdates' as const, label: 'Delivery Updates', desc: 'Get notified about delivery status changes', icon: Globe },
+   376→                    { key: 'newMessages' as const, label: 'New Messages', desc: 'Get notified when you receive new messages', icon: MessageSquare },
+   377→                    { key: 'marketing' as const, label: 'Marketing Emails', desc: 'Receive promotional emails and offers', icon: Zap },
+   378→                  ].map((item, i) => (
+   379→                    <div
+   380→                      key={item.key}
+   381→                      className={`-mx-2 px-2 py-3 -my-1 rounded-md transition-colors duration-150 hover:bg-muted/30 ${i > 0 ? 'border-b border-border/50' : ''}`}
+   382→                    >
+   383→                      <div className="flex items-center justify-between">
+   384→                        <div className="flex items-center gap-3">
+   385→                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+   386→                            <item.icon className="h-4 w-4 text-muted-foreground" />
+   387→                          </div>
+   388→                          <div>
+   389→                            <p className="text-sm font-medium">{item.label}</p>
+   390→                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+   391→                          </div>
+   392→                        </div>
+   393→                        <Switch
+   394→                          checked={notifications[item.key]}
+   395→                          onCheckedChange={() => handleToggleNotification(item.key)}
+   396→                          className={notifications[item.key] ? 'data-[state=checked]:bg-primary data-[state=checked]:border-primary' : ''}
+   397→                        />
+   398→                      </div>
+   399→                    </div>
+   400→                  ))}
+   401→                </CardContent>
+   402→              </Card>
+   403→            )}
+   404→
+   405→            {/* ── Appearance Section ── */}
+   406→            {activeSection === 'appearance' && (
+   407→              <Card>
+   408→                <CardHeader>
+   409→                  <CardTitle className="text-base flex items-center gap-2">
+   410→                    <Palette className="h-4 w-4" />
+   411→                    Appearance
+   412→                  </CardTitle>
+   413→                  <CardDescription>Customize the look and feel</CardDescription>
+   414→                </CardHeader>
+   415→                <CardContent>
+   416→                  <div className="space-y-4">
+   417→                    <div>
+   418→                      <Label className="text-sm font-medium">Theme</Label>
+   419→                      <p className="text-xs text-muted-foreground mb-3">Select your preferred color theme</p>
+   420→                      <div className="grid grid-cols-3 gap-3">
+   421→                        {[
+   422→                          { value: 'light', label: 'Light', icon: Sun },
+   423→                          { value: 'dark', label: 'Dark', icon: Moon },
+   424→                          { value: 'system', label: 'System', icon: Monitor },
+   425→                        ].map(t => (
+   426→                          <button
+   427→                            key={t.value}
+   428→                            onClick={() => {
+   429→                              setTheme(t.value);
+   430→                              toast.success('Theme Updated', { description: `${t.label} theme applied` });
+   431→                            }}
+   432→                            className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all duration-200 ${
+   433→                              theme === t.value
+   434→                                ? 'border-primary bg-primary/5 hover:scale-[1.02]'
+   435→                                : 'border-muted hover:border-muted-foreground/30 hover:scale-[1.02]'
+   436→                            }`}
+   437→                          >
+   438→                            {theme === t.value && (
+   439→                              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+   440→                                <Check className="h-3 w-3" />
+   441→                              </span>
+   442→                            )}
+   443→                            <t.icon className={`h-6 w-6 ${theme === t.value ? 'text-primary' : 'text-muted-foreground'}`} />
+   444→                            <span className={`text-sm font-medium ${theme === t.value ? 'text-primary' : ''}`}>
+   445→                              {t.label}
+   446→                            </span>
+   447→                          </button>
+   448→                        ))}
+   449→                      </div>
+   450→                    </div>
+   451→                  </div>
+   452→                </CardContent>
+   453→              </Card>
+   454→            )}
+   455→
+   456→            {/* ── Security Section ── */}
+   457→            {activeSection === 'security' && (
+   458→              <Card className="overflow-hidden">
+   459→                <div className="h-1 bg-gradient-to-r from-red-500/50 to-amber-500/50" />
+   460→                <CardHeader>
+   461→                  <CardTitle className="text-base flex items-center gap-2">
+   462→                    <Shield className="h-4 w-4" />
+   463→                    Security
+   464→                  </CardTitle>
+   465→                  <CardDescription>Manage your account security settings</CardDescription>
+   466→                </CardHeader>
+   467→                <CardContent className="space-y-6">
+   468→                  {/* Change Password */}
+   469→                  <div>
+   470→                    <h3 className="text-sm font-semibold flex items-center gap-2">
+   471→                      <Lock className="h-4 w-4" />
+   472→                      Change Password
+   473→                    </h3>
+   474→                    <div className="mt-4 space-y-4 max-w-md">
+   475→                      <div className="space-y-2">
+   476→                        <Label htmlFor="current-pw">Current Password</Label>
+   477→                        <Input
+   478→                          id="current-pw"
+   479→                          type="password"
+   480→                          placeholder="Enter current password"
+   481→                          value={passwordForm.current}
+   482→                          onChange={e => setPasswordForm(f => ({ ...f, current: e.target.value }))}
+   483→                        />
+   484→                      </div>
+   485→                      <div className="space-y-2">
+   486→                        <Label htmlFor="new-pw">New Password</Label>
+   487→                        <Input
+   488→                          id="new-pw"
+   489→                          type="password"
+   490→                          placeholder="Enter new password"
+   491→                          value={passwordForm.newPassword}
+   492→                          onChange={e => setPasswordForm(f => ({ ...f, newPassword: e.target.value }))}
+   493→                        />
+   494→                      </div>
+   495→                      <div className="space-y-2">
+   496→                        <Label htmlFor="confirm-pw">Confirm New Password</Label>
+   497→                        <Input
+   498→                          id="confirm-pw"
+   499→                          type="password"
+   500→                          placeholder="Confirm new password"
+   501→                          value={passwordForm.confirm}
+   502→                          onChange={e => setPasswordForm(f => ({ ...f, confirm: e.target.value }))}
+   503→                        />
+   504→                      </div>
+   505→                      <Button onClick={handleChangePassword} className="gap-2">
+   506→                        <Lock className="h-4 w-4" />
+   507→                        Update Password
+   508→                      </Button>
+   509→                    </div>
+   510→                  </div>
+   511→
+   512→                  <Separator />
+   513→
+   514→                  {/* 2FA */}
+   515→                  <div>
+   516→                    <div className="flex items-center justify-between">
+   517→                      <div className="flex items-center gap-3">
+   518→                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+   519→                          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+   520→                        </div>
+   521→                        <div>
+   522→                          <p className="text-sm font-medium">Two-Factor Authentication</p>
+   523→                          <p className="text-xs text-muted-foreground">Add an extra layer of security</p>
+   524→                        </div>
+   525→                      </div>
+   526→                      <div className="flex items-center gap-2">
+   527→                        <Badge variant="outline" className="text-xs">Coming Soon</Badge>
+   528→                        <Switch disabled />
+   529→                      </div>
+   530→                    </div>
+   531→                  </div>
+   532→                </CardContent>
+   533→              </Card>
+   534→            )}
+   535→
+   536→            {/* ── Danger Zone Section ── */}
+   537→            {activeSection === 'danger' && (
+   538→              <Card className="border-red-200 dark:border-red-900/50">
+   539→                <CardHeader>
+   540→                  <CardTitle className="text-base text-red-600 flex items-center gap-2">
+   541→                    <AlertTriangle className="h-4 w-4" />
+   542→                    Danger Zone
+   543→                  </CardTitle>
+   544→                  <CardDescription>Irreversible and destructive actions</CardDescription>
+   545→                </CardHeader>
+   546→                <CardContent className="space-y-4">
+   547→                  <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 transition-colors duration-200 hover:bg-destructive/5">
+   548→                    <div>
+   549→                      <p className="text-sm font-medium text-red-600 dark:text-red-400">Delete Account</p>
+   550→                      <p className="text-xs text-muted-foreground">
+   551→                        Permanently delete your account and all associated data. This action cannot be undone.
+   552→                      </p>
+   553→                    </div>
+   554→                    <Button variant="destructive" className="gap-2 shrink-0 transition-all duration-200 hover:bg-red-600/10 hover:text-red-600" onClick={() => setDeleteDialogOpen(true)}>
+   555→                      <Trash2 className="h-4 w-4" />
+   556→                      Delete Account
+   557→                    </Button>
+   558→                  </div>
+   559→
+   560→                  {currentUser?.role === 'company_owner' && (
+   561→                    <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 transition-colors duration-200 hover:bg-destructive/5">
+   562→                      <div>
+   563→                        <p className="text-sm font-medium text-red-600 dark:text-red-400">Deactivate Company</p>
+   564→                        <p className="text-xs text-muted-foreground">
+   565→                          Deactivate {userCompany?.name || 'your company'} and all operations. This can be reversed within 30 days.
+   566→                        </p>
+   567→                      </div>
+   568→                      <Button variant="destructive" className="gap-2 shrink-0 transition-all duration-200 hover:bg-destructive/90" onClick={() => setDeactivateDialogOpen(true)}>
+   569→                        <Building2 className="h-4 w-4" />
+   570→                        Deactivate
+   571→                      </Button>
+   572→                    </div>
+   573→                  )}
+   574→                </CardContent>
+   575→              </Card>
+   576→            )}
+   577→          </motion.div>
+   578→        </div>
+   579→      </div>
+   580→
+   581→      {/* Delete Account Confirmation Dialog */}
+   582→      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+   583→        <DialogContent className="sm:max-w-md">
+   584→          <DialogHeader>
+   585→            <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+   586→            <DialogDescription>
+   587→              Are you sure you want to delete your account? This action is permanent and cannot be undone.
+   588→              All your data, including delivery history and messages, will be permanently deleted.
+   589→            </DialogDescription>
+   590→          </DialogHeader>
+   591→          <DialogFooter>
+   592→            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+   593→            <Button variant="destructive" className="gap-2" onClick={handleDeleteAccount}>
+   594→              <Trash2 className="h-4 w-4" />
+   595→              Yes, Delete My Account
+   596→            </Button>
+   597→          </DialogFooter>
+   598→        </DialogContent>
+   599→      </Dialog>
+   600→
+   601→      {/* Deactivate Company Confirmation Dialog */}
+   602→      <Dialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
+   603→        <DialogContent className="sm:max-w-md">
+   604→          <DialogHeader>
+   605→            <DialogTitle className="text-red-600">Deactivate Company</DialogTitle>
+   606→            <DialogDescription>
+   607→              Are you sure you want to deactivate {userCompany?.name}? All company operations will be paused.
+   608→              This can be reversed within 30 days by contacting support.
+   609→            </DialogDescription>
+   610→          </DialogHeader>
+   611→          <DialogFooter>
+   612→            <Button variant="outline" onClick={() => setDeactivateDialogOpen(false)}>Cancel</Button>
+   613→            <Button variant="destructive" className="gap-2" onClick={handleDeactivateCompany}>
+   614→              <Building2 className="h-4 w-4" />
+   615→              Yes, Deactivate Company
+   616→            </Button>
+   617→          </DialogFooter>
+   618→        </DialogContent>
+   619→      </Dialog>
+   620→    </div>
+   621→  );
+   622→}

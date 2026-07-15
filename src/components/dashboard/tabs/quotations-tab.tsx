@@ -14,11 +14,28 @@ import type { Quotation } from '@/lib/types';
 import {
   FileText, Search, Clock, CheckCircle, XCircle, AlertTriangle,
   Eye, ChevronLeft, ChevronRight, Calendar, Package, User,
-  ArrowRightLeft, FileOutput, Sparkles
+  ArrowRightLeft, FileOutput, Sparkles, Download,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // ── Helpers ──────────────────────────────────────────────────
+function exportCSV(data: Record<string, unknown>[], filename: string) {
+  if (data.length === 0) return;
+  const headers = Object.keys(data[0]);
+  const csv = [
+    headers.join(','),
+    ...data.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${data.length} records to ${filename}`);
+}
+
 const statusConfig: Record<Quotation['status'], { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Clock },
   accepted: { label: 'Accepted', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle },
@@ -146,6 +163,25 @@ export function QuotationsTab() {
               onChange={e => handleSearchChange(e.target.value)}
             />
           </div>
+          <Button
+            variant="outline"
+            className="shrink-0 gap-2"
+            onClick={() => {
+              const data = filtered.map((q) => ({
+                'Quote #': q.id.toUpperCase(),
+                Delivery: q.trackingNumber,
+                Customer: q.customerName,
+                'Amount (M)': q.amount,
+                'Est. Days': q.estimatedDays,
+                'Valid Until': formatDate(q.validUntil),
+                Status: q.status,
+              }));
+              exportCSV(data, 'quotations.csv');
+            }}
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
           <div className="flex rounded-lg border bg-muted/50 p-0.5">
             {(['all', 'pending', 'accepted', 'rejected', 'expired'] as const).map(s => (
               <button

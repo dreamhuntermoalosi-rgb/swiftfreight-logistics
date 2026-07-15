@@ -28,15 +28,21 @@ function getCityBorderColor(city: string): string {
   return cityBorderColors[Math.abs(hash) % cityBorderColors.length];
 }
 
-function downloadCSV(data: string[][], filename: string) {
-  const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
+function exportCSV(data: Record<string, unknown>[], filename: string) {
+  if (data.length === 0) return;
+  const headers = Object.keys(data[0]);
+  const csv = [
+    headers.join(','),
+    ...data.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  toast.success(`Exported ${data.length} records to ${filename}`);
 }
 
 function formatCurrency(amount: number) {
@@ -171,26 +177,24 @@ export function CustomersTab() {
         </div>
         <Button
           variant="outline"
-          size="icon"
-          className="shrink-0"
-          aria-label="Download customers CSV"
+          className="shrink-0 gap-2"
+          aria-label="Export customers CSV"
           onClick={() => {
-            const header = ['Name', 'Email', 'Phone', 'City', 'Total Deliveries', 'Total Spent (M)', 'Rating', 'Joined Date'];
-            const rows = filtered.map((c) => [
-              c.name,
-              c.email,
-              c.phone,
-              c.city,
-              String(c.totalShipments),
-              String(c.totalSpent),
-              String(c.rating),
-              formatDate(c.joinedAt),
-            ]);
-            downloadCSV([header, ...rows], 'customers.csv');
-            toast.success(`Downloaded ${filtered.length} customers`);
+            const data = filtered.map((c) => ({
+              Name: c.name,
+              Email: c.email,
+              Phone: c.phone,
+              City: c.city,
+              Shipments: c.totalShipments,
+              'Total Spent': c.totalSpent,
+              Rating: c.rating,
+              Joined: formatDate(c.joinedAt),
+            }));
+            exportCSV(data, 'customers.csv');
           }}
         >
           <Download className="h-4 w-4" />
+          Export CSV
         </Button>
         <Select value={cityFilter} onValueChange={(v) => { setCityFilter(v); setPage(1); }}>
           <SelectTrigger className="w-full sm:w-48">

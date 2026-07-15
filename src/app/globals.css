@@ -360,3 +360,20 @@
 .dark .hero-fade::after {
   background: linear-gradient(to bottom, transparent, oklch(0.14 0.01 155 / 0.8));
 }
+
+/* ─── Print Styles for Invoice PDF ─── */
+@media print {
+  /* Hide everything except the invoice when printing */
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print-area, .invoice-print-area * {
+    visibility: visible;
+  }
+  .invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

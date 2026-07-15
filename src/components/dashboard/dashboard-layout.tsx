@@ -288,7 +288,7 @@ function SidebarNavContent({
               <button
                 key={item.tab}
                 onClick={() => handleNavClick(item.tab)}
-                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
