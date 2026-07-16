@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { ChainOfCustodyEntry } from '@/lib/types';
 import {
   CheckCircle2,
@@ -444,16 +443,15 @@ function HandoverDialog({
                 <span className="text-xs font-medium" style={{ color: '#757575' }}>Tap to capture/upload photo</span>
               </button>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
+
                 className="flex items-center gap-3 rounded-lg p-3"
                 style={{ backgroundColor: '#E8F5E9', border: '1px solid #A5D6A7' }}
               >
                 <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: '#2E7D32' }} />
                 <span className="text-xs font-medium flex-1" style={{ color: '#2E7D32' }}>handover_photo.jpg uploaded</span>
                 <button type="button" onClick={() => setHasPhoto(false)} className="text-[10px] underline" style={{ color: '#D32F2F' }}>Remove</button>
-              </motion.div>
+              </div>
             )}
           </div>
 
@@ -471,9 +469,8 @@ function HandoverDialog({
                 <span className="text-xs font-medium" style={{ color: '#757575' }}>Click to capture signature</span>
               </button>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
+
                 className="space-y-2"
               >
                 <div
@@ -490,7 +487,7 @@ function HandoverDialog({
                   <span className="text-xs font-medium" style={{ color: '#2E7D32' }}>Signature captured</span>
                   <button type="button" onClick={() => setHasSignature(false)} className="text-[10px] underline ml-auto" style={{ color: '#D32F2F' }}>Clear</button>
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
 
@@ -541,13 +538,11 @@ function StageDetailPanel({
 
   if (isPending) {
     return (
-      <motion.div
-        initial={{ opacity: 0, x: 16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.25 }}
+      <div
+
       >
-        <Card className="rounded-xl" style={{ borderColor: '#E0E0E0' }}>
-          <CardContent className="p-6">
+        <div className="rounded-lg border border-border/50 bg-card rounded-xl" style={{ borderColor: '#E0E0E0' }}>
+          <div className="p-6">
             <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: '#F5F5F5' }}>
                 <StageIcon className="h-7 w-7" style={{ color: '#BDBDBD' }} />
@@ -560,29 +555,24 @@ function StageDetailPanel({
                 Pending
               </Badge>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!entry) return null;
 
   return (
-    <motion.div
+    <div
       key={entry.id}
-      initial={{ opacity: 0, x: 16 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.25 }}
+
     >
-      <Card
-        className="rounded-xl transition-shadow hover:shadow-md"
-        style={{
+      <div className="rounded-lg border border-border/50 bg-card rounded-xl transition-shadow" style={{
           borderColor: isActive ? '#A5D6A7' : '#E0E0E0',
           backgroundColor: isActive ? '#F9FBF9' : 'white',
-        }}
-      >
-        <CardContent className="p-5 space-y-4">
+        }}>
+        <div className="p-5 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -714,9 +704,9 @@ function StageDetailPanel({
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -811,8 +801,8 @@ export function ChainOfCustodyTab() {
       </div>
 
       {/* Delivery Selector */}
-      <Card className="rounded-xl">
-        <CardContent className="p-4">
+      <div className="rounded-lg border border-border/50 bg-card rounded-xl">
+        <div className="p-4">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <div className="flex-1 w-full sm:w-auto">
               <label className="text-xs font-medium mb-1.5 block" style={{ color: '#757575' }}>
@@ -857,40 +847,39 @@ export function ChainOfCustodyTab() {
               <span>Progress: <strong style={{ color: '#2E7D32' }}>{completedCount}/5 stages</strong></span>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Record Handover Button */}
       {completedCount < 5 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <div>
           <Button
             onClick={handleRecordHandover}
             className="w-full sm:w-auto gap-2 font-semibold text-sm py-5"
             style={{ backgroundColor: '#2E7D32', color: 'white' }}
           >
-            <motion.span
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
+            <span
+
             >
               <CheckCircle2 className="h-5 w-5" />
-            </motion.span>
+            </span>
             Record {STAGES[completedCount]?.label ?? 'Handover'}
           </Button>
-        </motion.div>
+        </div>
       )}
 
       {/* Main Layout: Stepper (left) + Detail Panel (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Visual Stepper */}
         <div className="lg:col-span-4">
-          <Card className="rounded-xl sticky top-4">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-semibold flex items-center gap-2" style={{ color: '#757575' }}>
+          <div className="rounded-lg border border-border/50 bg-card rounded-xl sticky top-4">
+            <div className="pb-2">
+              <h2 className="text-xs font-semibold flex items-center gap-2" style={{ color: '#757575' }}>
                 <FileText className="h-3.5 w-3.5" />
                 Handover Stages
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
+              </h2>
+            </div>
+            <div className="p-4 pt-0">
               <div className="relative">
                 {/* Vertical connecting line */}
                 <div
@@ -917,11 +906,9 @@ export function ChainOfCustodyTab() {
                     const isSelected = effectiveSelectedIdx === idx;
 
                     return (
-                      <motion.button
+                      <button
                         key={stage.key}
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.06, duration: 0.25 }}
+
                         onClick={() => setSelectedStageIdx(idx)}
                         className="relative flex items-start gap-3 w-full text-left p-2.5 rounded-lg transition-all duration-150 group"
                         style={{
@@ -946,11 +933,10 @@ export function ChainOfCustodyTab() {
                             </div>
                           ) : isCurrent ? (
                             <div className="relative flex items-center justify-center">
-                              <motion.span
+                              <span
                                 className="absolute inline-flex h-9 w-9 rounded-full opacity-30"
                                 style={{ backgroundColor: '#2E7D32' }}
-                                animate={{ scale: [1, 1.4, 1] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
+
                               />
                               <div
                                 className="relative flex h-7 w-7 items-center justify-center rounded-full border-2"
@@ -986,13 +972,13 @@ export function ChainOfCustodyTab() {
                             </p>
                           )}
                         </div>
-                      </motion.button>
+                      </button>
                     );
                   })}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Right: Detail Panel */}

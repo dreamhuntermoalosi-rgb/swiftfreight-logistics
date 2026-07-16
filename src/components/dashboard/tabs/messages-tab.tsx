@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,6 @@ import {
   Search, Send, Paperclip, MessageSquare, Package, MapPin,
   ChevronRight, Truck, Clock, ExternalLink, Phone
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
 // ── Helpers ──────────────────────────────────────────────────
 function formatMessageTime(dateStr: string): string {
   const d = new Date(dateStr);
@@ -309,16 +307,14 @@ export function MessagesTab() {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="mx-auto max-w-2xl space-y-3">
-                  <AnimatePresence>
+                  
                     {activeConv.messages.map((msg, i) => {
                       const isSent = msg.senderId === userId;
                       const showAvatar = i === 0 || activeConv.messages[i - 1]?.senderId !== msg.senderId;
                       return (
-                        <motion.div
+                        <div
                           key={msg.id}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
+
                           className={`flex gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}
                         >
                           {!isSent && showAvatar && (
@@ -333,7 +329,7 @@ export function MessagesTab() {
                             <div
                               className={`rounded-2xl px-3.5 py-2 ${
                                 isSent
-                                  ? 'rounded-br-sm bg-gradient-to-br from-primary to-emerald-600 text-primary-foreground'
+                                  ? 'rounded-br-sm bg-primary text-primary-foreground'
                                   : 'rounded-bl-sm bg-muted'
                               }`}
                             >
@@ -343,16 +339,16 @@ export function MessagesTab() {
                               {formatMessageTime(msg.createdAt)}
                             </p>
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })}
-                  </AnimatePresence>
+                  
                   <div ref={chatEndRef} />
                 </div>
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="border-t border-transparent bg-gradient-to-r from-transparent via-border to-transparent p-3">
+              <div className="border-t border-transparent p-3">
                 <div className="mx-auto flex max-w-2xl items-center gap-2">
                   <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toast.info('Attachments coming soon')}>
                     <Paperclip className="h-4 w-4" />
@@ -366,7 +362,7 @@ export function MessagesTab() {
                   />
                   <Button
                     size="icon"
-                    className="shrink-0 bg-gradient-to-r from-primary to-emerald-600 hover:brightness-110"
+                    className="shrink-0"
                     onClick={handleSend}
                     disabled={!messageInput.trim()}
                   >
@@ -376,15 +372,13 @@ export function MessagesTab() {
               </div>
             </>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
+            <div
+
               className="flex flex-1 flex-col items-center justify-center text-center px-4"
             >
               <div className="relative mb-2">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-teal-400/20 blur-2xl" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-emerald-50 to-teal-50 dark:from-primary/20 dark:via-emerald-950/40 dark:to-teal-950/40 border border-primary/10">
+                <div className="absolute inset-0 rounded-full blur-2xl" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl dark:from-primary/20 dark:via-emerald-950/40 dark:to-teal-950/40 border border-primary/10">
                   <MessageSquare className="h-10 w-10 text-primary/40" />
                 </div>
               </div>
@@ -413,7 +407,7 @@ export function MessagesTab() {
                 <span className="h-2 w-2 rounded-full bg-primary/40 animate-bounce-dot-3" />
               </div>
               <p className="mt-3 text-xs text-muted-foreground/70">Select a conversation to start messaging</p>
-            </motion.div>
+            </div>
           )}
         </div>
 
@@ -425,14 +419,14 @@ export function MessagesTab() {
             </div>
             <ScrollArea className="flex-1 p-3">
               <div className="space-y-3">
-                <Card className="border-0 shadow-none">
-                  <CardHeader className="p-3 pb-2">
-                    <CardTitle className="flex items-center gap-2 text-xs font-medium">
+                <div className="rounded-lg border border-border/50 bg-card border-0 shadow-none">
+                  <div className="p-3 pb-2">
+                    <h2 className="flex items-center gap-2 text-xs font-medium">
                       <Package className="h-3.5 w-3.5 text-primary" />
                       Linked Delivery
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 p-3 pt-0">
+                    </h2>
+                  </div>
+                  <div className="space-y-3 p-3 pt-0">
                     <div>
                       <p className="font-mono text-xs font-bold text-primary">{linkedDelivery.trackingNumber}</p>
                     </div>
@@ -483,8 +477,8 @@ export function MessagesTab() {
                         Update Status
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             </ScrollArea>
           </div>

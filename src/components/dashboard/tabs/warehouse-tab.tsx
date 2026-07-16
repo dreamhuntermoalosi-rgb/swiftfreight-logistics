@@ -15,7 +15,7 @@ import {
   Clock,
   Info,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -173,14 +173,11 @@ export function WarehouseTab() {
         {warehouses.map((wh) => {
           const pct = Math.round((wh.used / wh.capacity) * 100);
           return (
-            <Card
-              key={wh.id}
-              className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <CardHeader className="pb-3">
+            <div className="rounded-lg border border-border/50 bg-card group transition-all duration-200" key={wh.id}>
+              <div className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <CardTitle className="text-base font-semibold">{wh.name}</CardTitle>
+                    <h3 className="text-base font-semibold">{wh.name}</h3>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" />
                       {wh.location}
@@ -188,8 +185,8 @@ export function WarehouseTab() {
                   </div>
                   {getStatusBadge(wh.status)}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              </div>
+              <div className="space-y-4">
                 {/* Utilization Bar */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
@@ -229,7 +226,7 @@ export function WarehouseTab() {
 
                 {/* Manager */}
                 <div className="flex items-center gap-2.5 border-t pt-3">
-                  <div className="avatar-gradient-ring">
+                  <div >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                       {getInitials(wh.manager)}
                     </div>
@@ -239,8 +236,8 @@ export function WarehouseTab() {
                     <p className="text-xs text-muted-foreground">Warehouse Manager</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>

@@ -1928,3 +1928,83 @@ Stage Summary:
 - All sections are now responsive with mobile-first breakpoints
 - Visual design is cleaner with consistent spacing and subtle backgrounds
 - Lint passes cleanly for overview-tab.tsx (2 pre-existing errors in other files)
+
+---
+Task ID: 5
+Agent: full-stack-developer (overview-tab)
+Task: Rewrite overview-tab.tsx with clean dark theme
+
+Work Log:
+- Analyzed reference design (dark bg, lime accent, minimalist)
+- Removed all Card/CardHeader/motion/gradient usage
+- Built 4 KPI cards with flat design using div + border-border/50 + bg-card
+- Revenue area chart with lime accent (var(--color-primary)) and 15% gradient fill
+- Status distribution horizontal bar chart with Cell-based per-bar coloring + top routes list with progress bars
+- Recent deliveries table with status badges and horizontal scroll on mobile
+- Fully responsive: grid-cols-2 lg:grid-cols-4 KPIs, grid-cols-1 lg:grid-cols-5 for status/routes
+- Custom Recharts tooltips matching dark theme
+- All lint checks pass cleanly
+
+Stage Summary:
+- Complete rewrite of overview-tab.tsx (~240 lines, down from ~1750)
+- Clean, professional dark theme with lime accents used sparingly
+- No decorative effects, no framer-motion, no Card components, no gradients
+- Data-focused design with proper whitespace and hierarchy
+
+---
+Task ID: 6
+Agent: full-stack-developer (tabs-cleanup)
+Task: Clean up all dashboard tabs for consistent dark theme
+
+Work Log:
+- Updated deliveries-tab, drivers-tab, fleet-tab, tracking-tab, customers-tab (priority tabs)
+- Updated reports-tab, warehouse-tab, sourcing-tab, messages-tab
+- Updated notifications-tab, invoices-tab, quotations-tab
+- Updated safety-tab, chain-of-custody-tab, dispatch-tab, settings-tab
+- Replaced all Card components with simple divs across 16 tab files
+- Removed all framer-motion imports and motion.div/motion.span/motion.tr/motion.button tags
+- Removed AnimatePresence wrappers
+- Removed all gradients (bg-gradient-to-r, from-*, via-*, to-*) - replaced with flat bg-primary or bg-primary/10
+- Removed all hover transform effects (hover:translate-y, hover:shadow-lg, hover:scale-*)
+- Removed decorative classes (gradient-top-bar, gradient-border-animated, shimmer-text, animate-gradient-ring)
+- Applied consistent table styling with subtle borders
+- Made all filter bars responsive
+- Fixed h3/h2 heading mismatches from CardTitle replacement
+- Fixed duplicate className attributes from Card→div conversion
+- Verified zero lint errors across all files
+- Verified zero forbidden patterns remain (no gradients, motion, heavy shadows)
+
+Stage Summary:
+- 16 tab files updated with consistent dark theme
+- Clean, professional, minimal design across all tabs
+- No decorative effects, data-focused presentation
+- All Card components replaced with simple divs
+- All framer-motion removed (no imports, no tags, no wrappers)
+- Zero lint errors, zero forbidden CSS patterns
+
+---
+Task ID: 7
+Agent: Main Orchestrator
+Task: Complete visual overhaul — dark theme with lime accent, reduce data, clean design
+
+Work Log:
+- Analyzed uploaded reference dashboard image (dark bg #1E1E1E, lime accent #E6FF00, minimalist)
+- Rewrote globals.css: New dark theme with lime/oklch(0.93 0.19 113) primary, neutral grays, subtle borders
+- Reduced mock data: 500→33 deliveries, 60→12 drivers, 300→20 customers, 40→10 vehicles, 10→6 notifications, 8→6 messages
+- Updated dashboard-layout.tsx: Force dark mode on dashboard mount, revert to light on unmount
+- Cleaned sidebar: removed gradient top bars, gradient active indicators, hover slide effects
+- Removed disclaimer banner, gradient top border from main layout
+- Updated notification icon colors to use lime/sky/emerald/amber
+- Fixed duplicate useIsMobile import error
+- Launched subagent to rewrite overview-tab.tsx (~240 lines, clean KPIs + charts + table)
+- Launched subagent to clean up all 16 other dashboard tabs (removed Cards, gradients, motion, heavy shadows)
+- Verified via agent-browser: dark dashboard (lime accent), clean KPIs, professional tables, light marketing page
+
+Stage Summary:
+- Complete visual transformation from green/gradient-heavy to dark/lime-accent minimalist design
+- Dashboard auto-switches to dark mode; marketing page stays light
+- All 17 dashboard tabs use consistent clean styling (flat divs, subtle borders, no decorative effects)
+- Data reduced ~90% for lighter, cleaner feel
+- Agent-browser verified: Overview, Deliveries, Drivers tabs all look professional and clean
+- Marketing page renders correctly in light mode after sign-out
+- Zero lint errors, zero build errors

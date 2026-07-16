@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -226,7 +226,7 @@ export function CustomersTab() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -241,7 +241,7 @@ export function CustomersTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -256,7 +256,7 @@ export function CustomersTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30">
               <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
@@ -279,8 +279,8 @@ export function CustomersTab() {
                   <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>
                     <span className="flex items-center">Name <SortIcon active={sortField === 'name'} direction={sortDir} /></span>
                   </TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="hidden sm:table-cell">Phone</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell font-medium text-muted-foreground uppercase tracking-wider">Email</TableHead>
+                  <TableHead className="text-xs hidden sm:table-cell font-medium text-muted-foreground uppercase tracking-wider">Phone</TableHead>
                   <TableHead className="hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort('city')}>
                     <span className="flex items-center">City <SortIcon active={sortField === 'city'} direction={sortDir} /></span>
                   </TableHead>
@@ -296,7 +296,7 @@ export function CustomersTab() {
                   <TableHead className="hidden xl:table-cell cursor-pointer select-none" onClick={() => handleSort('joinedAt')}>
                     <span className="flex items-center">Joined <SortIcon active={sortField === 'joinedAt'} direction={sortDir} /></span>
                   </TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="text-xs w-12 font-medium text-muted-foreground uppercase tracking-wider"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -413,7 +413,7 @@ export function CustomersTab() {
       {/* Customer Detail Dialog */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => { if (!open) setSelectedCustomer(null); }}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-          <div className="h-1 -mx-6 -mt-6 mb-4 bg-gradient-to-r from-primary to-teal-500 rounded-t-lg" />
+          <div className="h-1 -mx-6 -mt-6 mb-4 rounded-t-lg" />
           {selectedCustomer && (
             <>
               <DialogHeader>
@@ -456,21 +456,21 @@ export function CustomersTab() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-teal-500/20">
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg">
                     <Package className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-lg font-bold">{selectedCustomer.totalShipments}</p>
                   <p className="text-xs text-muted-foreground">Shipments</p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg">
                     <CreditCard className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <p className="text-lg font-bold">{formatCurrency(selectedCustomer.totalSpent)}</p>
                   <p className="text-xs text-muted-foreground">Total Spent</p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20">
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg">
                     <Star className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-lg font-bold">{(selectedCustomer.rating as number).toFixed(1)}</p>

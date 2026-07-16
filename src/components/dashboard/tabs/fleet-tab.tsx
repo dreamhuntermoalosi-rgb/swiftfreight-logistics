@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -77,10 +77,10 @@ const fuelColorMap: Record<Vehicle['fuelType'], string> = {
 };
 
 const statusGradientBg: Record<Vehicle['status'], string> = {
-  available: 'bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-900/10 dark:to-transparent',
-  in_use: 'bg-gradient-to-br from-primary/5 to-transparent dark:from-primary/10 dark:to-transparent',
-  maintenance: 'bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-900/10 dark:to-transparent',
-  out_of_service: 'bg-gradient-to-br from-red-50/30 to-transparent dark:from-red-900/10 dark:to-transparent',
+  available: 'bg-emerald-500/10',
+  in_use: 'bg-primary/10',
+  maintenance: 'bg-amber-500/10',
+  out_of_service: 'bg-red-500/10',
 };
 
 const maintenanceHistory = [
@@ -218,7 +218,7 @@ export function FleetTab() {
 
       {/* Fleet Overview Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-primary/10 p-3">
               <Truck className="h-5 w-5 text-primary" />
@@ -229,7 +229,7 @@ export function FleetTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -240,7 +240,7 @@ export function FleetTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
               <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -251,7 +251,7 @@ export function FleetTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/30">
               <Wrench className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -282,12 +282,12 @@ export function FleetTab() {
               const licDays = vehicle.licenseExpiry ? getDaysUntil(vehicle.licenseExpiry) : null;
 
               return (
-                <Card key={vehicle.id} className={`transition-all duration-200 hover:shadow-md hover:shadow-inner hover:shadow-emerald-500/5 hover:-translate-y-0.5 border-l-4 ${accentColors.border} cursor-pointer ${statusGradientBg[vehicle.status] || ''}`} onClick={() => setSelectedVehicle(vehicle)}>
-                  <CardContent className="p-4 space-y-3">
+                <div key={vehicle.id} className={`rounded-lg border border-border/50 bg-card border-l-4 ${accentColors.border} cursor-pointer ${statusGradientBg[vehicle.status] || ''}`} onClick={() => setSelectedVehicle(vehicle)}>
+                  <div className="p-4 space-y-3">
                     {/* Header: Type icon + Plate + Status */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="relative rounded-lg bg-gradient-to-br from-primary/15 to-teal-500/15 p-2 text-primary">
+                        <div className="relative rounded-lg p-2 text-primary">
                           {vehicleTypeIcons[vehicle.type]}
                           <span className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-background ${statusDot}`} />
                         </div>
@@ -394,8 +394,8 @@ export function FleetTab() {
                         Maintain
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })
           )}
@@ -469,7 +469,7 @@ export function FleetTab() {
                   <TableRow>
                     <TableHead>Vehicle</TableHead>
                     <TableHead>Plate</TableHead>
-                    <TableHead className="hidden sm:table-cell">Last Service</TableHead>
+                    <TableHead className="text-xs hidden sm:table-cell font-medium text-muted-foreground uppercase tracking-wider">Last Service</TableHead>
                     <TableHead>Next Service</TableHead>
                     <TableHead>Days Until</TableHead>
                   </TableRow>

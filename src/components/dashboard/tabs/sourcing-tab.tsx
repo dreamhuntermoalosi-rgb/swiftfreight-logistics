@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -20,8 +20,6 @@ import {
   MapPin, Calendar, Clock, User, Link as LinkIcon, Globe,
   CheckCircle, XCircle, Eye, AlertTriangle, Package
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
 // ── Helpers ──────────────────────────────────────────────────
 const sourcingStatusColors: Record<SourcingStatus, string> = {
   pending: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -275,7 +273,7 @@ export function SourcingTab() {
         <TabsList className="w-full overflow-x-auto">
           {['all', 'pending', 'quoted', 'accepted', 'purchased', 'delivered'].map(t => (
             <TabsTrigger key={t} value={t} className="capitalize relative data-[state=active]:shadow-none">
-              {t === tab && <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-primary to-teal-500 rounded-full" />}
+              {t === tab && <div className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full" />}
               {t}
               {counts[t] !== undefined && (
                 <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">
@@ -290,25 +288,23 @@ export function SourcingTab() {
           <ScrollArea className="max-h-[600px]">
             <div className="space-y-3">
               {filtered.length === 0 && (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="rounded-lg border border-border/50 bg-card">
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Package className="mb-3 h-10 w-10 text-muted-foreground/50" />
                     <p className="text-sm text-muted-foreground">No sourcing requests found</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
               {filtered.map((req, i) => {
                 const deadlineWarning = req.deadline ? daysUntil(req.deadline) <= 3 && daysUntil(req.deadline) > 0 : false;
                 const deadlineOverdue = req.deadline ? daysUntil(req.deadline) <= 0 : false;
                 return (
-                  <motion.div
+                  <div
                     key={req.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03 }}
+
                   >
-                    <Card className={`transition-shadow hover:shadow-md overflow-hidden border-l-[3px] ${statusLeftBorder[req.status] || ''}`}>
-                      <CardContent className="p-4">
+                    <div className={`rounded-lg border border-border/50 bg-card overflow-hidden border-l-[3px] ${statusLeftBorder[req.status] || ''}`}>
+                      <div className="p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           {/* Left info */}
                           <div className="min-w-0 flex-1 space-y-2">
@@ -407,9 +403,9 @@ export function SourcingTab() {
                             <span>Updated {timeAgo(req.updatedAt)}</span>
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -549,7 +545,7 @@ export function SourcingTab() {
                       const progress = (currentIdx / (statusFlow.length - 1)) * 100;
                       return (
                         <div
-                          className="absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all duration-500"
+                          className="absolute top-0 left-0 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
                         />
                       );

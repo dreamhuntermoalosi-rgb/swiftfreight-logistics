@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -33,8 +33,6 @@ import {
   Filter, AlertTriangle, ChevronRight, Zap, Printer, MessageSquare,
   UserPlus, Fuel, Star, Phone, CheckCircle, TrendingUp
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
 // ── Helpers ──────────────────────────────────────────────────
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -218,16 +216,16 @@ export function DispatchTab() {
           { label: 'Out for Delivery', value: stats.outForDelivery, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20', icon: MapPin, tooltip: 'Deliveries out for final-mile delivery to recipients', bars: [30, 50, 45, 65] },
           { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package, tooltip: 'Total deliveries successfully completed today', bars: [20, 45, 60, 80] },
         ].map(stat => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div key={stat.label}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card className={`${stat.bg} border-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden cursor-default`}>
-                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 to-teal-400/40" />
-                  <CardContent className="p-4">
+                <div className={`${stat.bg} rounded-lg border border-border/50 bg-card border-0 relative overflow-hidden cursor-default`}>
+                  <div className="absolute top-0 left-0 right-0 h-0.5" />
+                  <div className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
-                        <p className={`text-2xl font-bold ${stat.color} ${stat.label === 'In Transit' ? 'animate-shimmer bg-gradient-to-r from-blue-600 via-teal-600 to-blue-600 bg-[length:200%_100%] bg-clip-text text-transparent dark:from-blue-400 dark:via-teal-400 dark:to-blue-400' : ''}`}>{stat.value}</p>
+                        <p className={`text-2xl font-bold ${stat.color} ${stat.label === 'In Transit' ? 'text-primary' : ''}`}>{stat.value}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
                         <stat.icon className={`h-8 w-8 ${stat.color} opacity-60`} />
@@ -236,7 +234,7 @@ export function DispatchTab() {
                           {stat.bars.map((h, i) => (
                             <div
                               key={i}
-                              className="w-1.5 rounded-sm bg-gradient-to-t from-emerald-600/60 to-teal-400/80"
+                              className="w-1.5 rounded-sm"
                               style={{ height: `${h * 0.16}px` }}
                             />
                           ))}
@@ -256,14 +254,14 @@ export function DispatchTab() {
                         View All Active
                       </button>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
                 {stat.tooltip}
               </TooltipContent>
             </Tooltip>
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -292,11 +290,11 @@ export function DispatchTab() {
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Left Column - Delivery Queue */}
         <div className="lg:col-span-3">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Delivery Queue</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-border/50 bg-card">
+            <div className="pb-3">
+              <h3 className="text-base">Delivery Queue</h3>
+            </div>
+            <div>
               <Tabs value={deliveryTab} onValueChange={setDeliveryTab}>
                 <TabsList className="w-full">
                   <TabsTrigger value="pending" className="flex-1">
@@ -324,10 +322,9 @@ export function DispatchTab() {
                         <div className="py-8 text-center text-sm text-muted-foreground">No pending deliveries</div>
                       )}
                       {pendingDeliveries.map(d => (
-                        <motion.div
+                        <div
                           key={d.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
+
                           className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400' : 'border-l-emerald-400/40'}`}
                         >
                           <div className="min-w-0 flex-1">
@@ -345,7 +342,7 @@ export function DispatchTab() {
                             <UserPlus className="h-3.5 w-3.5" />
                             Assign
                           </Button>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </ScrollArea>
@@ -359,10 +356,9 @@ export function DispatchTab() {
                         <div className="py-8 text-center text-sm text-muted-foreground">No deliveries in progress</div>
                       )}
                       {inProgressDeliveries.map(d => (
-                        <motion.div
+                        <div
                           key={d.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
+
                           className="flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
                         >
                           <div className="min-w-0 flex-1">
@@ -383,7 +379,7 @@ export function DispatchTab() {
                             <Truck className="h-3.5 w-3.5" />
                             <span className="font-mono">{d.vehiclePlate}</span>
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </ScrollArea>
@@ -397,10 +393,9 @@ export function DispatchTab() {
                         <div className="py-8 text-center text-sm text-muted-foreground">No deliveries completed today</div>
                       )}
                       {completedToday.map(d => (
-                        <motion.div
+                        <div
                           key={d.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
+
                           className="flex items-center gap-3 rounded-lg border p-3"
                         >
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -416,30 +411,30 @@ export function DispatchTab() {
                           <span className="text-xs text-muted-foreground">
                             {d.actualDelivery ? formatTime(d.actualDelivery) : formatTime(d.updatedAt)}
                           </span>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </ScrollArea>
                 </TabsContent>
               </Tabs>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Right Column - Resource Panels */}
         <div className="space-y-4 lg:col-span-2">
           {/* Driver Availability */}
-          <Card>
-            <CardHeader className="pb-3">
+          <div className="rounded-lg border border-border/50 bg-card">
+            <div className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <h3 className="flex items-center gap-2 text-base">
                   <Users className="h-4 w-4" />
                   Available Drivers
-                </CardTitle>
+                </h3>
                 <Badge variant="outline" className="text-green-600">{availableDrivers.length}</Badge>
               </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div>
               <div className="mb-3">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -454,7 +449,7 @@ export function DispatchTab() {
               <ScrollArea className="max-h-[240px]">
                 <div className="space-y-2">
                   {filteredDrivers.slice(0, 10).map(d => (
-                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 bg-gradient-to-r from-emerald-50/50 to-transparent dark:from-emerald-900/10 dark:to-transparent transition-all duration-200 hover:shadow-sm">
+                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 dark:from-emerald-900/10 dark:to-transparent transition-all duration-200 hover:shadow-sm">
                       <div className="relative">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
                           {d.name.split(' ').map(n => n[0]).join('')}
@@ -476,21 +471,21 @@ export function DispatchTab() {
                   ))}
                 </div>
               </ScrollArea>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Vehicle Availability */}
-          <Card>
-            <CardHeader className="pb-3">
+          <div className="rounded-lg border border-border/50 bg-card">
+            <div className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <h3 className="flex items-center gap-2 text-base">
                   <Truck className="h-4 w-4" />
                   Available Vehicles
-                </CardTitle>
+                </h3>
                 <Badge variant="outline" className="text-green-600">{availableVehicles.length}</Badge>
               </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div>
               <ScrollArea className="max-h-[240px]">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {availableVehicles.slice(0, 8).map(v => (
@@ -515,8 +510,8 @@ export function DispatchTab() {
                   ))}
                 </div>
               </ScrollArea>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 

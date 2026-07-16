@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -247,7 +247,7 @@ export function DriversTab() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -262,7 +262,7 @@ export function DriversTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
               <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -274,7 +274,7 @@ export function DriversTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -286,7 +286,7 @@ export function DriversTab() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
             <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30">
               <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
@@ -309,21 +309,21 @@ export function DriversTab() {
                   <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>
                     <span className="flex items-center">Name <SortIcon active={sortField === 'name'} direction={sortDir} /></span>
                   </TableHead>
-                  <TableHead className="hidden md:table-cell">Phone</TableHead>
-                  <TableHead className="hidden lg:table-cell">License #</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell font-medium text-muted-foreground uppercase tracking-wider">Phone</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell font-medium text-muted-foreground uppercase tracking-wider">License #</TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => handleSort('status')}>
                     <span className="flex items-center">Status <SortIcon active={sortField === 'status'} direction={sortDir} /></span>
                   </TableHead>
-                  <TableHead className="hidden sm:table-cell">Vehicle</TableHead>
-                  <TableHead className="hidden lg:table-cell">Location</TableHead>
+                  <TableHead className="text-xs hidden sm:table-cell font-medium text-muted-foreground uppercase tracking-wider">Vehicle</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell font-medium text-muted-foreground uppercase tracking-wider">Location</TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => handleSort('rating')}>
                     <span className="flex items-center">Rating <SortIcon active={sortField === 'rating'} direction={sortDir} /></span>
                   </TableHead>
                   <TableHead className="hidden md:table-cell text-right cursor-pointer select-none" onClick={() => handleSort('totalDeliveries')}>
                     <span className="flex items-center justify-end">Deliveries <SortIcon active={sortField === 'totalDeliveries'} direction={sortDir} /></span>
                   </TableHead>
-                  <TableHead className="hidden xl:table-cell text-right">Success Rate</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="text-xs hidden xl:table-cell text-right font-medium text-muted-foreground uppercase tracking-wider">Success Rate</TableHead>
+                  <TableHead className="text-xs w-12 font-medium text-muted-foreground uppercase tracking-wider"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -348,7 +348,7 @@ export function DriversTab() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <span className={`h-2 w-2 shrink-0 rounded-full ${driverStatusDotColor[driver.status]}`} />
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-teal-500/20 text-xs font-semibold text-primary">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-primary">
                               {driver.name.split(' ').map((n) => n[0]).join('')}
                             </div>
                             <span className="font-medium truncate max-w-[140px]">{driver.name}</span>
@@ -477,7 +477,7 @@ export function DriversTab() {
               <>
                 <DialogHeader>
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-teal-500/20 text-xl font-bold text-primary">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl font-bold text-primary">
                       {selectedDriver.name.split(' ').map((n) => n[0]).join('')}
                     </div>
                     <div className="flex-1">
@@ -516,9 +516,9 @@ export function DriversTab() {
                     <Package className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
                     <p className="text-lg font-bold">{selectedDriver.totalDeliveries}</p>
                     <p className="text-xs text-muted-foreground">Deliveries</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted hover:brightness-110 transition-all">
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted transition-all">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all hover:brightness-110"
+                        className="h-full rounded-full transition-all"
                         style={{ width: `${Math.min(100, (selectedDriver.successfulDeliveries / Math.max(selectedDriver.totalDeliveries, 1)) * 100)}%` }}
                       />
                     </div>
@@ -529,7 +529,7 @@ export function DriversTab() {
                       {successRate}%
                     </p>
                     <p className="text-xs text-muted-foreground">On-Time Rate</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted hover:brightness-110 transition-all">
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted transition-all">
                       <div
                         className={`h-full rounded-full transition-all hover:brightness-110 ${successRate >= 95 ? 'bg-green-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
                         style={{ width: `${successRate}%` }}

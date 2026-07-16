@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   LayoutDashboard,
   Package,
@@ -26,7 +27,6 @@ import {
   PackageCheck,
   CreditCard,
   AlertTriangle,
-  Info,
   User as UserIcon,
   FileText,
   Warehouse,
@@ -55,13 +55,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { notifications as mockNotifications, roleLabels, companies } from '@/lib/mock-data';
 import type { DashboardTab, UserRole, NotificationType } from '@/lib/types';
 import { tabComponentMap } from '@/components/dashboard/tabs';
@@ -118,14 +111,14 @@ function getNotificationIcon(type: NotificationType) {
 function getNotificationIconColor(type: NotificationType) {
   switch (type) {
     case 'delivery_update':
-      return 'text-emerald-500';
-    case 'new_message':
       return 'text-primary';
+    case 'new_message':
+      return 'text-sky-400';
     case 'quote_received':
     case 'payment':
-      return 'text-teal-500';
+      return 'text-emerald-400';
     case 'alert':
-      return 'text-amber-500';
+      return 'text-amber-400';
     case 'system':
     default:
       return 'text-muted-foreground';
@@ -271,12 +264,10 @@ function SidebarNavContent({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Gradient top line */}
-      <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
       {/* Logo area */}
-      <div className="relative flex h-16 items-center gap-3 px-4 bg-white/60 dark:bg-black/20 backdrop-blur-sm">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Truck className="h-5 w-5" />
+      <div className="flex h-14 items-center gap-3 px-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <Truck className="h-4 w-4" />
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-bold leading-tight">SwiftFreight</span>
@@ -288,8 +279,7 @@ function SidebarNavContent({
         </div>
       </div>
 
-      {/* Gradient border below logo */}
-      <div className="h-[3px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="mx-3 h-px bg-border" />
       <ScrollArea className="flex-1 px-3 py-3">
         <nav className="space-y-1" aria-label="Main navigation">
           {navItems.map((item) => {
@@ -301,18 +291,15 @@ function SidebarNavContent({
               <button
                 key={item.tab}
                 onClick={() => handleNavClick(item.tab)}
-                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
                 aria-current={isActive ? 'page' : undefined}
               >
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
-                )}
                 <Icon
-                  className={`h-5 w-5 shrink-0 ${
+                  className={`h-[18px] w-[18px] shrink-0 ${
                     isActive
                       ? 'text-primary'
                       : 'text-muted-foreground group-hover:text-foreground'
@@ -337,30 +324,27 @@ function SidebarNavContent({
       <div className="space-y-1 border-t px-3 py-3">
         <button
           onClick={() => handleNavClick('settings')}
-          className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+          className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
             dashboardTab === 'settings'
-              ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
-          {dashboardTab === 'settings' && (
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
-          )}
-          <Settings className={`h-5 w-5 shrink-0 ${dashboardTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+          <Settings className={`h-[18px] w-[18px] shrink-0 ${dashboardTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
           <span className="flex-1 text-left">Settings</span>
         </button>
         <button
           onClick={handleSignOut}
           className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
         >
-          <LogOut className="h-5 w-5 shrink-0" />
+          <LogOut className="h-[18px] w-[18px] shrink-0" />
           <span className="flex-1 text-left">Sign Out</span>
         </button>
       </div>
 
       {/* User info card */}
       <div className="border-t px-3 py-3">
-        <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2.5">
+        <div className="flex items-center gap-3 rounded-lg px-3 py-2">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-xs text-primary-foreground">
               {initials}
@@ -371,12 +355,7 @@ function SidebarNavContent({
               {displayName}
               <KycVerifiedBadge size="sm" />
             </p>
-            <Badge
-              variant="secondary"
-              className="mt-0.5 px-1.5 py-0 text-[10px]"
-            >
-              {displayRole}
-            </Badge>
+            <p className="text-[11px] text-muted-foreground">{displayRole}</p>
           </div>
         </div>
       </div>
@@ -420,7 +399,7 @@ function NotificationDropdown() {
         className="w-80 p-0"
         sideOffset={8}
       >
-        <div className="flex items-center justify-between border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-teal-500/5">
+        <div className="flex items-center justify-between border-b px-4 py-3">
           <DropdownMenuLabel className="p-0 text-sm font-semibold">
             Notifications
           </DropdownMenuLabel>
@@ -532,7 +511,7 @@ function UserDropdown() {
           variant="ghost"
           className="relative flex h-9 items-center gap-2 rounded-full px-2"
         >
-          <div className="relative h-7 w-7 rounded-full p-[2px] bg-gradient-to-br from-primary to-teal-500">
+          <div className="relative h-7 w-7 rounded-full p-[2px] bg-primary">
           <Avatar className="h-full w-full">
             <AvatarFallback className="bg-primary text-xs text-primary-foreground">
               {initials}
@@ -554,7 +533,7 @@ function UserDropdown() {
             </p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+        <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer">
           <UserIcon className="mr-2 h-4 w-4" />
           My Profile
@@ -566,7 +545,7 @@ function UserDropdown() {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-destructive focus:text-destructive"
           onClick={handleSignOut}
@@ -734,7 +713,7 @@ function DashboardHeader() {
   );
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-card px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 md:px-6">
       {/* Left: hamburger + breadcrumb / mobile title */}
       <div className="flex min-w-0 items-center gap-3">
         {isMobile && (
@@ -749,15 +728,7 @@ function DashboardHeader() {
           </Button>
         )}
         <div className="hidden md:block">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-sm font-medium">
-                  {title}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <h1 className="text-sm font-medium text-foreground">{title}</h1>
         </div>
         {isMobile && (
           <h1 className="truncate text-sm font-semibold">{title}</h1>
@@ -952,6 +923,13 @@ export function DashboardLayout() {
   const { dashboardTab, sidebarOpen, setSidebarOpen, setDashboardTab } = useNavStore();
   const { currentUser } = useAuthStore();
   const { notifications } = useNotificationStore();
+  const { setTheme } = useTheme();
+
+  // Force dark mode for dashboard
+  useEffect(() => {
+    setTheme('dark');
+    return () => setTheme('light');
+  }, [setTheme]);
 
   // Initialize notification store with mock data on first render
   useEffect(() => {
@@ -995,7 +973,7 @@ export function DashboardLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop sidebar */}
       {!isMobile && (
-        <aside className="hidden w-64 shrink-0 border-r bg-card shadow-sm md:flex md:flex-col">
+        <aside className="hidden w-60 shrink-0 border-r border-border/50 bg-sidebar md:flex md:flex-col">
           <SidebarNavContent />
         </aside>
       )}
@@ -1003,7 +981,7 @@ export function DashboardLayout() {
       {/* Mobile sidebar (Sheet) */}
       {isMobile && (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="w-72 p-0">
+          <SheetContent side="left" className="w-72 p-0 bg-sidebar border-border/50">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <SidebarNavContent onNavigate={() => setSidebarOpen(false)} />
           </SheetContent>
@@ -1013,16 +991,7 @@ export function DashboardLayout() {
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardHeader />
-        {/* Gradient top-border accent */}
-        <div className="h-1 bg-gradient-to-r from-primary via-emerald to-teal shrink-0" />
         <main className="flex-1 scroll-smooth overflow-y-auto p-4 md:p-6">
-          {/* Platform Disclaimer Banner */}
-          <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#C8E6C9] bg-[#E8F5E9] px-3 py-2">
-            <Info className="h-3.5 w-3.5 text-[#2E7D32] mt-0.5 shrink-0" />
-            <p className="text-[11px] leading-relaxed text-[#1B5E20]">
-              SwiftFreight is a technology platform. All logistics services are provided by independent third-party companies. SwiftFreight is not liable for loss, damage, or delay of parcels.
-            </p>
-          </div>
           <TabRenderer tab={dashboardTab} />
         </main>
       </div>

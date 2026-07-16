@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,6 @@ import {
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/store';
 import type { IncidentReport } from '@/lib/types';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Car,
   AlertTriangle,
@@ -421,9 +420,8 @@ function ReportDialog({
                 </div>
               </button>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
+
                 className="flex items-center gap-3 rounded-lg p-3"
                 style={{ backgroundColor: '#E8F5E9', border: '1px solid #A5D6A7' }}
               >
@@ -437,7 +435,7 @@ function ReportDialog({
                 >
                   Remove
                 </button>
-              </motion.div>
+              </div>
             )}
           </div>
         </div>
@@ -474,7 +472,7 @@ function IncidentHistoryList({ incidents, showRole }: { incidents: IncidentRepor
 
   return (
     <div className="space-y-3">
-      <AnimatePresence>
+      
         {incidents.map((report) => {
           const sc = statusConfig[report.status];
           const pc = priorityConfig[report.priority];
@@ -483,16 +481,13 @@ function IncidentHistoryList({ incidents, showRole }: { incidents: IncidentRepor
           const isExpanded = expandedId === report.id;
 
           return (
-            <motion.div
+            <div
               key={report.id}
               layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+
             >
               <div
-                className="rounded-xl border overflow-hidden transition-shadow hover:shadow-md cursor-pointer"
+                className="rounded-xl border overflow-hidden transition-shadow cursor-pointer"
                 style={{
                   borderColor: isExpanded ? '#A5D6A7' : '#E0E0E0',
                   backgroundColor: report.priority === 'critical' ? '#FFFBFB' : 'white',
@@ -563,24 +558,20 @@ function IncidentHistoryList({ incidents, showRole }: { incidents: IncidentRepor
                     </div>
 
                     {/* Expand icon */}
-                    <motion.div
-                      animate={{ rotate: isExpanded ? 90 : 0 }}
-                      transition={{ duration: 0.15 }}
+                    <div
+
                       className="shrink-0 mt-1"
                     >
                       <ChevronRight className="h-4 w-4" style={{ color: '#BDBDBD' }} />
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Expanded details */}
-                <AnimatePresence>
+                
                   {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                    <div
+
                       className="overflow-hidden"
                     >
                       <div className="px-4 pb-4 pt-0">
@@ -602,14 +593,14 @@ function IncidentHistoryList({ incidents, showRole }: { incidents: IncidentRepor
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
-                </AnimatePresence>
+                
               </div>
-            </motion.div>
+            </div>
           );
         })}
-      </AnimatePresence>
+      
     </div>
   );
 }
@@ -786,14 +777,12 @@ export function SafetyTab() {
           ].map((kpi) => {
             const KpiIcon = kpi.icon;
             return (
-              <motion.div
+              <div
                 key={kpi.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+
               >
-                <Card className="rounded-xl">
-                  <CardContent className="p-4">
+                <div className="rounded-lg border border-border/50 bg-card rounded-xl">
+                  <div className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium" style={{ color: '#757575' }}>{kpi.label}</p>
@@ -803,9 +792,9 @@ export function SafetyTab() {
                         <KpiIcon className="h-5 w-5" style={{ color: kpi.color }} />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -843,25 +832,23 @@ export function SafetyTab() {
         <TabsContent value="report" className="mt-4 space-y-4">
           {/* Driver incident types */}
           {(isDriver || isAdmin) && visibleTypes.driver.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212121' }}>
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="pb-2">
+                <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212121' }}>
                   <Wrench className="h-4 w-4" style={{ color: '#2E7D32' }} />
                   Driver Safety Incidents
                   {isAdmin && <Badge variant="secondary" className="text-[10px] font-medium">7 types</Badge>}
-                </CardTitle>
+                </h2>
                 <p className="text-xs" style={{ color: '#9E9E9E' }}>Quick report for incidents that occur during delivery operations</p>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
                   {visibleTypes.driver.map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <motion.button
+                      <button
                         key={item.type}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.04, duration: 0.25 }}
+
                         onClick={() => handleQuickReport(item.type)}
                         className="flex flex-col items-center gap-2.5 rounded-xl border p-4 hover:shadow-md transition-all duration-200 group"
                         style={{
@@ -878,7 +865,7 @@ export function SafetyTab() {
                         }}
                       >
                         <div
-                          className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110"
+                          className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200"
                           style={{ backgroundColor: item.color + '14' }}
                         >
                           <Icon className="h-5 w-5" style={{ color: item.color }} />
@@ -886,35 +873,33 @@ export function SafetyTab() {
                         <span className="text-[11px] font-semibold text-center leading-tight" style={{ color: '#212121' }}>
                           {item.label}
                         </span>
-                      </motion.button>
+                      </button>
                     );
                   })}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Customer incident types */}
           {(isCustomer || isAdmin) && visibleTypes.customer.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212121' }}>
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="pb-2">
+                <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212121' }}>
                   <PackageSearch className="h-4 w-4" style={{ color: '#2E7D32' }} />
                   Customer Safety Reports
                   {isAdmin && <Badge variant="secondary" className="text-[10px] font-medium">7 types</Badge>}
-                </CardTitle>
+                </h2>
                 <p className="text-xs" style={{ color: '#9E9E9E' }}>Report concerns about your delivery experience</p>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
                   {visibleTypes.customer.map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <motion.button
+                      <button
                         key={item.type}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: (isDriver ? visibleTypes.driver.length : 0) + idx * 0.04, duration: 0.25 }}
+
                         onClick={() => handleQuickReport(item.type)}
                         className="flex flex-col items-center gap-2.5 rounded-xl border p-4 hover:shadow-md transition-all duration-200 group"
                         style={{
@@ -931,7 +916,7 @@ export function SafetyTab() {
                         }}
                       >
                         <div
-                          className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110"
+                          className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200"
                           style={{ backgroundColor: item.color + '14' }}
                         >
                           <Icon className="h-5 w-5" style={{ color: item.color }} />
@@ -939,12 +924,12 @@ export function SafetyTab() {
                         <span className="text-[11px] font-semibold text-center leading-tight" style={{ color: '#212121' }}>
                           {item.label}
                         </span>
-                      </motion.button>
+                      </button>
                     );
                   })}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </TabsContent>
 

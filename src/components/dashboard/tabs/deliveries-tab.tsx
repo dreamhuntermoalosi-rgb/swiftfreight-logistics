@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -47,7 +47,6 @@ import {
   Download, CheckCircle, Printer, CreditCard, Columns3, ShieldAlert, ShieldCheck,
   AlertTriangle, Box, Droplets, Monitor, FileCheck, ClipboardCheck,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { PackageDeclarationForm } from '@/components/dashboard/package-declaration-form';
 
 const ITEMS_PER_PAGE = 15;
@@ -306,7 +305,7 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-primary to-emerald-600 hover:brightness-110 text-white">
+        <Button className="text-white">
           <Plus className="mr-2 h-4 w-4" /> {isCustomer ? 'Request Delivery' : 'New Delivery'}
         </Button>
       </DialogTrigger>
@@ -396,7 +395,7 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleSubmit}>Create Delivery</Button>
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSubmit}>Create Delivery</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -518,13 +517,13 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           <Separator />
 
           {/* Package Details */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
+          <div className="rounded-lg border border-border/50 bg-card">
+            <div className="pb-2">
+              <h2 className="text-sm flex items-center gap-2">
                 <Package className="h-4 w-4" /> Package Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm space-y-2">
+              </h2>
+            </div>
+            <div className="text-sm space-y-2">
               <div className="flex justify-between"><span className="text-muted-foreground">Description</span><span>{delivery.packageDescription}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Weight</span><span>{delivery.packageWeight} kg</span></div>
               {delivery.packageDimensions && (
@@ -536,13 +535,13 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
               <div className="flex justify-between"><span className="text-muted-foreground">Priority</span>
                 <Badge className={`${priorityColors[delivery.priority] || ''} capitalize`} variant="secondary">{delivery.priority}</Badge>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Package Declaration */}
-          <Card style={{ backgroundColor: '#F8FFF8', borderColor: '#C8E6C9' }}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center justify-between">
+          <div className="rounded-lg border border-border/50 bg-card" style={{ backgroundColor: '#F8FFF8', borderColor: '#C8E6C9' }}>
+            <div className="pb-2">
+              <h2 className="text-sm flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <FileCheck className="h-4 w-4" style={{ color: '#2E7D32' }} /> Package Declaration
                 </span>
@@ -552,9 +551,9 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                 >
                   <ShieldCheck className="h-3 w-3 mr-1" /> Accepted
                 </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm space-y-3">
+              </h2>
+            </div>
+            <div className="text-sm space-y-3">
               <div className="flex items-center gap-2">
                 <Badge
                   variant="secondary"
@@ -577,48 +576,48 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
               <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ backgroundColor: 'white', border: '1px solid #E0E0E0', color: '#212121' }}>
                 &quot;I declare that the contents of this package are accurately described above. The package does not contain any prohibited, dangerous, or illegal goods. I understand that SwiftFreight reserves the right to inspect any package and may refuse carriage if the contents are found to be misrepresented.&quot;
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Pickup & Destination */}
           <div className="grid grid-cols-1 gap-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="pb-2">
+                <h2 className="text-sm flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-green-600" /> Pickup
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-1">
+                </h2>
+              </div>
+              <div className="text-sm space-y-1">
                 <p className="font-medium">{delivery.pickup.name}</p>
                 {delivery.pickup.phone && <p className="text-muted-foreground">{delivery.pickup.phone}</p>}
                 <p className="text-muted-foreground">{delivery.pickup.address}</p>
                 <p className="text-muted-foreground">{delivery.pickup.city}, {delivery.pickup.country}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
+              </div>
+            </div>
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="pb-2">
+                <h2 className="text-sm flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-red-500" /> Destination
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-1">
+                </h2>
+              </div>
+              <div className="text-sm space-y-1">
                 <p className="font-medium">{delivery.destination.name}</p>
                 {delivery.destination.phone && <p className="text-muted-foreground">{delivery.destination.phone}</p>}
                 <p className="text-muted-foreground">{delivery.destination.address}</p>
                 <p className="text-muted-foreground">{delivery.destination.city}, {delivery.destination.country}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Driver & Vehicle */}
           {delivery.driverName && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="pb-2">
+                <h2 className="text-sm flex items-center gap-2">
                   <Truck className="h-4 w-4" /> Driver & Vehicle
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-2">
+                </h2>
+              </div>
+              <div className="text-sm space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 text-xs font-bold">
                     {delivery.driverName.split(' ').map(n => n[0]).join('')}
@@ -628,20 +627,20 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                 {delivery.vehiclePlate && (
                   <p className="text-muted-foreground">Vehicle: {delivery.vehiclePlate}</p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Quotation */}
           {delivery.quotedAmount && (
-            <Card>
-              <CardContent className="pt-4">
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="pt-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Quoted Amount</span>
                   <span className="text-lg font-bold text-green-600">M{delivery.quotedAmount.toLocaleString()}</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Actions */}
@@ -805,7 +804,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                   <button
                     key={star}
                     type="button"
-                    className="transition-transform duration-150 hover:scale-125 focus:outline-none"
+                    className="transition-transform duration-150 focus:outline-none"
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
                     onClick={() => setSelectedRating(star)}
@@ -1103,7 +1102,7 @@ export function DeliveriesTab() {
       </div>
 
       {/* Gradient divider below header */}
-      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="h-px" />
 
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -1181,7 +1180,7 @@ export function DeliveriesTab() {
             <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                  <TableHead className="w-10">
+                  <TableHead className="text-xs w-10 font-medium text-muted-foreground uppercase tracking-wider">
                     <Checkbox
                       checked={paged.length > 0 && selected.size === paged.length}
                       onCheckedChange={toggleSelectAll}
@@ -1219,7 +1218,7 @@ export function DeliveriesTab() {
                       <span className="flex items-center">Date<SortIcon field="createdAt" sortField={sortField} sortDir={sortDir} /></span>
                     </TableHead>
                   )}
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="text-xs w-12 font-medium text-muted-foreground uppercase tracking-wider"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1376,18 +1375,15 @@ export function DeliveriesTab() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {paged.map((d) => (
-                <motion.div
+                <div
                   key={d.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
+
                 >
-                  <Card
-                    className={`group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400 hover:border-l-red-500' : d.priority === 'express' ? 'border-l-amber-400 hover:border-l-amber-500' : 'border-l-primary/30 hover:border-l-primary/60'} relative overflow-hidden`}
+                  <div className={`group cursor-pointer rounded-lg border border-border/50 bg-card border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400' : 'border-l-primary/30'} relative overflow-hidden`}
                     onClick={() => openDetail(d.id)}
                   >
-                    <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <CardContent className="p-4 space-y-3">
+                    <div className="absolute inset-x-0 top-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <span className="font-mono text-sm font-medium text-green-700 dark:text-green-400">
                           {d.trackingNumber}
@@ -1420,9 +1416,9 @@ export function DeliveriesTab() {
                           <Clock className="h-3 w-3" /> {formatDate(d.createdAt)}
                         </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}

@@ -13,7 +13,7 @@ import {
   Package,
   Search,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -527,7 +527,7 @@ export function InvoicesTab() {
 
             <DialogFooter className="gap-2 sm:gap-0">
               {selectedInvoice.status !== 'paid' && (
-                <Button onClick={handlePayNow} className="gap-2 bg-gradient-to-r from-primary to-emerald-600 text-white hover:brightness-110 border-0">
+                <Button onClick={handlePayNow} className="gap-2 text-white border-0">
                   <CreditCard className="h-4 w-4" />
                   Pay Now
                 </Button>

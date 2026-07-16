@@ -34,7 +34,7 @@ import {
   MapPin,
   Building2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -70,7 +70,6 @@ import {
   statusLabels,
   statusColors,
 } from '@/lib/mock-data';
-
 
 // ============ Chart Configs ============
 const revenueAreaConfig: ChartConfig = {
@@ -387,16 +386,16 @@ export function ReportsTab() {
       {/* ── Charts Section ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue Trend */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-primary to-teal-400" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-emerald-600" />
-              <CardTitle className="text-base">Revenue Trend</CardTitle>
+              <h3 className="text-base">Revenue Trend</h3>
             </div>
-            <CardDescription>Monthly revenue over the past 12 months</CardDescription>
-          </CardHeader>
-          <CardContent>
+            <p className="text-sm text-muted-foreground">Monthly revenue over the past 12 months</p>
+          </div>
+          <div>
             <ChartContainer config={revenueAreaConfig} className="h-[260px] w-full">
               <AreaChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <defs>
@@ -424,20 +423,20 @@ export function ReportsTab() {
                 />
               </AreaChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Delivery Volume */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-emerald-500" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-teal-500" />
-              <CardTitle className="text-base">Delivery Volume</CardTitle>
+              <h3 className="text-base">Delivery Volume</h3>
             </div>
-            <CardDescription>Number of deliveries per month</CardDescription>
-          </CardHeader>
-          <CardContent>
+            <p className="text-sm text-muted-foreground">Number of deliveries per month</p>
+          </div>
+          <div>
             <ChartContainer config={deliveryVolumeConfig} className="h-[260px] w-full">
               <BarChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -447,20 +446,20 @@ export function ReportsTab() {
                 <Bar dataKey="deliveries" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={24} />
               </BarChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Delivery Success Rate */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-emerald-600" />
-              <CardTitle className="text-base">Delivery Success Rate</CardTitle>
+              <h3 className="text-base">Delivery Success Rate</h3>
             </div>
-            <CardDescription>On-time delivery percentage trend</CardDescription>
-          </CardHeader>
-          <CardContent>
+            <p className="text-sm text-muted-foreground">On-time delivery percentage trend</p>
+          </div>
+          <div>
             <ChartContainer config={successRateConfig} className="h-[260px] w-full">
               <LineChart data={onTimeTrend} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -484,22 +483,22 @@ export function ReportsTab() {
                 />
               </LineChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
       </div>
 
       {/* ── Driver Performance Table ── */}
-      <Card className="relative overflow-hidden shadow-sm border">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-        <CardHeader className="pb-2">
+      <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 left-0 right-0 h-1" />
+        <div className="pb-2">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-emerald-600" />
-            <CardTitle className="text-base">Driver Performance</CardTitle>
+            <h3 className="text-base">Driver Performance</h3>
           </div>
-          <CardDescription>Top 10 drivers by performance metrics</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <p className="text-sm text-muted-foreground">Top 10 drivers by performance metrics</p>
+        </div>
+        <div>
           <div className="max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
@@ -559,22 +558,22 @@ export function ReportsTab() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* ── Fleet Performance + Customer Insights ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Fleet Performance */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <Truck className="h-4 w-4 text-emerald-600" />
-              <CardTitle className="text-base">Fleet Performance</CardTitle>
+              <h3 className="text-base">Fleet Performance</h3>
             </div>
-            <CardDescription>Vehicle utilization and maintenance</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+            <p className="text-sm text-muted-foreground">Vehicle utilization and maintenance</p>
+          </div>
+          <div className="space-y-6">
             {/* Utilization bars */}
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-muted-foreground">Vehicle Utilization by Type</h4>
@@ -627,20 +626,20 @@ export function ReportsTab() {
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Customer Insights */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 via-pink-500 to-rose-400" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-emerald-600" />
-              <CardTitle className="text-base">Customer Insights</CardTitle>
+              <h3 className="text-base">Customer Insights</h3>
             </div>
-            <CardDescription>Top customers and satisfaction trends</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+            <p className="text-sm text-muted-foreground">Top customers and satisfaction trends</p>
+          </div>
+          <div className="space-y-6">
             {/* Satisfaction Pie */}
             <div>
               <h4 className="mb-3 text-sm font-medium text-muted-foreground">Customer Satisfaction</h4>
@@ -691,23 +690,23 @@ export function ReportsTab() {
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* ── Revenue by Route + Delivery Time Distribution ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue by Route */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-emerald-600" />
-              <CardTitle className="text-base">Revenue by Route</CardTitle>
+              <h3 className="text-base">Revenue by Route</h3>
             </div>
-            <CardDescription>Top 8 routes by delivered revenue</CardDescription>
-          </CardHeader>
-          <CardContent>
+            <p className="text-sm text-muted-foreground">Top 8 routes by delivered revenue</p>
+          </div>
+          <div>
             <ChartContainer config={routeRevenueConfig} className="h-[300px] w-full">
               <BarChart
                 data={deliveryRouteRevenue}
@@ -735,20 +734,20 @@ export function ReportsTab() {
                 <Bar dataKey="revenue" fill="url(#routeBarGradient)" radius={[0, 4, 4, 0]} barSize={18} />
               </BarChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Delivery Time Distribution */}
-        <Card className="relative overflow-hidden shadow-sm border">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
-          <CardHeader className="pb-2">
+        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 left-0 right-0 h-1" />
+          <div className="pb-2">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-600" />
-              <CardTitle className="text-base">Delivery Time Distribution</CardTitle>
+              <h3 className="text-base">Delivery Time Distribution</h3>
             </div>
-            <CardDescription>How quickly deliveries reach their destination</CardDescription>
-          </CardHeader>
-          <CardContent>
+            <p className="text-sm text-muted-foreground">How quickly deliveries reach their destination</p>
+          </div>
+          <div>
             <ChartContainer config={deliveryTimeConfig} className="h-[300px] w-full">
               <BarChart data={deliveryTimeData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
@@ -762,21 +761,21 @@ export function ReportsTab() {
                 </Bar>
               </BarChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* ── Delivery Volume by Day of Week ── */}
-      <Card className="relative overflow-hidden shadow-sm border">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-primary to-teal-400" />
-        <CardHeader className="pb-2">
+      <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 left-0 right-0 h-1" />
+        <div className="pb-2">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-emerald-600" />
-            <CardTitle className="text-base">Delivery Volume by Day of Week</CardTitle>
+            <h3 className="text-base">Delivery Volume by Day of Week</h3>
           </div>
-          <CardDescription>Average delivery count per day of the week</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <p className="text-sm text-muted-foreground">Average delivery count per day of the week</p>
+        </div>
+        <div>
           <ChartContainer config={dayOfWeekConfig} className="h-[280px] w-full">
             <BarChart data={dayOfWeekData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
               <defs>
@@ -802,20 +801,20 @@ export function ReportsTab() {
               <Bar dataKey="deliveries" fill="url(#dayBarGradient)" radius={[4, 4, 0, 0]} barSize={32} />
             </BarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* ── Company Performance Comparison ── */}
-      <Card className="relative overflow-hidden shadow-sm border">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-400" />
-        <CardHeader className="pb-2">
+      <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 left-0 right-0 h-1" />
+        <div className="pb-2">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-emerald-600" />
-            <CardTitle className="text-base">Company Performance Comparison</CardTitle>
+            <h3 className="text-base">Company Performance Comparison</h3>
           </div>
-          <CardDescription>How the 3 companies compare across key metrics</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <p className="text-sm text-muted-foreground">How the 3 companies compare across key metrics</p>
+        </div>
+        <div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -849,8 +848,8 @@ export function ReportsTab() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* ── Cross-Border Delivery Analytics ── */}
       <div className="space-y-6">
@@ -861,13 +860,13 @@ export function ReportsTab() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Border Post Performance Table */}
-          <Card className="relative overflow-hidden shadow-sm border">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Border Post Performance</CardTitle>
-              <CardDescription>Lesotho–South Africa border crossing metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+            <div className="absolute top-0 left-0 right-0 h-1" />
+            <div className="pb-2">
+              <h3 className="text-base">Border Post Performance</h3>
+              <p className="text-sm text-muted-foreground">Lesotho–South Africa border crossing metrics</p>
+            </div>
+            <div>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -914,20 +913,20 @@ export function ReportsTab() {
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Cross-Border Trend Chart */}
-          <Card className="relative overflow-hidden shadow-sm border">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-emerald-500 to-teal-400" />
-            <CardHeader className="pb-2">
+          <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+            <div className="absolute top-0 left-0 right-0 h-1" />
+            <div className="pb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-emerald-600" />
-                <CardTitle className="text-base">Cross-Border vs Domestic Volume</CardTitle>
+                <h3 className="text-base">Cross-Border vs Domestic Volume</h3>
               </div>
-              <CardDescription>Monthly delivery volume comparison (2024)</CardDescription>
-            </CardHeader>
-            <CardContent>
+              <p className="text-sm text-muted-foreground">Monthly delivery volume comparison (2024)</p>
+            </div>
+            <div>
               <ChartContainer config={crossBorderTrendConfig} className="h-[300px] w-full">
                 <AreaChart data={crossBorderTrend} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                   <defs>
@@ -949,8 +948,8 @@ export function ReportsTab() {
                   <Area type="monotone" dataKey="domestic" stroke="#5eead4" fill="url(#fillDomestic)" strokeWidth={2} />
                 </AreaChart>
               </ChartContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

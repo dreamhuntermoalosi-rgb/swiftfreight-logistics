@@ -173,7 +173,7 @@ export function NotificationsTab() {
       </div>
 
       {/* Gradient divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="h-px" />
 
       {/* Notification List */}
       <ScrollArea className="max-h-[calc(100vh-320px)]">
@@ -183,7 +183,7 @@ export function NotificationsTab() {
               <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted/30">
                 <Bell className="h-12 w-12 opacity-20" />
               </div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/5 to-transparent" />
+              <div className="absolute inset-0 rounded-full" />
             </div>
             <p className="text-lg font-medium text-foreground/70">No notifications</p>
             <p className="text-sm mt-2 max-w-xs text-center">
@@ -213,7 +213,7 @@ export function NotificationsTab() {
                 >
                   {/* Icon */}
                   <div
-                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconBg} transition-transform duration-200 group-hover:scale-105`}
+                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconBg} transition-transform duration-200`}
                   >
                     <IconComponent className="h-5 w-5" />
                   </div>
@@ -270,7 +270,7 @@ function NotificationFilters({
           size="sm"
           className={`rounded-full transition-all duration-200 ${
             current === opt.key
-              ? 'bg-gradient-to-r from-primary to-teal-600 text-primary-foreground hover:from-primary/90 hover:to-teal-600/90 shadow-sm'
+              ? 'bg-primary text-primary-foreground'
               : 'hover:bg-muted'
           }`}
           onClick={() => onChange(opt.key)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,6 @@ import {
   Eye, ChevronLeft, ChevronRight, Calendar, Package, User,
   ArrowRightLeft, FileOutput, Sparkles, Download,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-
 // ── Helpers ──────────────────────────────────────────────────
 function exportCSV(data: Record<string, unknown>[], filename: string) {
   if (data.length === 0) return;
@@ -212,10 +210,10 @@ export function QuotationsTab() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-          <Card className="overflow-hidden border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-900/10">
-            <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-500" />
-            <CardContent className="p-4">
+        <div>
+          <div className="rounded-lg border border-border/50 bg-card overflow-hidden border-amber-200/50 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-900/10">
+            <div className="h-1" />
+            <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Pending</p>
@@ -226,13 +224,13 @@ export function QuotationsTab() {
                   <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <Card className="overflow-hidden border-emerald-200/50 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-900/10">
-            <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-500" />
-            <CardContent className="p-4">
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="rounded-lg border border-border/50 bg-card overflow-hidden border-emerald-200/50 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+            <div className="h-1" />
+            <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Accepted</p>
@@ -243,13 +241,13 @@ export function QuotationsTab() {
                   <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="overflow-hidden border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-900/10">
-            <div className="h-1 bg-gradient-to-r from-red-400 to-red-500" />
-            <CardContent className="p-4">
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="rounded-lg border border-border/50 bg-card overflow-hidden border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-900/10">
+            <div className="h-1" />
+            <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Rejected</p>
@@ -259,9 +257,9 @@ export function QuotationsTab() {
                   <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Quotation Table */}
@@ -292,11 +290,9 @@ export function QuotationsTab() {
                   {paginated.map((q, i) => {
                     const cfg = statusConfig[q.status];
                     return (
-                      <motion.tr
+                      <tr
                         key={q.id}
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.02 }}
+
                         className={`border-b transition-colors last:border-0 hover:bg-muted/30 ${getRowBorderClass(q.status)}`}
                       >
                         <td className="px-4 py-3">
@@ -333,7 +329,7 @@ export function QuotationsTab() {
                             View
                           </Button>
                         </td>
-                      </motion.tr>
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -350,11 +346,9 @@ export function QuotationsTab() {
               {paginated.map((q, i) => {
                 const cfg = statusConfig[q.status];
                 return (
-                  <motion.div
+                  <div
                     key={q.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03 }}
+
                     className="flex items-center gap-3 p-4"
                   >
                     <div className="min-w-0 flex-1">
@@ -374,7 +368,7 @@ export function QuotationsTab() {
                     <Button variant="ghost" size="sm" className="h-8 shrink-0" onClick={() => openDetail(q)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
@@ -424,7 +418,7 @@ export function QuotationsTab() {
       {/* Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="sm:max-w-lg overflow-hidden">
-          <div className="h-1 gradient-top-bar" />
+          <div className="h-1" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
@@ -567,7 +561,7 @@ export function QuotationsTab() {
                   <XCircle className="h-4 w-4" />
                   Reject
                 </Button>
-                <Button className="gap-1.5 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 text-white" onClick={handleAccept}>
+                <Button className="gap-1.5 text-white" onClick={handleAccept}>
                   <CheckCircle className="h-4 w-4" />
                   Accept
                 </Button>

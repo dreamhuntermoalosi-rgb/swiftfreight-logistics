@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,6 @@ import {
   Phone, MessageSquare, Lock, Trash2, Zap, Sun, Moon, Monitor,
   AlertTriangle, ShieldCheck, Camera, Globe, MapPin, Check, Keyboard
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { KycSettingsCard } from '@/components/dashboard/kyc-verification';
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -151,8 +150,8 @@ export function SettingsTab() {
 
       <div className="flex flex-col gap-4 lg:flex-row">
         {/* Settings Nav - vertical on desktop */}
-        <Card className="w-full shrink-0 lg:w-56">
-          <CardContent className="p-2">
+        <div className="rounded-lg border border-border/50 bg-card w-full shrink-0 lg:w-56">
+          <div className="p-2">
             <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col">
               {settingsNav.map(item => (
                 <button
@@ -174,24 +173,24 @@ export function SettingsTab() {
                 </button>
               ))}
             </nav>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Settings Content */}
         <div className="flex-1">
-          <motion.div key={activeSection} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15 }}>
+          <div key={activeSection}>
 
             {/* ── Profile Section ── */}
             {activeSection === 'profile' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Profile Settings</CardTitle>
-                  <CardDescription>Update your personal information</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+              <div className="rounded-lg border border-border/50 bg-card">
+                <div>
+                  <h3 className="text-base">Profile Settings</h3>
+                  <p className="text-sm text-muted-foreground">Update your personal information</p>
+                </div>
+                <div className="space-y-6">
                   <div className="flex items-center gap-4">
                     <div className="relative group/avatar">
-                      <div className="rounded-full bg-gradient-to-br from-primary to-teal-500 p-[2px]">
+                      <div className="rounded-full p-[2px]">
                         <Avatar className="h-20 w-20">
                           <AvatarFallback className="bg-background text-xl font-bold text-primary">
                             {getInitials(profileForm.name || 'U')}
@@ -272,20 +271,20 @@ export function SettingsTab() {
                       Save Changes
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* ── Company Section ── */}
             {activeSection === 'company' && userCompany && (
-              <Card className="overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="text-base">Company Settings</CardTitle>
-                  <CardDescription>Manage your company information</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+              <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
+                <div>
+                  <h3 className="text-base">Company Settings</h3>
+                  <p className="text-sm text-muted-foreground">Manage your company information</p>
+                </div>
+                <div className="space-y-6">
                   <div className="relative flex items-center justify-between rounded-lg border p-4">
-                    <div className="absolute left-0 top-0 h-full w-1 rounded-l-lg bg-gradient-to-b from-primary/40 to-teal-500/40" />
+                    <div className="absolute left-0 top-0 h-full w-1 rounded-l-lg" />
                     <div className="flex items-center gap-3 pl-2">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                         <Building2 className="h-6 w-6 text-primary" />
@@ -361,21 +360,21 @@ export function SettingsTab() {
                       Save Changes
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* ── Notifications Section ── */}
             {activeSection === 'notifications' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card">
+                <div>
+                  <h3 className="text-base flex items-center gap-2">
                     <Bell className="h-4 w-4" />
                     Notification Preferences
-                  </CardTitle>
-                  <CardDescription>Choose how you want to be notified</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-1">
+                  </h3>
+                  <p className="text-sm text-muted-foreground">Choose how you want to be notified</p>
+                </div>
+                <div className="space-y-1">
                   {[
                     { key: 'email' as const, label: 'Email Notifications', desc: 'Receive notifications via email', icon: Mail },
                     { key: 'push' as const, label: 'Push Notifications', desc: 'Receive push notifications in your browser', icon: Bell },
@@ -406,21 +405,21 @@ export function SettingsTab() {
                       </div>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* ── Appearance Section ── */}
             {activeSection === 'appearance' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card">
+                <div>
+                  <h3 className="text-base flex items-center gap-2">
                     <Palette className="h-4 w-4" />
                     Appearance
-                  </CardTitle>
-                  <CardDescription>Customize the look and feel</CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">Customize the look and feel</p>
+                </div>
+                <div>
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Theme</Label>
@@ -439,8 +438,8 @@ export function SettingsTab() {
                             }}
                             className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all duration-200 ${
                               theme === t.value
-                                ? 'border-primary bg-primary/5 hover:scale-[1.02]'
-                                : 'border-muted hover:border-muted-foreground/30 hover:scale-[1.02]'
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border/50 hover:border-muted-foreground/30'
                             }`}
                           >
                             {theme === t.value && (
@@ -457,21 +456,21 @@ export function SettingsTab() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* ── Keyboard Shortcuts Section ── */}
             {activeSection === 'shortcuts' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card">
+                <div>
+                  <h3 className="text-base flex items-center gap-2">
                     <Keyboard className="h-4 w-4" />
                     Keyboard Shortcuts
-                  </CardTitle>
-                  <CardDescription>Speed up your workflow with these shortcuts</CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">Speed up your workflow with these shortcuts</p>
+                </div>
+                <div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {[
                       { keys: 'Ctrl + K', label: 'Quick Search' },
@@ -494,22 +493,22 @@ export function SettingsTab() {
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* ── Security Section ── */}
             {activeSection === 'security' && (
-              <Card className="overflow-hidden">
-                <div className="h-1 bg-gradient-to-r from-red-500/50 to-amber-500/50" />
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
+                <div className="h-1" />
+                <div>
+                  <h3 className="text-base flex items-center gap-2">
                     <Shield className="h-4 w-4" />
                     Security
-                  </CardTitle>
-                  <CardDescription>Manage your account security settings</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+                  </h3>
+                  <p className="text-sm text-muted-foreground">Manage your account security settings</p>
+                </div>
+                <div className="space-y-6">
                   {/* Change Password */}
                   <div>
                     <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -574,8 +573,8 @@ export function SettingsTab() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* ── KYC Verification Section ── */}
@@ -585,18 +584,18 @@ export function SettingsTab() {
 
             {/* ── Danger Zone Section ── */}
             {activeSection === 'danger' && (
-              <Card className="border-red-200 dark:border-red-900/50 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500" />
-                <CardHeader>
-                  <CardTitle className="text-base text-red-600 flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card border-red-200 dark:border-red-900/50 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1" />
+                <div>
+                  <h3 className="text-base text-red-600 flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
                       <AlertTriangle className="h-4 w-4" />
                     </div>
                     Danger Zone
-                  </CardTitle>
-                  <CardDescription>Irreversible and destructive actions</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                  </h3>
+                  <p className="text-sm text-muted-foreground">Irreversible and destructive actions</p>
+                </div>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 transition-colors duration-200 hover:bg-red-100/50 dark:hover:bg-red-950/30">
                     <div>
                       <p className="text-sm font-medium text-red-600 dark:text-red-400">Delete Account</p>
@@ -624,10 +623,10 @@ export function SettingsTab() {
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
 

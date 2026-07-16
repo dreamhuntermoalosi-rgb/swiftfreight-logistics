@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -22,8 +22,6 @@ import {
   PackageSearch, User, Phone, Building2, Calendar, Zap, AlertCircle,
   Copy, Scale, AlertTriangle as AlertTriangleIcon,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
 // Status order for the horizontal progress bar
 const PROGRESS_STATUSES: DeliveryStatus[] = [
   'request_received', 'awaiting_quote', 'quote_accepted', 'collected',
@@ -138,7 +136,7 @@ export function TrackingTab() {
             />
           </div>
           <Button
-            className="bg-green-600 hover:bg-green-700 text-white h-12 px-8 text-base font-semibold"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8 text-base font-semibold"
             onClick={handleTrack}
           >
             Track
@@ -165,13 +163,11 @@ export function TrackingTab() {
       <Separator />
 
       {/* Results */}
-      <AnimatePresence mode="wait">
+      
         {!hasSearched ? (
-          <motion.div
+          <div
             key="placeholder"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+
             className="text-center py-12"
           >
             <div className="mx-auto w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -181,13 +177,11 @@ export function TrackingTab() {
             <p className="text-sm text-muted-foreground/70 mt-1">
               Your delivery updates will appear here
             </p>
-          </motion.div>
+          </div>
         ) : !delivery ? (
-          <motion.div
+          <div
             key="not-found"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
+
             className="text-center py-12"
           >
             <div className="mx-auto w-20 h-20 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
@@ -199,24 +193,22 @@ export function TrackingTab() {
               <span className="font-mono font-medium">{searchedNumber}</span>.
               Please check the number and try again.
             </p>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
+          <div
             key="results"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
+
             className="max-w-3xl mx-auto space-y-6"
           >
             {/* Status Banner */}
             <div className={`rounded-xl p-6 ${
               delivery.status === 'delivered'
-                ? 'bg-gradient-to-br from-green-600 to-emerald-700 text-white'
+                ? 'bg-primary text-primary-foreground'
                 : delivery.status === 'cancelled'
-                  ? 'bg-gradient-to-br from-red-600 to-rose-700 text-white'
+                  ? 'bg-destructive text-destructive-foreground'
                   : delivery.status === 'returned'
-                    ? 'bg-gradient-to-br from-rose-600 to-pink-700 text-white'
-                    : 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800'
+                    ? 'bg-destructive text-destructive-foreground'
+                    : 'border border-primary/30 bg-primary/5'
             }`}>
               <div className="flex items-center gap-4">
                 <div className={`shrink-0 ${
@@ -269,8 +261,8 @@ export function TrackingTab() {
             </div>
 
             {/* Progress Bar */}
-            <Card>
-              <CardContent className="p-6">
+            <div className="rounded-lg border border-border/50 bg-card">
+              <div className="p-6">
                 <h3 className="text-sm font-semibold mb-6">Delivery Progress</h3>
                 <div className="relative">
                   {/* Background track */}
@@ -278,7 +270,7 @@ export function TrackingTab() {
                   {/* Progress fill */}
                   {currentStepIndex >= 0 && (
                     <div
-                      className="absolute top-3 left-4 h-1 rounded-full bg-gradient-to-r from-primary via-emerald-500 to-teal-500 transition-all duration-500"
+                      className="absolute top-3 left-4 h-1 rounded-full transition-all duration-500"
                       style={{ width: `calc(${(currentStepIndex / (PROGRESS_STATUSES.length - 1)) * 100}% - ${currentStepIndex === 0 ? 0 : 32}px)` }}
                     />
                   )}
@@ -292,9 +284,9 @@ export function TrackingTab() {
                         <div key={status} className="flex flex-col items-center" style={{ width: `${100 / PROGRESS_STATUSES.length}%` }}>
                           <div className={`relative z-10 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                             isCurrent && !isTerminalFailed
-                              ? 'bg-gradient-to-br from-primary to-emerald-500 border-primary shadow-lg shadow-primary/30 scale-110'
+                              ? 'bg-primary border-primary scale-110'
                               : isCompleted
-                                ? 'bg-gradient-to-br from-primary/80 to-emerald-500/80 border-primary/60'
+                                ? 'bg-primary/80 border-primary/60'
                                 : 'bg-background border-muted-foreground/30'
                           } ${isCurrent && !isTerminalFailed ? 'animate-[ring-pulse_2s_ease-in-out_infinite]' : ''}`}>
                             {isCompleted ? (
@@ -317,18 +309,18 @@ export function TrackingTab() {
                     })}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Timeline Detail */}
             {timeline.length > 0 && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card">
+                <div className="pb-2">
+                  <h3 className="text-base flex items-center gap-2">
                     <Clock className="h-4 w-4" /> Detailed Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-6">
+                  </h3>
+                </div>
+                <div className="pb-6">
                   <div className="relative pl-8">
                     {timeline.map((event, idx) => {
                       const isLast = idx === timeline.length - 1;
@@ -337,7 +329,7 @@ export function TrackingTab() {
                       return (
                         <div key={event.id} className="relative pb-6 last:pb-0 group">
                           {!isLast && (
-                            <div className="absolute left-[-20px] top-5 bottom-0 w-px bg-gradient-to-b from-primary/60 to-primary/10" />
+                            <div className="absolute left-[-20px] top-5 bottom-0 w-px" />
                           )}
                           {/* Dot */}
                           <div className={`absolute left-[-25px] top-1 h-3.5 w-3.5 rounded-full border-2 ${
@@ -346,7 +338,7 @@ export function TrackingTab() {
                               : 'bg-primary border-primary'
                           }`} />
                           {/* Event card with hover lift */}
-                          <div className="-ml-2 p-2 -my-1 rounded-lg transition-all duration-200 group-hover:bg-primary/[0.03] group-hover:-translate-y-[1px]">
+                          <div className="-ml-2 p-2 -my-1 rounded-lg transition-all duration-200 group-hover:bg-primary/[0.03]">
                             <p className="text-sm font-medium">{event.description}</p>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -368,19 +360,19 @@ export function TrackingTab() {
                       );
                     })}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Package Information */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
+              <div className="rounded-lg border border-border/50 bg-card">
+                <div className="pb-2">
+                  <h2 className="text-sm flex items-center gap-2">
                     <Package className="h-4 w-4" /> Package Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-3">
+                  </h2>
+                </div>
+                <div className="text-sm space-y-3">
                   <div>
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Package className="h-3.5 w-3.5" /> Description</p>
                     <p className="font-medium">{delivery.packageDescription}</p>
@@ -416,18 +408,18 @@ export function TrackingTab() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               <div className="space-y-4">
                 {/* Driver Info */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
+                <div className="rounded-lg border border-border/50 bg-card">
+                  <div className="pb-2">
+                    <h2 className="text-sm flex items-center gap-2">
                       <Truck className="h-4 w-4" /> Driver Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                    </h2>
+                  </div>
+                  <div>
                     {delivery.driverName ? (
                       <div className="text-sm space-y-2">
                         <div className="flex items-center gap-3">
@@ -445,17 +437,17 @@ export function TrackingTab() {
                     ) : (
                       <p className="text-sm text-muted-foreground">No driver assigned yet</p>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Delivery Summary */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
+                <div className="rounded-lg border border-border/50 bg-card">
+                  <div className="pb-2">
+                    <h2 className="text-sm flex items-center gap-2">
                       <Zap className="h-4 w-4" /> Delivery Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm space-y-2">
+                    </h2>
+                  </div>
+                  <div className="text-sm space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Tracking #</span>
                       <div className="flex items-center gap-1.5">
@@ -499,13 +491,13 @@ export function TrackingTab() {
                         <span className="font-medium text-xs">{delivery.companyName}</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      
     </div>
   );
 }
