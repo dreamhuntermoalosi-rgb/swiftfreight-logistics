@@ -409,7 +409,6 @@ export function CustomersTab() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Customer Detail Dialog */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => { if (!open) setSelectedCustomer(null); }}>

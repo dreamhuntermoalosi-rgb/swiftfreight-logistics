@@ -292,7 +292,6 @@ export function WarehouseTab() {
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
 
       {/* Recent Activity */}
       <div className="rounded-xl border border-border/50 overflow-hidden">
@@ -336,7 +335,8 @@ export function WarehouseTab() {
                 </div>
               ))}
             </div>
-            </div>
+          </ScrollArea>
       </div>
+    </div>
   );
 }

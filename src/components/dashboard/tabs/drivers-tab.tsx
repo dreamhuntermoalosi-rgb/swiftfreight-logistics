@@ -461,7 +461,6 @@ export function DriversTab() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Driver Detail Dialog */}
       <Dialog open={!!selectedDriver} onOpenChange={(open) => { if (!open) setSelectedDriver(null); }}>

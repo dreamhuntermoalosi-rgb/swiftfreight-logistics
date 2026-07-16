@@ -420,7 +420,6 @@ export function QuotationsTab() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
