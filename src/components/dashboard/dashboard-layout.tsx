@@ -567,7 +567,7 @@ function DashboardHeader() {
     trackingNumber,
     selectDelivery,
   } = useNavStore();
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const { setSidebarOpen } = useNavStore();
 
@@ -735,7 +735,7 @@ function DashboardHeader() {
         )}
       </div>
 
-      {/* Right: search, theme, notifications, user */}
+      {/* Right: search, notifications, user */}
       <div className="ml-auto flex items-center gap-2">
         {/* Quick search — desktop only */}
         <form onSubmit={handleQuickTrack} className="hidden md:block">
@@ -881,18 +881,6 @@ function DashboardHeader() {
             )}
           </div>
         </form>
-
-        {/* Theme toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label="Toggle theme"
-        >
-          <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-        </Button>
 
         {/* Notifications */}
         <NotificationDropdown />

@@ -395,15 +395,15 @@ export function MarketingWebsite() {
             <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
               {/* Left — Copy */}
               <div className="text-center lg:text-left">
-                <h1 className="text-3xl font-bold tracking-tight text-[#212121] sm:text-4xl lg:text-5xl leading-[1.15]">
+                <h1 className="mx-auto text-3xl font-bold tracking-tight text-[#212121] sm:text-4xl lg:text-5xl lg:mx-0 leading-[1.15]">
                   Run Logistics.
                   <br />
                   <span className="text-[#2E7D32]">Smarter. Faster. Stronger.</span>
                 </h1>
-                <p className="mt-5 text-base leading-relaxed text-[#757575] sm:text-lg max-w-lg">
+                <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-[#757575] sm:text-lg lg:mx-0">
                   SwiftFreight is the all-in-one logistics platform for courier companies, fleet operators and businesses in Lesotho and beyond. Manage deliveries, fleets, drivers, sourcing, tracking and customers from one powerful system.
                 </p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
                   <Button
                     size="lg"
                     className="h-11 bg-[#2E7D32] px-7 text-sm font-bold text-white hover:bg-[#1B5E20] transition-colors"
@@ -834,7 +834,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 9. FAQ ═══════════════════ */}
         <FadeIn>
-          <section id="faq" className="bg-[#E8ECE8] py-16 sm:py-20">
+          <section id="faq" className="bg-gray-50 py-16 sm:py-20">
             <div className="mx-auto max-w-3xl px-6">
               <SectionHeading
                 title="Everything you need to know"
@@ -843,10 +843,11 @@ export function MarketingWebsite() {
               <Accordion
                 type="single"
                 collapsible
-                className="mt-10 w-full"
+                className="w-full"
                 value={faqOpenIndex}
                 onValueChange={(val) => setFaqOpenIndex(val)}
               >
+              <div className="space-y-3">
                 {[
                   {
                     q: 'Is SwiftFreight suitable for small businesses?',
@@ -858,7 +859,7 @@ export function MarketingWebsite() {
                   },
                   {
                     q: 'Can I request products from outside Lesotho?',
-                    a: 'Yes. SwiftFreight includes a sourcing module that lets your customers request products from anywhere. Sourcing agents manage the procurement, and the entire process — from request to delivery — is tracked on the platform.',
+                    a: 'Yes. SwiftFreight includes a sourcing module that lets your customers request products from anywhere. Sourcing agents manage the procurement, and the entire process \u2014 from request to delivery \u2014 is tracked on the platform.',
                   },
                   {
                     q: 'Is training provided for my team?',
@@ -876,16 +877,17 @@ export function MarketingWebsite() {
                   <AccordionItem
                     key={index}
                     value={`faq-${index}`}
-                    className={`border-[#E0E0E0] transition-all duration-200 ${faqOpenIndex === `faq-${index}` ? 'rounded-lg border-l-[3px] border-l-[#2E7D32] bg-white shadow-sm' : 'bg-white hover:bg-gray-50'}`}
+                    className={'rounded-xl border bg-white px-5 transition-all duration-200 ' + (faqOpenIndex === 'faq-' + index ? 'border-[#2E7D32]/20 shadow-sm' : 'border-gray-200 hover:border-gray-300')}
                   >
-                    <AccordionTrigger className="text-left text-sm font-medium text-[#212121] hover:no-underline sm:text-[15px] hover:text-[#2E7D32] transition-colors">
+                    <AccordionTrigger className="py-4 text-left text-[15px] font-medium text-gray-800 hover:no-underline hover:text-[#2E7D32] transition-colors">
                       {item.q}
                     </AccordionTrigger>
-                    <AccordionContent className="text-sm leading-relaxed text-[#757575] pl-1">
+                    <AccordionContent className="pb-4 text-sm leading-relaxed text-gray-500">
                       {item.a}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
+              </div>
               </Accordion>
             </div>
           </section>
