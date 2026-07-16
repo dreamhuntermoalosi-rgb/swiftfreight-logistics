@@ -1495,3 +1495,41 @@ SwiftFreight is a comprehensive, investor-ready multi-tenant SaaS Logistics Oper
 4. Enhance dispatch map with click-to-assign from map markers
 5. Add more empty state illustrations and onboarding guidance for new users
 
+
+---
+Task ID: 10
+Agent: Main Orchestrator
+Task: Homepage Content & UI Rewrite - Complete Marketing Website Overhaul
+
+Work Log:
+- Read and analyzed entire existing marketing website (~1318 lines) and global CSS
+- Updated globals.css: Changed --background from oklch(0.99 0.002 155) (off-white) to oklch(1 0 0) (pure white)
+- Updated --primary from oklch(0.42 0.14 155) to oklch(0.33 0.1 155) (deeper forest green matching #14532D)
+- Updated --teal and --emerald to better match #0F766E and #16A34A hex targets
+- Updated --border/--input from green-tinted to neutral gray (oklch 0.93 hue 260)
+- Updated --foreground and --muted-foreground to neutral gray tones
+- Updated hero-fade CSS to fade to pure white
+- Completely rewrote marketing-website.tsx with 13 sections:
+  1. Navigation (clean glass nav, "Book a Live Demo" CTA)
+  2. Hero ("Move Goods Smarter. Grow Faster." + trust indicators)
+  3. Problem Section (8 pain point cards with red accent icons)
+  4. Solutions/Features (10 feature cards in 5-column grid)
+  5. Workflow (6-step vertical timeline)
+  6. Customer Types (10 business type cards)
+  7. Why SwiftFreight (4 value proposition cards)
+  8. Training Section (NEW - implementation services, staff training, certification, support)
+  9. Testimonials (3 realistic logistics-focused quotes)
+  10. Pricing (renamed heading, custom package note, "Talk to Sales" CTA)
+  11. FAQ (8 questions, clean left-border active state)
+  12. Final CTA (deep green background, contact info)
+  13. Footer (6 columns: Brand, Product, Solutions, Resources/Support, Company/Legal)
+- Color palette implemented with exact hex values via Tailwind classes
+- All section backgrounds are pure white or light gray-50 (no milky/off-white)
+- Verified with agent-browser: all sections render, FAQ accordion works, nav scroll works, Sign In and Book a Live Demo buttons navigate correctly, zero console errors
+
+Stage Summary:
+- Complete homepage rewrite with professional SaaS copywriting for Southern African logistics market
+- New color system: #14532D primary, #16A34A accent, #0F766E teal, #FFFFFF backgrounds, #111827 text, #4B5563 secondary text, #E5E7EB borders
+- 2 new sections added: Problem, Training
+- Expanded from 6 to 10 customer types, 6 to 10 features, 4 to 6 workflow steps
+- All tests pass: lint clean, dev server compiles, agent-browser verification successful
