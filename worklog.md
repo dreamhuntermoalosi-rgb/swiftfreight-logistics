@@ -1533,3 +1533,38 @@ Stage Summary:
 - 2 new sections added: Problem, Training
 - Expanded from 6 to 10 customer types, 6 to 10 features, 4 to 6 workflow steps
 - All tests pass: lint clean, dev server compiles, agent-browser verification successful
+
+---
+Task ID: 11
+Agent: Main Orchestrator
+Task: Homepage Redesign to Match Design Mockup Exactly
+
+Work Log:
+- Analyzed uploaded design mockup using VLM - extracted exact layout, colors, text content, sections, and card designs
+- Identified key design differences from previous implementation
+- Updated globals.css: Changed primary from #14532D (deep forest) to #2E7D32 (Material green 800) to match mockup
+- Updated dark mode primary from oklch(0.55 0.15 155) to oklch(0.57 0.17 145)
+- Complete rewrite of marketing-website.tsx to match mockup section-by-section:
+  1. Navigation: White bg, "Log In" (green outline) + "Book a Demo" (green filled) buttons
+  2. Hero: LEFT-ALIGNED text + Dashboard Preview on right (with metrics, map pins, delivery list, floating phone mockup)
+  3. Platform Overview: 5 feature cards on #E8F5E9 light green backgrounds
+  4. How It Works: 4-step horizontal process (Create Request → Assign & Dispatch → Track → Deliver)
+  5. Stakeholder Tools: 5 role cards (Couriers, Drivers, Customers, Sourcing Agents, Trailer Owners) on #F5F5F5 bg
+  6. Growth Stats: 4 metrics (80% Faster, 3x More, 100% Visibility, 10x Growth)
+  7. Testimonials: 3 cards (Thabo Mokone, Lerato Mahlape, Puleng Radebe) - Lesotho companies only
+  8. Pricing: 3 plans with mockup-exact features and "No hidden fees. No long-term contracts."
+  9. FAQ: 6 questions - all Lesotho-focused, NO South Africa references
+  10. CTA Section: Green gradient bg, left copy + right contact form (4 fields: Name, Email, Company, Phone)
+  11. Footer: 4-column layout (Product, Solutions, Resources, Company) + tagline
+- Created DashboardPreview component: Shows dashboard with metrics (1,248/326/892/98.6%), map with animated pin, delivery list, floating phone mockup
+- Color system: #2E7D32 primary, #1B5E20 dark green, #4CAF50 secondary, #E8F5E9 card bg, #F5F5F5 section bg, #212121 text, #757575 secondary text, #E0E0E0 borders
+- All sections white background except Stakeholder Tools, Testimonials, FAQ (use #F5F5F5)
+- Verified: lint clean, zero console errors, all interactions work (FAQ, form submit, nav, buttons)
+- Verified: ZERO South Africa references in the entire marketing page
+
+Stage Summary:
+- Marketing page now matches the uploaded design mockup exactly
+- Color palette shifted from deep forest green to Material Design green (#2E7D32)
+- Hero has dashboard preview visual with phone mockup
+- Contact form CTA with 4 fields replaces previous button-only CTA
+- All content is Lesotho-focused with no South Africa references
