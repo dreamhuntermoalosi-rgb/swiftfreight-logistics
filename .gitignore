@@ -50,5 +50,16 @@ test
 prompt
 
 server.log
+
 # Skills directory
 /skills/
+
+# Project-specific
+tool-results/
+download/
+upload/
+db/
+agent-ctx/
+*.png
+*.jpg
+*.jpeg
