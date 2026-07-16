@@ -246,9 +246,9 @@ export function DriversTab() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
@@ -260,10 +260,10 @@ export function DriversTab() {
                 <span className="font-semibold">+3</span> this week
               </p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
               <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
@@ -272,10 +272,10 @@ export function DriversTab() {
               <p className="text-xl font-bold">{onTripDrivers}</p>
               <p className="text-xs text-blue-600">{Math.round((onTripDrivers / drivers.length) * 100)}% of fleet</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
@@ -284,10 +284,10 @@ export function DriversTab() {
               <p className="text-xl font-bold">{availableDrivers}</p>
               <p className="text-xs text-emerald-600">Ready for dispatch</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30">
               <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             </div>
@@ -296,15 +296,14 @@ export function DriversTab() {
               <p className="text-xl font-bold">{avgRating.toFixed(1)}</p>
               <RatingStars rating={avgRating} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
+      <div className="rounded-xl border border-border/50 overflow-hidden">
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+            <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>
@@ -461,12 +460,12 @@ export function DriversTab() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Driver Detail Dialog */}
       <Dialog open={!!selectedDriver} onOpenChange={(open) => { if (!open) setSelectedDriver(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           {selectedDriver && (() => {
             const statusCfg = driverStatusConfig[selectedDriver.status];
             const successRate = selectedDriver.totalDeliveries > 0

@@ -310,7 +310,7 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
           <Plus className="mr-2 h-4 w-4" /> {isCustomer ? 'Request Delivery' : 'New Delivery'}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Delivery</DialogTitle>
         </DialogHeader>
@@ -1117,7 +1117,7 @@ export function DeliveriesTab() {
           />
         </div>
         <Select value={statusFilter} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
             {Object.entries(statusLabels).map(([key, label]) => (
@@ -1126,7 +1126,7 @@ export function DeliveriesTab() {
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={handlePriorityFilter}>
-          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Priority" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[150px]"><SelectValue placeholder="Priority" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Priorities</SelectItem>
             <SelectItem value="standard">Standard</SelectItem>
@@ -1177,8 +1177,8 @@ export function DeliveriesTab() {
       {/* Table View */}
       {viewMode === 'table' && (
         <div className="rounded-lg border overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead className="w-10">
@@ -1323,7 +1323,7 @@ export function DeliveriesTab() {
           </div>
 
           {/* Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/30">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t bg-muted/30">
             <div className="text-sm text-muted-foreground">
               {selected.size > 0 ? (
                 <span className="font-medium text-green-700 dark:text-green-400">{selected.size} selected</span>

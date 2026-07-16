@@ -187,7 +187,7 @@ export function SourcingTab() {
               <DialogDescription>Describe the product you need sourced</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label>Product Name *</Label>
                   <Input
@@ -445,7 +445,7 @@ export function SourcingTab() {
                 <Separator />
 
                 {/* Customer & Location */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">Customer</p>
                     <p className="text-sm font-medium">{selectedRequest.customerName}</p>
@@ -459,7 +459,7 @@ export function SourcingTab() {
                 </div>
 
                 {/* Budget vs Quoted */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
                     <p className="text-xs text-amber-600 dark:text-amber-400">Budget</p>
                     <p className="text-xl font-bold text-amber-700 dark:text-amber-300">

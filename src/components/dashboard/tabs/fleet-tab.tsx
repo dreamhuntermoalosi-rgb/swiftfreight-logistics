@@ -217,9 +217,9 @@ export function FleetTab() {
       </div>
 
       {/* Fleet Overview Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-primary/10 p-3">
               <Truck className="h-5 w-5 text-primary" />
             </div>
@@ -227,10 +227,10 @@ export function FleetTab() {
               <p className="text-sm text-muted-foreground">Total Vehicles</p>
               <p className="text-xl font-bold">{mockVehicles.length}</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
@@ -238,10 +238,10 @@ export function FleetTab() {
               <p className="text-sm text-muted-foreground">Available</p>
               <p className="text-xl font-bold text-green-600">{availableCount}</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
               <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
@@ -249,10 +249,10 @@ export function FleetTab() {
               <p className="text-sm text-muted-foreground">In Use</p>
               <p className="text-xl font-bold text-blue-600">{inUseCount}</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/30">
               <Wrench className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             </div>
@@ -260,8 +260,8 @@ export function FleetTab() {
               <p className="text-sm text-muted-foreground">Maintenance</p>
               <p className="text-xl font-bold text-amber-600">{maintenanceCount}</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Vehicle Card Grid */}
@@ -403,11 +403,9 @@ export function FleetTab() {
       </div>
 
       {/* Fleet Utilization */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Fleet Utilization by Type</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <div className="rounded-xl border border-border/50 p-4">
+        <h3 className="text-lg font-semibold mb-5">Fleet Utilization by Type</h3>
+        <div className="space-y-5">
           {fleetUtil.map((item) => {
             const pct = Math.round((item.inUse / item.total) * 100);
             const availablePct = Math.round((item.available / item.total) * 100);
@@ -447,28 +445,26 @@ export function FleetTab() {
               </div>
             );
           })}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Maintenance Schedule */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-amber-500" />
-            <CardTitle className="text-lg">Upcoming Maintenance</CardTitle>
-            <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-              {maintenanceSchedule.length} vehicles
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
+      <div className="rounded-xl border border-border/50 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 pt-4 pb-3">
+          <Wrench className="h-5 w-5 text-amber-500" />
+          <h3 className="text-lg font-semibold">Upcoming Maintenance</h3>
+          <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            {maintenanceSchedule.length} vehicles
+          </Badge>
+        </div>
+        <div className="px-4 pb-4">
           {maintenanceSchedule.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
               No vehicles due for maintenance in the next 30 days.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+              <Table className="min-w-[500px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Vehicle</TableHead>
@@ -533,8 +529,8 @@ export function FleetTab() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Vehicle Detail Sheet */}
       <Sheet open={!!selectedVehicle} onOpenChange={(open) => { if (!open) setSelectedVehicle(null); }}>

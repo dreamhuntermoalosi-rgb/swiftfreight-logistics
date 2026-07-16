@@ -378,7 +378,7 @@ function HandoverDialog({
           </div>
 
           {/* From / To Person */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-medium" style={{ color: '#757575' }}>Handing Over (From)</Label>
               <Input

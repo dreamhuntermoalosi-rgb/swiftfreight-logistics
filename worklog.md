@@ -1897,3 +1897,34 @@ Stage Summary:
 - Chain of custody: 5-stage handover with GPS, photo, signature fields
 - All user-facing content is Lesotho-only
 - Lint passes cleanly, browser-verified all features working
+
+---
+Task ID: 3
+Agent: UI Redesign Agent
+Task: Redesign overview-tab.tsx to remove box-heavy design and make fully responsive
+
+Work Log:
+- Read full overview-tab.tsx (1993 lines) and analyzed all Card wrapper usages across 6 role-based overview components
+- Created SectionHeader reusable component replacing all CardHeader/CardTitle/CardDescription patterns
+- Redesigned KpiCard component: removed Card wrapper, gradient top border, hover translate; replaced with rounded-xl bg-muted/40 with subtle hover:bg-muted/70 hover:shadow-sm
+- Removed iconBg prop from KpiCard (simplified to single bg-background/80 icon circle), reduced icon size (h-9 w-9 → h-10 w-10 on sm)
+- Replaced all Quick Action Card components with button-like elements using bg-muted/40 hover:bg-muted rounded-xl px-4 py-3
+- Wrapped all charts in minimal div with rounded-xl border border-border/50 bg-card/50 p-4
+- Wrapped all tables in minimal div with rounded-xl border border-border/50 overflow-hidden
+- Removed Card wrappers from Activity Feed, Live Activity Feed, Delivery Pipeline, Status Distribution Bar
+- Converted inline KPI cards in SourcingAgent, TrailerOwner, WarehousePartner from Card to consistent div pattern
+- Applied responsive grid classes throughout: grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 for KPIs, md:grid-cols-2 xl:grid-cols-3 for 3-col bottom row
+- Applied responsive chart heights: h-[220px] sm:h-[260px] lg:h-[280px]
+- Applied responsive pipeline widths: w-[110px] sm:w-[140px] with reduced padding on mobile
+- Applied responsive feed max-heights: max-h-48 sm:max-h-64
+- Simplified OverviewLoadingSkeleton to use divs instead of Cards
+- Removed Card, CardContent, CardDescription, CardHeader, CardTitle imports entirely
+- Removed unused TrendingDown import
+- Preserved all data logic, useMemo computations, chart configs, helper functions, click handlers, and tab routing
+
+Stage Summary:
+- File reduced from 1993 to ~1750 lines while preserving all functionality
+- Zero Card components remain in the file
+- All sections are now responsive with mobile-first breakpoints
+- Visual design is cleaner with consistent spacing and subtle backgrounds
+- Lint passes cleanly for overview-tab.tsx (2 pre-existing errors in other files)

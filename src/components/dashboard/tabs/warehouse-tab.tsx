@@ -105,7 +105,7 @@ export function WarehouseTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
             <Warehouse className="h-5 w-5 text-primary" />
@@ -118,66 +118,54 @@ export function WarehouseTab() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="overflow-hidden">
-          <div className="h-1 gradient-top-bar" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Warehouses</p>
-                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalWarehouses}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                <Warehouse className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Total Warehouses</p>
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalWarehouses}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+              <Warehouse className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="overflow-hidden">
-          <div className="h-1 gradient-top-bar" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Packages in Storage</p>
-                <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">{totalInStorage.toLocaleString()}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/30">
-                <Package className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Packages in Storage</p>
+              <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">{totalInStorage.toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/30">
+              <Package className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="overflow-hidden">
-          <div className="h-1 gradient-top-bar" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Storage Utilization</p>
-                <p className="text-2xl font-bold text-primary">{overallUtilization}%</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <BarChart3 className="h-5 w-5 text-primary" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Storage Utilization</p>
+              <p className="text-2xl font-bold text-primary">{overallUtilization}%</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-500" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pending Dispatch</p>
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingDispatch}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <Truck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Pending Dispatch</p>
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingDispatch}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <Truck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Warehouse Cards Grid */}
@@ -258,13 +246,9 @@ export function WarehouseTab() {
       </div>
 
       {/* Storage Breakdown Chart */}
-      <Card className="overflow-hidden">
-        <div className="h-0.5 gradient-top-bar" />
-        <CardHeader>
-          <CardTitle className="text-base">Storage Breakdown by Warehouse</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] w-full">
+      <div className="rounded-xl border border-border/50 p-4">
+        <h3 className="text-base font-semibold mb-4">Storage Breakdown by Warehouse</h3>
+        <div className="h-[200px] sm:h-[260px] lg:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} barGap={4} barCategoryGap="20%">
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -307,15 +291,15 @@ export function WarehouseTab() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+      <div className="rounded-xl border border-border/50 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 pt-4 pb-3">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-base font-semibold">Recent Activity</h3>
+        </div>
           <ScrollArea className="max-h-96">
             <div className="divide-y">
               {recentActivities.map((activity) => (
@@ -352,9 +336,7 @@ export function WarehouseTab() {
                 </div>
               ))}
             </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+      </div>
   );
 }

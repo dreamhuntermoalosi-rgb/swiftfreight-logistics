@@ -247,54 +247,44 @@ export function InvoicesTab() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-slate-400 to-slate-500" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Billed</p>
-                <p className="text-2xl font-bold tracking-tight mt-1">{formatCurrency(totalBilled)}</p>
-              </div>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <FileText className="h-5 w-5 text-slate-600" />
-              </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Total Billed</p>
+              <p className="text-2xl font-bold tracking-tight mt-1">{formatCurrency(totalBilled)}</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Paid</p>
-                <p className="text-2xl font-bold tracking-tight mt-1 text-green-600">{formatCurrency(totalPaid)}</p>
-              </div>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 dark:bg-green-950/50">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-              </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <FileText className="h-5 w-5 text-slate-600" />
             </div>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
-                <p className="text-2xl font-bold tracking-tight mt-1 text-amber-600">{formatCurrency(totalOutstanding)}</p>
-              </div>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-              </div>
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Paid</p>
+              <p className="text-2xl font-bold tracking-tight mt-1 text-green-600">{formatCurrency(totalPaid)}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 dark:bg-green-950/50">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
+              <p className="text-2xl font-bold tracking-tight mt-1 text-amber-600">{formatCurrency(totalOutstanding)}</p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
+      <div className="rounded-xl border border-border/50 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -317,16 +307,14 @@ export function InvoicesTab() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Invoice Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
+      <div className="rounded-xl border border-border/50 overflow-hidden">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+          <Table className="min-w-[600px]">
+            <TableHeader>
+              <TableRow>
                   <TableHead className="text-xs">Invoice #</TableHead>
                   <TableHead className="text-xs">Delivery</TableHead>
                   {!isCustomer && <TableHead className="hidden text-xs md:table-cell">Customer</TableHead>}
@@ -414,8 +402,7 @@ export function InvoicesTab() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (

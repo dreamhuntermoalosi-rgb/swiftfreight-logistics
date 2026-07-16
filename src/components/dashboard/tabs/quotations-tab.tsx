@@ -265,12 +265,10 @@ export function QuotationsTab() {
       </div>
 
       {/* Quotation Table */}
-      <Card>
-        <CardContent className="p-0">
-          {/* Desktop Table */}
+      <div className="rounded-xl border border-border/50 overflow-hidden">
           <div className="hidden md:block">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead>
                   <tr className="border-b bg-muted/30">
                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Quote #</th>
@@ -421,8 +419,8 @@ export function QuotationsTab() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>

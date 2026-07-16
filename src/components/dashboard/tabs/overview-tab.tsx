@@ -28,7 +28,6 @@ import {
   Clock,
   Users,
   TrendingUp,
-  TrendingDown,
   Truck,
   MapPin,
   Star,
@@ -47,7 +46,6 @@ import {
   Info,
   FileText,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -225,6 +223,22 @@ function notifIcon(type: string) {
   }
 }
 
+// ============ Section Header ============
+function SectionHeader({ title, description, icon: Icon, action }: { title: string; description?: string; icon?: React.ElementType; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        {Icon && <Icon className="h-4 w-4 text-primary" />}
+        <div>
+          <h2 className="text-sm font-semibold">{title}</h2>
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        </div>
+      </div>
+      {action}
+    </div>
+  );
+}
+
 // ============ KPI Card ============
 function KpiCard({
   title,
@@ -234,7 +248,6 @@ function KpiCard({
   prefix = '',
   suffix = '',
   isNegative = false,
-  iconBg = 'bg-emerald-50 dark:bg-emerald-950/50',
   iconColor = 'text-emerald-600',
   pulse = false,
 }: {
@@ -245,49 +258,35 @@ function KpiCard({
   prefix?: string;
   suffix?: string;
   isNegative?: boolean;
-  iconBg?: string;
   iconColor?: string;
   pulse?: boolean;
 }) {
   const isPositive = growth !== undefined && growth >= 0;
   return (
-    <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-      {/* Gradient top border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
-      <CardContent className="p-4 pt-5">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              {title}
-              {pulse && <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
-            </p>
-            <p className="text-2xl font-bold tracking-tight">
-              {prefix}{value}{suffix}
-            </p>
-          </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
-            <Icon className={`h-6 w-6 ${iconColor}`} />
-          </div>
+    <div className="relative rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">
+            {title}
+            {pulse && <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />}
+          </p>
+          <p className="text-xl font-bold tracking-tight sm:text-2xl">
+            {prefix}{value}{suffix}
+          </p>
         </div>
-        {growth !== undefined && (
-          <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
-            {isPositive ? (
-              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
-            ) : (
-              <TrendingDown className={`h-3.5 w-3.5 ${isNegative ? 'text-red-500' : 'text-emerald-600'}`} />
-            )}
-            <span
-              className={`text-sm font-semibold ${
-                isNegative ? (isPositive ? 'text-red-500' : 'text-emerald-600') : 'text-emerald-600'
-              }`}
-            >
-              {isPositive ? '+' : ''}{growth}%
-            </span>
-            <span className="text-xs text-muted-foreground">vs last period</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor}`} />
+        </div>
+      </div>
+      {growth !== undefined && (
+        <div className="mt-2 flex items-center gap-1 text-xs">
+          <span className={isPositive || !isNegative ? 'text-emerald-600' : 'text-red-500'}>
+            {isPositive ? '+' : ''}{growth}%
+          </span>
+          <span className="text-muted-foreground">vs last period</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -295,30 +294,24 @@ function KpiCard({
 function OverviewLoadingSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <Skeleton className="mb-2 h-4 w-24" />
-              <Skeleton className="mb-2 h-8 w-32" />
-              <Skeleton className="h-4 w-20" />
-            </CardContent>
-          </Card>
+          <div key={i} className="rounded-xl bg-muted/40 p-4">
+            <Skeleton className="mb-2 h-4 w-24" />
+            <Skeleton className="mb-2 h-8 w-32" />
+            <Skeleton className="h-4 w-20" />
+          </div>
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardContent className="p-6">
-            <Skeleton className="mb-4 h-5 w-40" />
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <Skeleton className="mb-4 h-5 w-40" />
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+          <Skeleton className="mb-4 h-5 w-40" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+          <Skeleton className="mb-4 h-5 w-40" />
+          <Skeleton className="h-64 w-full" />
+        </div>
       </div>
     </div>
   );
@@ -395,26 +388,23 @@ function CustomerOverview() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Active Shipments"
           value={activeShipments.length.toString()}
           icon={Package}
-          iconBg="bg-amber-50 dark:bg-amber-950/50"
           iconColor="text-amber-600"
         />
         <KpiCard
           title="Delivered"
           value={deliveredShipments.length.toString()}
           icon={CheckCircle2}
-          iconBg="bg-green-50 dark:bg-green-950/50"
           iconColor="text-green-600"
         />
         <KpiCard
           title="Total Spent"
           value={formatCurrency(totalSpent)}
           icon={DollarSign}
-          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
           iconColor="text-emerald-600"
         />
         <KpiCard
@@ -422,72 +412,62 @@ function CustomerOverview() {
           value="3.2"
           suffix=" days"
           icon={Clock}
-          iconBg="bg-teal-50 dark:bg-teal-950/50"
           iconColor="text-teal-600"
         />
       </div>
 
       {/* Quick Actions */}
       <div>
-        <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Card
-            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+        <h2 className="mb-3 text-sm font-semibold">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <button
+            className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer"
             onClick={() => setDashboardTab('deliveries')}
           >
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-                <Plus className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="font-medium">New Shipment</p>
-                <p className="text-xs text-muted-foreground">Create a delivery request</p>
-              </div>
-              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+              <Plus className="h-4 w-4 text-emerald-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">New Shipment</p>
+              <p className="text-xs text-muted-foreground">Create a delivery request</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
+          <button
+            className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer"
             onClick={() => setDashboardTab('tracking')}
           >
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
-                <Search className="h-5 w-5 text-teal-600" />
-              </div>
-              <div>
-                <p className="font-medium">Track a Parcel</p>
-                <p className="text-xs text-muted-foreground">Look up your shipment</p>
-              </div>
-              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
+              <Search className="h-4 w-4 text-teal-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Track a Parcel</p>
+              <p className="text-xs text-muted-foreground">Look up your shipment</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
+          <button
+            className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer"
             onClick={() => setDashboardTab('sourcing')}
           >
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50">
-                <Truck className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="font-medium">Request Sourcing</p>
-                <p className="text-xs text-muted-foreground">Source products from SA</p>
-              </div>
-              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50">
+              <Truck className="h-4 w-4 text-amber-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Request Sourcing</p>
+              <p className="text-xs text-muted-foreground">Source products from SA</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
         </div>
       </div>
 
       {/* Recent Shipments + Spending Chart */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Recent Shipments */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Recent Shipments</CardTitle>
-            <CardDescription>Your latest delivery activity</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div>
+          <SectionHeader title="Recent Shipments" description="Your latest delivery activity" />
+          <div className="rounded-xl border border-border/50 overflow-hidden">
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
@@ -530,17 +510,14 @@ function CustomerOverview() {
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Spending Overview */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Spending Overview</CardTitle>
-            <CardDescription>Your monthly delivery spend</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={spendingChartConfig} className="h-[280px] w-full">
+        <div>
+          <SectionHeader title="Spending Overview" description="Your monthly delivery spend" />
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+            <ChartContainer config={spendingChartConfig} className="h-[220px] sm:h-[260px] lg:h-[280px] w-full">
               <BarChart data={spendingByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
@@ -567,18 +544,15 @@ function CustomerOverview() {
                 />
               </BarChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Monthly Spending Trend */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Monthly Spending Trend</CardTitle>
-          <CardDescription>Your spending over the last 6 months</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={spendingTrendChartConfig} className="h-[260px] w-full">
+      <div>
+        <SectionHeader title="Monthly Spending Trend" description="Your spending over the last 6 months" />
+        <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+          <ChartContainer config={spendingTrendChartConfig} className="h-[220px] sm:h-[260px] lg:h-[280px] w-full">
             <LineChart data={customerSpendingTrend} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="fillSpendingTrend" x1="0" y1="0" x2="0" y2="1">
@@ -613,8 +587,8 @@ function CustomerOverview() {
               />
             </LineChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -683,75 +657,64 @@ function DriverOverview() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Today&apos;s Jobs"
           value={todayJobs.toString()}
           icon={ClipboardCheck}
-          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
           iconColor="text-emerald-600"
         />
         <KpiCard
           title="Completed This Week"
           value={completedThisWeek.toString()}
           icon={CheckCircle2}
-          iconBg="bg-green-50 dark:bg-green-950/50"
           iconColor="text-green-600"
         />
         <KpiCard
           title="This Month&apos;s Earnings"
           value={monthlyEarnings}
           icon={DollarSign}
-          iconBg="bg-amber-50 dark:bg-amber-950/50"
           iconColor="text-amber-600"
         />
         <KpiCard
           title="Rating"
           value={avgRating.toString()}
           icon={Star}
-          iconBg="bg-yellow-50 dark:bg-yellow-950/50"
           iconColor="text-yellow-500"
         />
       </div>
 
       {/* Quick Actions */}
       <div>
-        <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-                <Truck className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="font-medium">Update Status</p>
-                <p className="text-xs text-muted-foreground">Update delivery progress</p>
-              </div>
-              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-          <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
-                <Phone className="h-5 w-5 text-teal-600" />
-              </div>
-              <div>
-                <p className="font-medium">Contact Dispatcher</p>
-                <p className="text-xs text-muted-foreground">Message or call dispatch</p>
-              </div>
-              <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
+        <h2 className="mb-3 text-sm font-semibold">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+              <Truck className="h-4 w-4 text-emerald-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Update Status</p>
+              <p className="text-xs text-muted-foreground">Update delivery progress</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
+          <button className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
+              <Phone className="h-4 w-4 text-teal-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Contact Dispatcher</p>
+              <p className="text-xs text-muted-foreground">Message or call dispatch</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
         </div>
       </div>
 
       {/* Today's Deliveries */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Today&apos;s Assigned Deliveries</CardTitle>
-          <CardDescription>Deliveries assigned to you</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
+      <div>
+        <SectionHeader title="Today&apos;s Assigned Deliveries" description="Deliveries assigned to you" />
+        <div className="rounded-xl border border-border/50 overflow-hidden">
           <div className="max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
@@ -795,24 +758,22 @@ function DriverOverview() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* This Week's Earnings */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base">This Week&apos;s Earnings</CardTitle>
-              <CardDescription>Daily breakdown for the current week</CardDescription>
-            </div>
+      <div>
+        <SectionHeader
+          title="This Week&apos;s Earnings"
+          description="Daily breakdown for the current week"
+          action={
             <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
               M3,430 <span className="text-xs font-normal text-muted-foreground">total</span>
             </span>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={weeklyEarningsChartConfig} className="h-[240px] w-full">
+          }
+        />
+        <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+          <ChartContainer config={weeklyEarningsChartConfig} className="h-[220px] sm:h-[260px] lg:h-[280px] w-full">
             <BarChart data={weeklyEarnings} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="fillEarnings" x1="0" y1="0" x2="0" y2="1">
@@ -846,8 +807,8 @@ function DriverOverview() {
               />
             </BarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -879,7 +840,7 @@ function CompanyOverview() {
   return (
     <div className="space-y-6">
       {/* Top KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Total Revenue"
           value={formatCurrency(analyticsData.totalRevenue)}
@@ -908,12 +869,9 @@ function CompanyOverview() {
       </div>
 
       {/* Delivery Status Distribution Bar */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Delivery Status Distribution</CardTitle>
-          <CardDescription>Current shipment status breakdown</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div>
+        <SectionHeader title="Delivery Status Distribution" description="Current shipment status breakdown" />
+        <div className="space-y-3">
           <div className="h-3 w-full overflow-hidden rounded-full bg-muted flex">
             {(() => {
               const statusCounts: Record<string, number> = {};
@@ -992,20 +950,16 @@ function CompanyOverview() {
               );
             })()}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Middle Row: Revenue Chart + Status Pie */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Revenue & Deliveries Combo Chart */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Revenue & Deliveries</CardTitle>
-            <CardDescription>Monthly performance over the last 12 months</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={revenueChartConfig} className="h-[280px] w-full">
+        <div>
+          <SectionHeader title="Revenue & Deliveries" description="Monthly performance over the last 12 months" />
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+            <ChartContainer config={revenueChartConfig} className="h-[220px] sm:h-[260px] lg:h-[280px] w-full">
               <AreaChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -1056,18 +1010,14 @@ function CompanyOverview() {
                 />
               </AreaChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Delivery Status Breakdown */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Delivery Status Breakdown</CardTitle>
-            <CardDescription>Current deliveries by status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={statusChartConfig} className="mx-auto h-[280px] w-full">
+        <div>
+          <SectionHeader title="Delivery Status Breakdown" description="Current deliveries by status" />
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+            <ChartContainer config={statusChartConfig} className="mx-auto h-[220px] sm:h-[260px] lg:h-[280px] w-full">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent nameKey="status" />} />
                 <Pie
@@ -1093,19 +1043,16 @@ function CompanyOverview() {
                 />
               </PieChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Bottom Row: 3 Columns */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
         {/* Recent Deliveries */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Recent Deliveries</CardTitle>
-            <CardDescription>Latest delivery activity</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div>
+          <SectionHeader title="Recent Deliveries" description="Latest delivery activity" />
+          <div className="rounded-xl border border-border/50 overflow-hidden">
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
@@ -1145,113 +1092,100 @@ function CompanyOverview() {
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Top Routes */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Top Routes</CardTitle>
-            <CardDescription>Most active delivery corridors</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {analyticsData.topRoutes.map((route) => {
-                const maxCount = analyticsData.topRoutes[0].count;
-                const pct = (route.count / maxCount) * 100;
-                return (
-                  <div key={route.route} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-1.5 font-medium truncate max-w-[180px]">
-                        <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                        {route.route}
-                      </span>
-                      <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                        {route.count} trips
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground w-16 text-right shrink-0">
-                        {formatCurrency(route.revenue)}
-                      </span>
-                    </div>
+        <div>
+          <SectionHeader title="Top Routes" description="Most active delivery corridors" icon={MapPin} />
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {analyticsData.topRoutes.map((route) => {
+              const maxCount = analyticsData.topRoutes[0].count;
+              const pct = (route.count / maxCount) * 100;
+              return (
+                <div key={route.route} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 font-medium truncate max-w-[180px]">
+                      <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                      {route.route}
+                    </span>
+                    <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                      {route.count} trips
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Fleet Utilization */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Fleet Utilization</CardTitle>
-            <CardDescription>Vehicle usage by type</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-5">
-                {analyticsData.fleetUtilization.map((fleet) => {
-                const pct = Math.round((fleet.inUse / fleet.total) * 100);
-                return (
-                  <div key={fleet.type} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{fleet.type}</span>
-                      </div>
-                      <span className="text-sm font-semibold tabular-nums text-primary shadow-[0_0_8px_oklch(0.42_0.14_155/0.25)] rounded-sm px-1.5 py-0.5">
-                        {pct}%
-                      </span>
-                    </div>
-                    <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
                         style={{ width: `${pct}%` }}
                       />
-                      <div
-                        className="absolute inset-y-0 rounded-full bg-amber-400 transition-all"
-                        style={{
-                          left: `${pct}%`,
-                          width: `${Math.round((fleet.maintenance / fleet.total) * 100)}%`,
-                        }}
-                      />
                     </div>
-                    <div className="flex gap-4 text-[11px] text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                        Active: {fleet.inUse}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
-                        Maintenance: {fleet.maintenance}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30" />
-                        Available: {fleet.available}
-                      </span>
-                    </div>
+                    <span className="text-xs font-medium text-muted-foreground w-16 text-right shrink-0">
+                      {formatCurrency(route.revenue)}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Fleet Utilization */}
+        <div>
+          <SectionHeader title="Fleet Utilization" description="Vehicle usage by type" icon={Truck} />
+          <div className="space-y-5">
+              {analyticsData.fleetUtilization.map((fleet) => {
+              const pct = Math.round((fleet.inUse / fleet.total) * 100);
+              return (
+                <div key={fleet.type} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">{fleet.type}</span>
+                    </div>
+                    <span className="text-sm font-semibold tabular-nums text-primary shadow-[0_0_8px_oklch(0.42_0.14_155/0.25)] rounded-sm px-1.5 py-0.5">
+                      {pct}%
+                    </span>
+                  </div>
+                  <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
+                    <div
+                      className="absolute inset-y-0 rounded-full bg-amber-400 transition-all"
+                      style={{
+                        left: `${pct}%`,
+                        width: `${Math.round((fleet.maintenance / fleet.total) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex gap-4 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      Active: {fleet.inUse}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
+                      Maintenance: {fleet.maintenance}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30" />
+                      Available: {fleet.available}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Performance Radar */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Performance Radar</CardTitle>
-          <CardDescription>Key metrics at a glance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={performanceRadarConfig} className="mx-auto h-[280px] w-full">
+      <div>
+        <SectionHeader title="Performance Radar" description="Key metrics at a glance" />
+        <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+          <ChartContainer config={performanceRadarConfig} className="mx-auto h-[220px] sm:h-[260px] lg:h-[280px] w-full">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={performanceRadarData}>
               <PolarGrid className="stroke-muted" />
               <PolarAngleAxis
@@ -1276,120 +1210,107 @@ function CompanyOverview() {
               <ChartTooltip content={<ChartTooltipContent />} />
             </RadarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Activity Feed */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Activity Feed</CardTitle>
-          <CardDescription>Recent events and notifications</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-64 overflow-y-auto space-y-1">
-            {notifications.slice(0, 6).map((notif, idx) => {
-              const notifBorder = notif.type === 'delivery_update' ? 'border-l-[3px] border-l-emerald-500' : notif.type === 'alert' ? 'border-l-[3px] border-l-amber-500' : 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500';
-              return (
-                <motion.div
-                  key={notif.id}
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.25, delay: idx * 0.05, ease: 'easeOut' }}
-                  className={`flex items-start gap-3 rounded-lg p-2.5 ${notifBorder} transition-all duration-200 hover:bg-muted/40 hover:pl-3.5`}
-                >
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                    {notifIcon(notif.type)}
+      <div>
+        <SectionHeader title="Activity Feed" description="Recent events and notifications" />
+        <div className="max-h-48 sm:max-h-64 overflow-y-auto space-y-1">
+          {notifications.slice(0, 6).map((notif, idx) => {
+            const notifBorder = notif.type === 'delivery_update' ? 'border-l-[3px] border-l-emerald-500' : notif.type === 'alert' ? 'border-l-[3px] border-l-amber-500' : 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500';
+            return (
+              <motion.div
+                key={notif.id}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.25, delay: idx * 0.05, ease: 'easeOut' }}
+                className={`flex items-start gap-3 rounded-lg p-2.5 ${notifBorder} transition-all duration-200 hover:bg-muted/40 hover:pl-3.5`}
+              >
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                  {notifIcon(notif.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium leading-tight truncate">{notif.title}</p>
+                    <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(notif.createdAt)}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium leading-tight truncate">{notif.title}</p>
-                      <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(notif.createdAt)}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{notif.message}</p>
-                  </div>
-                  {!notif.isRead && (
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{notif.message}</p>
+                </div>
+                {!notif.isRead && (
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Delivery Pipeline */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <ClipboardCheck className="h-4 w-4 text-emerald-600" />
-            <CardTitle className="text-base">Delivery Pipeline</CardTitle>
-          </div>
-          <CardDescription>Shipment status distribution across all stages</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {pipelineData.map((item, idx) => (
-              <motion.div
-                key={item.status}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.07, ease: 'easeOut' }}
-                className="flex-shrink-0 w-[140px] rounded-lg border p-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${item.color} text-white`}>
-                    <item.icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground leading-tight">{item.status}</span>
+      <div>
+        <SectionHeader title="Delivery Pipeline" description="Shipment status distribution across all stages" icon={ClipboardCheck} />
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {pipelineData.map((item, idx) => (
+            <motion.div
+              key={item.status}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: idx * 0.07, ease: 'easeOut' }}
+              className="flex-shrink-0 w-[110px] sm:w-[140px] rounded-lg border p-2.5 sm:p-3 transition-all duration-200 hover:shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full ${item.color} text-white`}>
+                  <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
-                <p className="text-2xl font-bold">{item.count}</p>
-                <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${item.color} transition-all`}
-                    style={{ width: `${item.count / pipelineTotal * 100}%` }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                <span className="text-xs font-medium text-muted-foreground leading-tight">{item.status}</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold">{item.count}</p>
+              <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${item.color} transition-all`}
+                  style={{ width: `${item.count / pipelineTotal * 100}%` }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
       {/* Live Activity Feed */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Live Activity Feed</CardTitle>
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
-              Live
-            </Badge>
-          </div>
-          <CardDescription>Real-time operations across all routes</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[420px] overflow-y-auto space-y-1">
-            {liveActivities.map((activity, idx) => {
-              const colors = activityTypeColors[activity.type] || activityTypeColors.system;
-              return (
-                <motion.div
-                  key={activity.id}
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.25, delay: idx * 0.04, ease: 'easeOut' }}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 ${colors.border} transition-all duration-200 hover:bg-muted/40 hover:pl-4`}
-                >
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colors.bg}`}>
-                    <LiveActivityIcon iconName={activity.icon} className={colors.text} />
-                  </div>
-                  <p className="flex-1 text-sm leading-tight truncate min-w-0">{activity.message}</p>
-                  <span className="text-[11px] text-muted-foreground shrink-0">{activity.time}</span>
-                </motion.div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <div>
+        <SectionHeader
+          title="Live Activity Feed"
+          description="Real-time operations across all routes"
+          action={
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
+                Live
+              </Badge>
+            </div>
+          }
+        />
+        <div className="max-h-48 sm:max-h-64 overflow-y-auto space-y-1">
+          {liveActivities.map((activity, idx) => {
+            const colors = activityTypeColors[activity.type] || activityTypeColors.system;
+            return (
+              <motion.div
+                key={activity.id}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.25, delay: idx * 0.04, ease: 'easeOut' }}
+                className={`flex items-center gap-3 rounded-md px-3 py-2.5 ${colors.border} transition-all duration-200 hover:bg-muted/40 hover:pl-4`}
+              >
+                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colors.bg}`}>
+                  <LiveActivityIcon iconName={activity.icon} className={colors.text} />
+                </div>
+                <p className="flex-1 text-sm leading-tight truncate min-w-0">{activity.message}</p>
+                <span className="text-[11px] text-muted-foreground shrink-0">{activity.time}</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1435,91 +1356,77 @@ function SourcingAgentOverview() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Active Requests - emerald */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Active Requests</p>
-                <p className="text-2xl font-bold tracking-tight">{activeRequests.length}</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                <ClipboardCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Active Requests</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{activeRequests.length}</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                {activeRequests.filter((r) => r.status === 'pending').length} pending
-              </span>
-              <span className="text-xs text-muted-foreground">•</span>
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                {activeRequests.filter((r) => r.status === 'quoted').length} quoted
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1 text-xs">
+            <span className="text-emerald-600 dark:text-emerald-400">
+              {activeRequests.filter((r) => r.status === 'pending').length} pending
+            </span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-emerald-600 dark:text-emerald-400">
+              {activeRequests.filter((r) => r.status === 'quoted').length} quoted
+            </span>
+          </div>
+        </div>
 
         {/* Completed This Month - teal */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-teal-300 dark:hover:border-teal-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-teal-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Completed This Month</p>
-                <p className="text-2xl font-bold tracking-tight">{completedThisMonth.length}</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
-                <CheckCircle2 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Completed This Month</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{completedThisMonth.length}</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 px-2.5 py-1 w-fit">
-              <TrendingUp className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">This month</span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600 dark:text-teal-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1 text-xs">
+            <TrendingUp className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+            <span className="text-teal-600 dark:text-teal-400">This month</span>
+          </div>
+        </div>
 
         {/* Total Value Quoted - primary */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Total Value Quoted</p>
-                <p className="text-2xl font-bold tracking-tight">{formatCurrency(totalValueQuoted)}</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
-                <DollarSign className="h-6 w-6 text-primary" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Total Value Quoted</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{formatCurrency(totalValueQuoted)}</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
-              <span className="text-xs text-muted-foreground">For accepted requests</span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground">For accepted requests</div>
+        </div>
 
         {/* Average Response Time - amber */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-amber-300 dark:hover:border-amber-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Avg Response Time</p>
-                <p className="text-2xl font-bold tracking-tight">2.4 hrs</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Avg Response Time</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">2.4 hrs</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 w-fit">
-              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-xs font-semibold text-emerald-600">-12%</span>
-              <span className="text-xs text-muted-foreground">vs last month</span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1 text-xs">
+            <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-emerald-600">-12%</span>
+            <span className="text-muted-foreground">vs last month</span>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
@@ -1539,12 +1446,9 @@ function SourcingAgentOverview() {
       </div>
 
       {/* Recent Sourcing Requests Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent Sourcing Requests</CardTitle>
-          <CardDescription>Your last 5 sourcing requests</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
+      <div>
+        <SectionHeader title="Recent Sourcing Requests" description="Your last 5 sourcing requests" />
+        <div className="rounded-xl border border-border/50 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -1589,8 +1493,8 @@ function SourcingAgentOverview() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1632,101 +1536,80 @@ function TrailerOwnerOverview() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* My Trailers */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">My Trailers</p>
-                <p className="text-2xl font-bold tracking-tight">{myTrailers.length}</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                <Truck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">My Trailers</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{myTrailers.length}</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                {activeHires.length} in use
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+            {activeHires.length} in use
+          </div>
+        </div>
 
         {/* Active Hires */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-teal-300 dark:hover:border-teal-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-teal-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Active Hires</p>
-                <p className="text-2xl font-bold tracking-tight">{activeHires.length}</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
-                <CheckCircle2 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Active Hires</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{activeHires.length}</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">
-                Currently deployed
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600 dark:text-teal-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-teal-600 dark:text-teal-400">
+            Currently deployed
+          </div>
+        </div>
 
         {/* Monthly Revenue */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
-                <p className="text-2xl font-bold tracking-tight">M45,200</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
-                <DollarSign className="h-6 w-6 text-primary" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Monthly Revenue</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">M45,200</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-xs font-semibold text-emerald-600">+12%</span>
-              <span className="text-xs text-muted-foreground">vs last month</span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1 text-xs">
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-emerald-600">+12%</span>
+            <span className="text-muted-foreground">vs last month</span>
+          </div>
+        </div>
 
         {/* Utilization Rate */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-amber-300 dark:hover:border-amber-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Utilization Rate</p>
-                <p className="text-2xl font-bold tracking-tight">{utilizationRate}%</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                <TrendingUp className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Utilization Rate</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{utilizationRate}%</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                {myTrailers.length - activeHires.length} available
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+            {myTrailers.length - activeHires.length} available
+          </div>
+        </div>
       </div>
 
       {/* Trailers Table + Revenue Chart */}
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-5">
         {/* My Trailers Table */}
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="text-base">My Trailers</CardTitle>
-            <CardDescription>All trailers in your fleet</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div className="lg:col-span-3">
+          <SectionHeader title="My Trailers" description="All trailers in your fleet" />
+          <div className="rounded-xl border border-border/50 overflow-hidden">
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
@@ -1762,17 +1645,14 @@ function TrailerOwnerOverview() {
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Revenue Trend Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Revenue Trend</CardTitle>
-            <CardDescription>Monthly revenue over last 6 months</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={trailerRevenueChartConfig} className="h-[280px] w-full">
+        <div className="lg:col-span-2">
+          <SectionHeader title="Revenue Trend" description="Monthly revenue over last 6 months" />
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+            <ChartContainer config={trailerRevenueChartConfig} className="h-[220px] sm:h-[260px] lg:h-[280px] w-full">
               <BarChart data={revenueData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="fillTrailerRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -1802,8 +1682,8 @@ function TrailerOwnerOverview() {
                 />
               </BarChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1847,90 +1727,70 @@ function WarehousePartnerOverview() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Storage Capacity */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Storage Capacity</p>
-                <p className="text-2xl font-bold tracking-tight">71%</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                <Package className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Storage Capacity</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">71%</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                3,200 / 4,500 packages
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+            3,200 / 4,500 packages
+          </div>
+        </div>
 
         {/* Pending Dispatch */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-amber-300 dark:hover:border-amber-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Pending Dispatch</p>
-                <p className="text-2xl font-bold tracking-tight">{pendingDispatch.length}</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Pending Dispatch</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">{pendingDispatch.length}</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                Awaiting processing
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+            Awaiting processing
+          </div>
+        </div>
 
         {/* Today's Inbound */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-teal-300 dark:hover:border-teal-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-teal-400" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Today&apos;s Inbound</p>
-                <p className="text-2xl font-bold tracking-tight">23</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
-                <ArrowUpRight className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Today&apos;s Inbound</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">23</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">
-                packages received
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600 dark:text-teal-400" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-teal-600 dark:text-teal-400">
+            packages received
+          </div>
+        </div>
 
         {/* Outbound Today */}
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px] hover:border-emerald-300 dark:hover:border-emerald-700">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-teal-500" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Outbound Today</p>
-                <p className="text-2xl font-bold tracking-tight">18</p>
-              </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-teal-500/10">
-                <Truck className="h-6 w-6 text-primary" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:bg-muted/70 hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Outbound Today</p>
+              <p className="text-xl font-bold tracking-tight sm:text-2xl">18</p>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 w-fit">
-              <span className="text-xs font-semibold text-primary">
-                shipments dispatched
-              </span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
+              <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 text-xs text-primary">
+            shipments dispatched
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
@@ -1950,27 +1810,22 @@ function WarehousePartnerOverview() {
       </div>
 
       {/* Warehouse Activity Feed */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Warehouse Activity</CardTitle>
-          <CardDescription>Recent warehouse operations</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {warehouseActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50">
-                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${activity.color}`}>
-                  {activityTypeIcon[activity.type] || <Info className="h-3.5 w-3.5" />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm leading-snug">{activity.message}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{activity.time}</p>
-                </div>
+      <div>
+        <SectionHeader title="Warehouse Activity" description="Recent warehouse operations" />
+        <div className="space-y-3">
+          {warehouseActivities.map((activity) => (
+            <div key={activity.id} className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50">
+              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${activity.color}`}>
+                {activityTypeIcon[activity.type] || <Info className="h-3.5 w-3.5" />}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm leading-snug">{activity.message}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{activity.time}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

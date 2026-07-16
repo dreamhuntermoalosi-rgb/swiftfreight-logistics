@@ -225,39 +225,39 @@ export function CustomersTab() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
               <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Customers</p>
               <p className="text-xl font-bold">{customers.length}</p>
-              <p className="flex items-center text-xs text-green-600">
+              <p className="text-xs text-green-600 flex items-center">
                 <TrendingUp className="mr-1 h-3 w-3" />
                 <span className="font-semibold">+15.7%</span> this month
               </p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Revenue</p>
               <p className="text-xl font-bold">{formatCurrency(totalRevenue)}</p>
-              <p className="flex items-center text-xs text-green-600">
+              <p className="text-xs text-green-600 flex items-center">
                 <ArrowUpRight className="mr-1 h-3 w-3" />
                 <span className="font-semibold">+12.5%</span> this month
               </p>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-4 p-4">
+          </div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="flex items-center gap-4">
             <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30">
               <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             </div>
@@ -266,15 +266,14 @@ export function CustomersTab() {
               <p className="text-xl font-bold">{avgRating.toFixed(1)}</p>
               <RatingStars rating={avgRating} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
+      <div className="rounded-xl border border-border/50 overflow-hidden">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+          <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>
@@ -409,12 +408,12 @@ export function CustomersTab() {
               </Pagination>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Customer Detail Dialog */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => { if (!open) setSelectedCustomer(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <div className="h-1 -mx-6 -mt-6 mb-4 bg-gradient-to-r from-primary to-teal-500 rounded-t-lg" />
           {selectedCustomer && (
             <>

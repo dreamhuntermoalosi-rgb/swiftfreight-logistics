@@ -300,7 +300,7 @@ export function ReportsTab() {
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -314,83 +314,75 @@ export function ReportsTab() {
       </div>
 
       {/* ── Executive Summary Cards ── */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Revenue</p>
-                <p className="text-2xl font-bold tracking-tight">{formatCurrency(analyticsData.totalRevenue)}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
-              </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Revenue</p>
+              <p className="text-2xl font-bold tracking-tight">{formatCurrency(analyticsData.totalRevenue)}</p>
             </div>
-            <div className="mt-2 flex items-center gap-1">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-sm font-medium text-emerald-600">+{analyticsData.revenueGrowth}%</span>
-              <span className="text-xs text-muted-foreground">growth</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+              <DollarSign className="h-5 w-5 text-emerald-600" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1">
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-sm font-medium text-emerald-600">+{analyticsData.revenueGrowth}%</span>
+            <span className="text-xs text-muted-foreground">growth</span>
+          </div>
+        </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Deliveries</p>
-                <p className="text-2xl font-bold tracking-tight">{analyticsData.totalDeliveries.toLocaleString()}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-                <Package className="h-5 w-5 text-emerald-600" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Deliveries</p>
+              <p className="text-2xl font-bold tracking-tight">{analyticsData.totalDeliveries.toLocaleString()}</p>
             </div>
-            <div className="mt-2 flex items-center gap-1">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-sm font-medium text-emerald-600">+{analyticsData.deliveriesGrowth}%</span>
-              <span className="text-xs text-muted-foreground">growth</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+              <Package className="h-5 w-5 text-emerald-600" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1">
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-sm font-medium text-emerald-600">+{analyticsData.deliveriesGrowth}%</span>
+            <span className="text-xs text-muted-foreground">growth</span>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Average Rating</p>
-                <p className="text-2xl font-bold tracking-tight">{analyticsData.avgRating}/5.0</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-                <Star className="h-5 w-5 text-emerald-600" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Average Rating</p>
+              <p className="text-2xl font-bold tracking-tight">{analyticsData.avgRating}/5.0</p>
             </div>
-            <div className="mt-2 flex items-center gap-1">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-sm font-medium text-emerald-600">+{analyticsData.avgRatingGrowth}</span>
-              <span className="text-xs text-muted-foreground">improvement</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+              <Star className="h-5 w-5 text-emerald-600" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-2 flex items-center gap-1">
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-sm font-medium text-emerald-600">+{analyticsData.avgRatingGrowth}</span>
+            <span className="text-xs text-muted-foreground">improvement</span>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Customer Satisfaction</p>
-                <p className="text-2xl font-bold tracking-tight">72%</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-                <Heart className="h-5 w-5 text-emerald-600" />
-              </div>
+        <div className="rounded-xl bg-muted/40 p-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Customer Satisfaction</p>
+              <p className="text-2xl font-bold tracking-tight">72%</p>
             </div>
-            <div className="mt-2 flex items-center gap-1">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-sm font-medium text-emerald-600">+4.2%</span>
-              <span className="text-xs text-muted-foreground">vs last quarter</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
+              <Heart className="h-5 w-5 text-emerald-600" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          <div className="mt-2 flex items-center gap-1">
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-sm font-medium text-emerald-600">+4.2%</span>
+            <span className="text-xs text-muted-foreground">vs last quarter</span>
+          </div>
+        </div>
 
       {/* ── Charts Section ── */}
       <div className="grid gap-6 lg:grid-cols-2">
