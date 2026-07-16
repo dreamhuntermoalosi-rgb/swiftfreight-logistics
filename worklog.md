@@ -1838,3 +1838,62 @@ Stage Summary:
 - Safety Tab: Complete rewrite with 14 incident types (7 driver + 7 customer), two-tab layout, role-based filtering, rich report dialog with priority radio buttons and photo upload, expandable history list with status/priority badges
 - Chain of Custody Tab: Complete rewrite with 5-stage visual stepper, detail panel, handover recording dialog with GPS/photo/signature fields, interactive demo with 3 mock deliveries at different stages
 - Both tabs use consistent color scheme (#2E7D32, #1B5E20, #4CAF50, #E8F5E9, #212121, #757575, #E0E0E0), framer-motion animations, and shadcn/ui components
+
+---
+Task ID: 10-14 (Round 4)
+Agent: Main Orchestrator + 3 full-stack-developer subagents
+Task: GitHub repo creation, legal compliance system, KYC, package declarations, safety reporting, chain of custody enhancements
+
+Work Log:
+- Created GitHub repo: https://github.com/dreamhuntermoalosi-rgb/swiftfreight-logistics
+- Updated .gitignore to exclude tool-results, download, upload, db, agent-ctx, image files
+- Marketing website updates:
+  - Replaced #F5F5F5 FAQ section bg with #E8ECE8 (darker green-tinted gray)
+  - Added Instagram and WhatsApp SVG social icons to footer (now 5 icons: X, LinkedIn, Facebook, Instagram, WhatsApp)
+  - Added footer links to Knowledgebase, Training, Feature Requests, Onboarding Guide
+  - Added legal bottom bar links: Privacy Policy, Terms of Service, Platform Disclaimer, Liability Notice
+  - Added full "Platform Disclaimer & Liability Notice" section before footer with Shield icon
+  - Updated footer tagline from "built for Africa" to "built for Lesotho"
+  - Changed hero DashboardPreview delivery from "Mafikeng" to "Mafeteng" (Lesotho city)
+- Auth pages:
+  - Fixed login page "South Africa" reference → "all ten districts of Lesotho"
+  - Changed "Cross-border Lesotho–South Africa logistics" → "Nationwide coverage across all of Lesotho"
+  - Added platform disclaimer banners to login, register, and forgot-password pages
+- Dashboard:
+  - Added platform disclaimer banner at top of main content area
+  - Updated invoice PDF title from "Lesotho-South Africa Logistics Platform" to "Lesotho Logistics Platform"
+- KYC Verification (subagent):
+  - Created kyc-verification.tsx with 5-step wizard (Phone, Email, National ID, Selfie, Proof of Address)
+  - 3 verification levels: Bronze (basic), Silver (standard), Gold (full/verified)
+  - Added useKycStore to store.ts with Zustand persist
+  - Integrated into settings tab with "Start Verification" button
+  - Added KycVerifiedBadge to dashboard sidebar and header dropdown
+- Package Declaration (subagent):
+  - Created package-declaration-form.tsx as Sheet with 12 fields
+  - Category select, description, value (M), weight (kg), dimensions (L×W×H cm)
+  - Dangerous goods checkbox with red border and legal text
+  - Fragile/Electronics/Liquids/Documents color-coded checkbox cards
+  - Photo upload with drag & drop, up to 4 photos
+  - Declaration acceptance with full legal text and auto-timestamp
+  - Print Declaration button
+  - Integrated "Declare Package" button into deliveries tab action bar
+- Safety Tab Enhancement (subagent):
+  - Fixed invalid lucide-react imports (CarCollision→Car, MapPinX→MapPinOff)
+  - 7 Driver incident types + 7 Customer incident types with one-tap icon cards
+  - Two-tab layout: Report Incident / Incident History
+  - Role-based filtering, search, status/priority/role filters
+  - 8 mock incidents with Lesotho-only references
+- Chain of Custody Enhancement (subagent):
+  - Changed mock data from Johannesburg routes to Lesotho domestic routes
+  - 5-stage visual stepper with GPS/photo/signature recording
+- Removed South Africa references from user-facing areas (safety mock data, chain of custody, hero preview, invoice)
+
+Stage Summary:
+- GitHub repo created and pushed: https://github.com/dreamhuntermoalosi-rgb/swiftfreight-logistics
+- Legal liability system: Platform disclaimer on marketing site, all auth pages, and dashboard
+- KYC verification: Full 5-step wizard with 3 verification levels and badge system
+- Package declaration: Complete form with 9+ fields, photo upload, legal acceptance, timestamp, print
+- Safety reporting: 14 incident types (7 driver + 7 customer) with history and filters
+- Chain of custody: 5-stage handover with GPS, photo, signature fields
+- All user-facing content is Lesotho-only
+- Lint passes cleanly, browser-verified all features working
