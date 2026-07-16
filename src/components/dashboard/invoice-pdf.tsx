@@ -415,7 +415,7 @@ function generateInvoiceHtml(invoice: Invoice, company: Company): string {
     <!-- Footer -->
     <div class="invoice-footer">
       <div class="footer-left">
-        <p><strong>SwiftFreight</strong> — Lesotho-South Africa Logistics Platform</p>
+        <p><strong>SwiftFreight</strong> — Lesotho Logistics Platform</p>
         <p>www.swiftfreight.com &middot; support@swiftfreight.com &middot; +266 2231 0000</p>
       </div>
       <div class="footer-right">

@@ -145,3 +145,73 @@ export const useDeliveryStore = create<DeliveryState>()(
     }
   )
 );
+
+// ============ KYC STORE ============
+export type KycLevel = 'none' | 'basic' | 'standard' | 'full';
+export type KycBadge = 'none' | 'bronze' | 'silver' | 'gold';
+
+interface KycState {
+  phoneVerified: boolean;
+  emailVerified: boolean;
+  nationalIdVerified: boolean;
+  selfieVerified: boolean;
+  proofOfAddressVerified: boolean;
+  verificationLevel: KycLevel;
+  badge: KycBadge;
+  setVerified: (field: 'phoneVerified' | 'emailVerified' | 'nationalIdVerified' | 'selfieVerified' | 'proofOfAddressVerified') => void;
+  resetKyc: () => void;
+}
+
+export const useKycStore = create<KycState>()(
+  persist(
+    (set) => ({
+      phoneVerified: false,
+      emailVerified: false,
+      nationalIdVerified: false,
+      selfieVerified: false,
+      proofOfAddressVerified: false,
+      verificationLevel: 'none',
+      badge: 'none',
+      setVerified: (field) =>
+        set((s) => {
+          const updated = { ...s, [field]: true };
+          const { phoneVerified: pv, emailVerified: ev, nationalIdVerified: nid, selfieVerified: sv, proofOfAddressVerified: poa } = updated;
+          let verificationLevel: KycLevel = 'none';
+          let badge: KycBadge = 'none';
+          if (pv && ev && nid && sv && poa) {
+            verificationLevel = 'full';
+            badge = 'gold';
+          } else if (pv && ev && nid) {
+            verificationLevel = 'standard';
+            badge = 'silver';
+          } else if (pv && ev) {
+            verificationLevel = 'basic';
+            badge = 'bronze';
+          }
+          return { ...updated, verificationLevel, badge };
+        }),
+      resetKyc: () =>
+        set({
+          phoneVerified: false,
+          emailVerified: false,
+          nationalIdVerified: false,
+          selfieVerified: false,
+          proofOfAddressVerified: false,
+          verificationLevel: 'none',
+          badge: 'none',
+        }),
+    }),
+    {
+      name: 'swiftfreight-kyc',
+      partialize: (state) => ({
+        phoneVerified: state.phoneVerified,
+        emailVerified: state.emailVerified,
+        nationalIdVerified: state.nationalIdVerified,
+        selfieVerified: state.selfieVerified,
+        proofOfAddressVerified: state.proofOfAddressVerified,
+        verificationLevel: state.verificationLevel,
+        badge: state.badge,
+      }),
+    }
+  )
+);

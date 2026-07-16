@@ -21,6 +21,7 @@ import {
   AlertTriangle, ShieldCheck, Camera, Globe, MapPin, Check, Keyboard
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { KycSettingsCard } from '@/components/dashboard/kyc-verification';
 
 // ── Helpers ──────────────────────────────────────────────────
 function getInitials(name: string): string {
@@ -131,6 +132,7 @@ export function SettingsTab() {
     { id: 'appearance', label: 'Appearance', icon: Palette, badge: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' },
     { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard, badge: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400' },
     { id: 'security', label: 'Security', icon: Shield, badge: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' },
+    { id: 'kyc', label: 'KYC Verification', icon: ShieldCheck, badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle, badge: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
   ];
 
@@ -574,6 +576,11 @@ export function SettingsTab() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* ── KYC Verification Section ── */}
+            {activeSection === 'kyc' && (
+              <KycSettingsCard />
             )}
 
             {/* ── Danger Zone Section ── */}

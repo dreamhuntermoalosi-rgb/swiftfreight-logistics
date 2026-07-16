@@ -1720,3 +1720,121 @@ Stage Summary:
 - Safety reporting tab with role-specific incident types
 - Chain of custody visual timeline tab
 - All South Africa references removed throughout the entire platform
+
+---
+Task ID: 10
+Agent: full-stack-developer
+Task: Build KYC (Know Your Customer) verification flow component
+
+Work Log:
+- Added `useKycStore` to `src/lib/store.ts` with Zustand persist middleware for tracking 5 verification fields, verification level (none/basic/standard/full), and badge (none/bronze/silver/gold)
+- Created `src/components/dashboard/kyc-verification.tsx` (~580 lines) with:
+  - `KycVerifiedBadge` — small inline badge for sidebar/header display (bronze/silver/gold circle with checkmark)
+  - `KycVerificationDialog` — full 5-step wizard in a shadcn Dialog with animated step transitions via framer-motion AnimatePresence
+  - `KycSettingsCard` — card for settings tab showing progress bar, level indicators (Basic/Standard/Full), step checklist, and CTA button
+  - 5 step content components:
+    - `PhoneStep` — phone number input, send OTP (simulated), enter 6-digit OTP, verify
+    - `EmailStep` — show email, send link (simulated), confirm verified
+    - `NationalIdStep` — ID/Passport number input + file upload for document photo
+    - `SelfieStep` — circular upload zone for selfie photo
+    - `ProofOfAddressStep` — document type cards + file upload for utility bill/bank statement
+  - All verifications simulated with setTimeout (1-2s delays)
+  - Step navigation: back/next buttons, clickable completed steps, auto-advance on verify
+  - Visual progress bar, step indicators with checkmarks for completed steps
+  - Level badges shown in dialog footer (Basic/Standard/Full) with dynamic coloring
+- Integrated `KycSettingsCard` into `src/components/dashboard/tabs/settings-tab.tsx`:
+  - Added import for `KycSettingsCard`
+  - Added "KYC Verification" nav item with ShieldCheck icon between Security and Danger Zone
+  - Added `{activeSection === 'kyc' && <KycSettingsCard />}` section
+- Added `KycVerifiedBadge` to `src/components/dashboard/dashboard-layout.tsx`:
+  - Imported `useKycStore` and `KycVerifiedBadge`
+  - Added badge next to user name in sidebar user info card
+  - Added badge next to user name in UserDropdown header trigger
+- Color scheme uses exact specified values: #2E7D32, #1B5E20, #4CAF50, #E8F5E9, #212121, #757575, #E0E0E0
+- All lint checks pass on modified files (pre-existing error in safety-tab.tsx unrelated)
+
+Stage Summary:
+- Complete KYC verification flow with 5-step wizard, 3 verification levels (bronze/silver/gold badges)
+- Settings tab now has "KYC Verification" section with progress card that opens step-by-step dialog
+- Sidebar and header user dropdown show verified badge when KYC level > "none"
+- All state persisted via Zustand with localStorage, simulates verification with timeouts
+- No real API calls used; frontend-only simulation as specified
+
+---
+Task ID: 11
+Agent: full-stack-developer
+Task: Build Package Declaration Form with all required fields and parcel declaration acceptance checkbox with timestamp
+
+Work Log:
+- Read and analyzed existing project context: types.ts (PackageDeclaration interface), Prisma schema (PackageDeclaration model), API route (POST /api/declarations), deliveries-tab.tsx structure
+- Created `src/components/dashboard/package-declaration-form.tsx` (~1100 lines) with complete form component:
+  - Package Category Select: 10 categories (Electronics, Clothing, Food & Perishables, Documents, Furniture, Building Materials, Medical Supplies, Automotive Parts, Household Goods, Other)
+  - Description Textarea: free text with validation
+  - Estimated Value Input: with "M" (Maloti) prefix, number type
+  - Weight Input: with "kg" suffix, number type
+  - Dimensions: 3 side-by-side inputs (L × W × H in cm) with × separators and "cm" label
+  - Dangerous Goods Checkbox: red-bordered warning area with full legal text, animated confirmation badge when checked
+  - Fragile Checkbox: orange-tinted card with Archive icon
+  - Electronics Checkbox: blue-tinted card with Monitor icon
+  - Liquids Checkbox: teal-tinted card with Droplets icon
+  - Documents Checkbox: purple-tinted card with FileText icon
+  - Parcel Photos: drag & drop upload zone with thumbnail previews (up to 4, 5MB max), remove button on hover
+  - Declaration Acceptance: full legal text checkbox with green border transition when accepted
+  - Timestamp: auto-captured when declaration accepted, displayed as "Declared on: [date time]" with Clock icon
+  - Warning banner at top: orange bg with AlertTriangle icon, "Accurate declaration protects you"
+  - Form validation: all required fields validated with inline error messages
+  - Success state: green-bordered card with CheckCircle2 animation, declaration summary, "Print Declaration" button
+  - Print Declaration: generates full HTML declaration document in new window with print dialog
+  - Sheet component for responsive slide-in from right
+  - Framer Motion animations throughout (form transitions, photo thumbnails, checkbox states)
+  - Exact color scheme: #2E7D32, #1B5E20, #4CAF50, #E8F5E9, #212121, #757575, #E0E0E0, #FF5252, #FFF3E0
+- Integrated "Declare Package" button into deliveries tab action bar (src/components/dashboard/tabs/deliveries-tab.tsx):
+  - Added `ClipboardCheck` icon import
+  - Added `PackageDeclarationForm` import
+  - Added `declarationOpen` state
+  - Added green-outlined "Declare Package" button between Download and Columns buttons
+  - Form receives selected delivery context via `detailDelivery` prop
+- Lint passes cleanly (only pre-existing safety-tab.tsx error unrelated to this task)
+- Dev server compiles without errors
+
+Stage Summary:
+- Package Declaration Form created at src/components/dashboard/package-declaration-form.tsx
+- Form is a Sheet component triggered from deliveries tab
+- All 12 required fields implemented with proper validation
+- Red border for dangerous goods area, green for successful submission
+- Declaration acceptance with auto-timestamp and print functionality
+- Integrated into deliveries tab action bar with green-outlined "Declare Package" button
+- Dev server running clean, no compilation errors
+
+---
+Task ID: 12-13-14
+Agent: full-stack-developer
+Task: Enhance Safety Tab (driver + customer incident reporting) and Chain of Custody Tab (5-stage handover tracking)
+
+Work Log:
+- Rewrote safety-tab.tsx with complete redesign:
+  - 7 Driver Safety Incident types: Vehicle Accident, Road Hazard, Theft/Hijacking, Package Damage, Mechanical Breakdown, Medical Emergency, Security Threat
+  - 7 Customer Safety Report types: Wrong Package Received, Damaged Package, Missing Contents, Suspicious Activity, Late Delivery, Incorrect Address, Privacy Concern
+  - Two sub-tabs via shadcn/ui Tabs: "Report Incident" and "Incident History"
+  - Role-based views: driver sees driver types, customer sees customer types, admin/manager sees both with KPI cards
+  - One-tap icon cards with color-coded icons for quick incident type selection
+  - Full Report Dialog with: pre-selected incident type (read-only), searchable Delivery ID dropdown, Description textarea, Priority radio buttons with color coding (Low/Medium/High/Critical), simulated photo upload area, Submit button
+  - Incident History with expandable detail cards showing: status badges (Open=gray, Investigating=blue, Resolved=green, Dismissed=light gray), priority badges with colored dots, type icon, reporter name/role, timestamp, expandable description
+  - Admin history view with search, status/priority/role filters, summary stats
+  - 8 mock incidents with realistic Lesotho-specific data
+  - framer-motion animations throughout
+
+- Rewrote chain-of-custody-tab.tsx with complete redesign:
+  - 5-Stage Handover Tracking: Customer Handover → Warehouse Check-in → Dispatch Handover → Delivery Point → Recipient Handover
+  - Visual vertical stepper on the left with: green checkmarks for completed stages, pulsing green dot for current stage, gray icons for pending stages, green progress line
+  - Detail panel on the right showing selected stage info: timestamp, GPS location with coordinates, handover flow (from person → to person with party icons/badges), photo proof, signature, notes
+  - Delivery selector at top with search by tracking number/route/recipient
+  - "Record Handover" button for current pending stage
+  - Handover Dialog with: Stage name (read-only with description), From/To person fields (pre-filled), GPS location with "Get Location" button, photo upload area (simulated), signature capture area with SVG placeholder signature, Notes field, "Confirm Handover" button
+  - 3 mock deliveries with varying completion stages (5/5, 3/5, 1/5) for demo
+  - framer-motion animations, responsive layout
+
+Stage Summary:
+- Safety Tab: Complete rewrite with 14 incident types (7 driver + 7 customer), two-tab layout, role-based filtering, rich report dialog with priority radio buttons and photo upload, expandable history list with status/priority badges
+- Chain of Custody Tab: Complete rewrite with 5-stage visual stepper, detail panel, handover recording dialog with GPS/photo/signature fields, interactive demo with 3 mock deliveries at different stages
+- Both tabs use consistent color scheme (#2E7D32, #1B5E20, #4CAF50, #E8F5E9, #212121, #757575, #E0E0E0), framer-motion animations, and shadcn/ui components

@@ -45,9 +45,10 @@ import {
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
   FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
   Download, CheckCircle, Printer, CreditCard, Columns3, ShieldAlert, ShieldCheck,
-  AlertTriangle, Box, Droplets, Monitor, FileCheck,
+  AlertTriangle, Box, Droplets, Monitor, FileCheck, ClipboardCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PackageDeclarationForm } from '@/components/dashboard/package-declaration-form';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -889,6 +890,9 @@ export function DeliveriesTab() {
     setLocalDeliveries((prev) => [d, ...prev]);
   }, []);
 
+  // Declaration form state
+  const [declarationOpen, setDeclarationOpen] = useState(false);
+
   // Filters
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -1043,6 +1047,21 @@ export function DeliveriesTab() {
           <Download className="mr-2 h-4 w-4" />
           Download
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-2"
+          style={{ borderColor: '#2E7D32', color: '#2E7D32' }}
+          onClick={() => setDeclarationOpen(true)}
+        >
+          <ClipboardCheck className="h-4 w-4" />
+          Declare Package
+        </Button>
+        <PackageDeclarationForm
+          open={declarationOpen}
+          onOpenChange={setDeclarationOpen}
+          delivery={detailDelivery}
+        />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="shrink-0 gap-2">

@@ -111,7 +111,7 @@ export function LoginPage() {
               <span className="text-[#C8E6C9]">made simple</span>
             </h1>
             <p className="text-white/70 text-lg max-w-md leading-relaxed">
-              Streamline your delivery operations across Lesotho and South Africa with real-time tracking and smart dispatch.
+              Streamline your delivery operations across all ten districts of Lesotho with real-time tracking and smart dispatch.
             </p>
           </motion.div>
 
@@ -123,7 +123,7 @@ export function LoginPage() {
           >
             {[
               { icon: Zap, text: 'Real-time package tracking & notifications' },
-              { icon: Globe, text: 'Cross-border Lesotho–South Africa logistics' },
+              { icon: Globe, text: 'Nationwide coverage across all of Lesotho' },
               { icon: Building2, text: 'Multi-tenant SaaS for companies of all sizes' },
               { icon: Shield, text: 'Secure, reliable, and fully compliant' },
             ].map(({ icon: Icon, text }) => (
@@ -296,6 +296,12 @@ export function LoginPage() {
                 </button>
               </p>
             </CardFooter>
+            {/* Platform Disclaimer */}
+            <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-3 mb-2">
+              <p className="text-[11px] text-[#1B5E20] leading-relaxed">
+                SwiftFreight is a technology platform connecting logistics companies, drivers, and customers in Lesotho. We do NOT operate as a courier or freight carrier. All logistics services are provided by independent third-party companies.
+              </p>
+            </div>
             {/* Powered by footer */}
             <p className="text-center text-[11px] text-muted-foreground/50 pb-4">
               Powered by <span className="font-medium text-muted-foreground/70">SwiftFreight Technologies</span>

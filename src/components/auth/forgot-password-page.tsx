@@ -277,6 +277,12 @@ export function ForgotPasswordPage() {
                 </button>
               </p>
             </CardFooter>
+            {/* Platform Disclaimer */}
+            <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-3 mb-2">
+              <p className="text-[11px] text-[#1B5E20] leading-relaxed">
+                SwiftFreight is a technology platform. All logistics services are provided by independent third-party companies registered on the platform.
+              </p>
+            </div>
             {/* Powered by footer */}
             <p className="text-center text-[11px] text-muted-foreground/50 pb-4">
               Powered by <span className="font-medium text-muted-foreground/70">SwiftFreight Technologies</span>

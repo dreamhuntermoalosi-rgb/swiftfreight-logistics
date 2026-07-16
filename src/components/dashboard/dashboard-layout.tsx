@@ -33,7 +33,8 @@ import {
   Shield,
   GitBranch,
 } from 'lucide-react';
-import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
+import { useNavStore, useAuthStore, useNotificationStore, useKycStore } from '@/lib/store';
+import { KycVerifiedBadge } from '@/components/dashboard/kyc-verification';
 import { deliveries, customers, drivers, statusLabels, statusColors } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -366,8 +367,9 @@ function SidebarNavContent({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium leading-tight">
+            <p className="truncate text-sm font-medium leading-tight flex items-center gap-1.5">
               {displayName}
+              <KycVerifiedBadge size="sm" />
             </p>
             <Badge
               variant="secondary"
@@ -537,8 +539,9 @@ function UserDropdown() {
             </AvatarFallback>
           </Avatar>
           </div>
-          <span className="hidden text-sm font-medium lg:inline-block">
+          <span className="hidden text-sm font-medium lg:inline-flex lg:items-center lg:gap-1.5">
             {displayName}
+            <KycVerifiedBadge size="sm" />
           </span>
         </Button>
       </DropdownMenuTrigger>
@@ -1013,6 +1016,13 @@ export function DashboardLayout() {
         {/* Gradient top-border accent */}
         <div className="h-1 bg-gradient-to-r from-primary via-emerald to-teal shrink-0" />
         <main className="flex-1 scroll-smooth overflow-y-auto p-4 md:p-6">
+          {/* Platform Disclaimer Banner */}
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#C8E6C9] bg-[#E8F5E9] px-3 py-2">
+            <Info className="h-3.5 w-3.5 text-[#2E7D32] mt-0.5 shrink-0" />
+            <p className="text-[11px] leading-relaxed text-[#1B5E20]">
+              SwiftFreight is a technology platform. All logistics services are provided by independent third-party companies. SwiftFreight is not liable for loss, damage, or delay of parcels.
+            </p>
+          </div>
           <TabRenderer tab={dashboardTab} />
         </main>
       </div>
