@@ -1,0 +1,1010 @@
+     1→'use client';
+     2→
+     3→import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+     4→import { useTheme } from 'next-themes';
+     5→import {
+     6→  LayoutDashboard,
+     7→  Package,
+     8→  MapPin,
+     9→  MessageSquare,
+    10→  Users,
+    11→  UserCog,
+    12→  Truck,
+    13→  Radio,
+    14→  ShoppingBag,
+    15→  BarChart3,
+    16→  Settings,
+    17→  LogOut,
+    18→  Menu,
+    19→  Search,
+    20→  Bell,
+    21→  Sun,
+    22→  Moon,
+    23→  ClipboardList,
+    24→  Receipt,
+    25→  ChevronRight,
+    26→  PackageCheck,
+    27→  CreditCard,
+    28→  AlertTriangle,
+    29→  Info,
+    30→  User as UserIcon,
+    31→  FileText,
+    32→  Warehouse,
+    33→} from 'lucide-react';
+    34→import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
+    35→import { deliveries, customers, drivers, statusLabels, statusColors } from '@/lib/mock-data';
+    36→import { Button } from '@/components/ui/button';
+    37→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    38→import { Badge } from '@/components/ui/badge';
+    39→import { Input } from '@/components/ui/input';
+    40→import {
+    41→  Sheet,
+    42→  SheetContent,
+    43→  SheetTitle,
+    44→} from '@/components/ui/sheet';
+    45→import {
+    46→  DropdownMenu,
+    47→  DropdownMenuContent,
+    48→  DropdownMenuItem,
+    49→  DropdownMenuLabel,
+    50→  DropdownMenuSeparator,
+    51→  DropdownMenuTrigger,
+    52→} from '@/components/ui/dropdown-menu';
+    53→import { ScrollArea } from '@/components/ui/scroll-area';
+    54→import { Separator } from '@/components/ui/separator';
+    55→import {
+    56→  Breadcrumb,
+    57→  BreadcrumbList,
+    58→  BreadcrumbItem,
+    59→  BreadcrumbPage,
+    60→} from '@/components/ui/breadcrumb';
+    61→import { useIsMobile } from '@/hooks/use-mobile';
+    62→import { notifications as mockNotifications, roleLabels, companies } from '@/lib/mock-data';
+    63→import type { DashboardTab, UserRole, NotificationType } from '@/lib/types';
+    64→import { tabComponentMap } from '@/components/dashboard/tabs';
+    65→
+    66→// ============ TYPES ============
+    67→interface NavItem {
+    68→  tab: DashboardTab;
+    69→  label: string;
+    70→  icon: React.ElementType;
+    71→}
+    72→
+    73→// ============ HELPERS ============
+    74→function getInitials(name: string): string {
+    75→  return name
+    76→    .split(' ')
+    77→    .map((w) => w[0])
+    78→    .join('')
+    79→    .toUpperCase()
+    80→    .slice(0, 2);
+    81→}
+    82→
+    83→function getTimeAgo(dateStr: string): string {
+    84→  const now = Date.now();
+    85→  const then = new Date(dateStr).getTime();
+    86→  const diffMs = now - then;
+    87→  const diffMins = Math.floor(diffMs / 60000);
+    88→  const diffHours = Math.floor(diffMs / 3600000);
+    89→  const diffDays = Math.floor(diffMs / 86400000);
+    90→
+    91→  if (diffMins < 1) return 'Just now';
+    92→  if (diffMins < 60) return `${diffMins}m ago`;
+    93→  if (diffHours < 24) return `${diffHours}h ago`;
+    94→  if (diffDays < 7) return `${diffDays}d ago`;
+    95→  return `${Math.floor(diffDays / 7)}w ago`;
+    96→}
+    97→
+    98→function getNotificationIcon(type: NotificationType) {
+    99→  switch (type) {
+   100→    case 'delivery_update':
+   101→      return PackageCheck;
+   102→    case 'new_message':
+   103→      return MessageSquare;
+   104→    case 'quote_received':
+   105→    case 'payment':
+   106→      return CreditCard;
+   107→    case 'alert':
+   108→      return AlertTriangle;
+   109→    case 'system':
+   110→    default:
+   111→      return Info;
+   112→  }
+   113→}
+   114→
+   115→function getNotificationIconColor(type: NotificationType) {
+   116→  switch (type) {
+   117→    case 'delivery_update':
+   118→      return 'text-emerald-500';
+   119→    case 'new_message':
+   120→      return 'text-primary';
+   121→    case 'quote_received':
+   122→    case 'payment':
+   123→      return 'text-teal-500';
+   124→    case 'alert':
+   125→      return 'text-amber-500';
+   126→    case 'system':
+   127→    default:
+   128→      return 'text-muted-foreground';
+   129→  }
+   130→}
+   131→
+   132→// ============ NAV CONFIGURATION ============
+   133→const commonNavItems: NavItem[] = [
+   134→  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
+   135→  { tab: 'deliveries', label: 'Deliveries', icon: Package },
+   136→  { tab: 'tracking', label: 'Tracking', icon: MapPin },
+   137→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   138→];
+   139→
+   140→const staffNavItems: NavItem[] = [
+   141→  { tab: 'customers', label: 'Customers', icon: Users },
+   142→  { tab: 'drivers', label: 'Drivers', icon: UserCog },
+   143→  { tab: 'fleet', label: 'Fleet', icon: Truck },
+   144→  { tab: 'warehouse', label: 'Warehouse', icon: Warehouse },
+   145→  { tab: 'dispatch', label: 'Dispatch', icon: Radio },
+   146→  { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
+   147→  { tab: 'notifications', label: 'Notifications', icon: Bell },
+   148→  { tab: 'invoices', label: 'Invoices', icon: Receipt },
+   149→  { tab: 'quotations', label: 'Quotations', icon: FileText },
+   150→  { tab: 'reports', label: 'Reports', icon: BarChart3 },
+   151→];
+   152→
+   153→const driverNavItems: NavItem[] = [
+   154→  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
+   155→  { tab: 'deliveries', label: 'My Jobs', icon: ClipboardList },
+   156→  { tab: 'fleet', label: 'My Vehicle', icon: Truck },
+   157→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   158→];
+   159→
+   160→const customerNavItems: NavItem[] = [
+   161→  { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
+   162→  { tab: 'deliveries', label: 'My Shipments', icon: Package },
+   163→  { tab: 'tracking', label: 'Track Parcel', icon: MapPin },
+   164→  { tab: 'sourcing', label: 'Sourcing Requests', icon: ShoppingBag },
+   165→  { tab: 'messages', label: 'Messages', icon: MessageSquare },
+   166→  { tab: 'invoices', label: 'Invoices', icon: Receipt },
+   167→];
+   168→
+   169→function getNavItemsForRole(role: UserRole): NavItem[] {
+   170→  const staffRoles: UserRole[] = [
+   171→    'company_owner',
+   172→    'operations_manager',
+   173→    'dispatcher',
+   174→    'fleet_manager',
+   175→    'super_admin',
+   176→  ];
+   177→  if (staffRoles.includes(role)) {
+   178→    return [...commonNavItems, ...staffNavItems];
+   179→  }
+   180→  if (role === 'driver') {
+   181→    return driverNavItems;
+   182→  }
+   183→  if (role === 'customer') {
+   184→    return customerNavItems;
+   185→  }
+   186→  return commonNavItems;
+   187→}
+   188→
+   189→const tabTitles: Record<DashboardTab, string> = {
+   190→  overview: 'Overview',
+   191→  deliveries: 'Deliveries',
+   192→  tracking: 'Tracking',
+   193→  customers: 'Customers',
+   194→  drivers: 'Drivers',
+   195→  fleet: 'Fleet',
+   196→  warehouse: 'Warehouse',
+   197→  dispatch: 'Dispatch',
+   198→  sourcing: 'Sourcing',
+   199→  messages: 'Messages',
+   200→  reports: 'Reports',
+   201→  invoices: 'Invoices',
+   202→  quotations: 'Quotations',
+   203→  notifications: 'Notifications',
+   204→  settings: 'Settings',
+   205→};
+   206→
+   207→function getTabTitleForRole(tab: DashboardTab, role: UserRole): string {
+   208→  if (role === 'customer') {
+   209→    const map: Partial<Record<DashboardTab, string>> = {
+   210→      deliveries: 'My Shipments',
+   211→      tracking: 'Track Parcel',
+   212→      sourcing: 'Sourcing Requests',
+   213→      invoices: 'Invoices',
+   214→    };
+   215→    return map[tab] ?? tabTitles[tab];
+   216→  }
+   217→  if (role === 'driver') {
+   218→    const map: Partial<Record<DashboardTab, string>> = {
+   219→      deliveries: 'My Jobs',
+   220→      fleet: 'My Vehicle',
+   221→    };
+   222→    return map[tab] ?? tabTitles[tab];
+   223→  }
+   224→  return tabTitles[tab];
+   225→}
+   226→
+   227→// ============ SIDEBAR NAV CONTENT ============
+   228→function SidebarNavContent({
+   229→  onNavigate,
+   230→}: {
+   231→  onNavigate?: () => void;
+   232→}) {
+   233→  const { dashboardTab, setDashboardTab } = useNavStore();
+   234→  const { currentUser, logout } = useAuthStore();
+   235→  const { unreadCount } = useNotificationStore();
+   236→
+   237→  const role = currentUser?.role ?? 'customer';
+   238→  const navItems = getNavItemsForRole(role);
+   239→
+   240→  const handleNavClick = useCallback(
+   241→    (tab: DashboardTab) => {
+   242→      setDashboardTab(tab);
+   243→      onNavigate?.();
+   244→    },
+   245→    [setDashboardTab, onNavigate]
+   246→  );
+   247→
+   248→  const handleSignOut = useCallback(() => {
+   249→    logout();
+   250→    useNavStore.getState().setView('marketing');
+   251→    onNavigate?.();
+   252→  }, [logout, onNavigate]);
+   253→
+   254→  const initials = currentUser ? getInitials(currentUser.name) : '??';
+   255→  const displayName = currentUser?.name ?? 'Unknown User';
+   256→  const displayRole = currentUser
+   257→    ? roleLabels[currentUser.role] ?? currentUser.role
+   258→    : 'User';
+   259→
+   260→  return (
+   261→    <div className="flex h-full flex-col">
+   262→      {/* Gradient top line */}
+   263→      <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+   264→      {/* Logo area */}
+   265→      <div className="relative flex h-16 items-center gap-3 px-4 bg-white/60 dark:bg-black/20 backdrop-blur-sm">
+   266→        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+   267→          <Truck className="h-5 w-5" />
+   268→        </div>
+   269→        <div className="flex flex-col">
+   270→          <span className="text-sm font-bold leading-tight">SwiftFreight</span>
+   271→          {currentUser?.companyId && (
+   272→            <span className="text-[11px] leading-tight text-muted-foreground">
+   273→              {companies.find((c) => c.id === currentUser.companyId)?.name ?? 'My Company'}
+   274→            </span>
+   275→          )}
+   276→        </div>
+   277→      </div>
+   278→
+   279→      {/* Gradient border below logo */}
+   280→      <div className="h-[3px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+   281→      <ScrollArea className="flex-1 px-3 py-3">
+   282→        <nav className="space-y-1" aria-label="Main navigation">
+   283→          {navItems.map((item) => {
+   284→            const Icon = item.icon;
+   285→            const isActive = dashboardTab === item.tab;
+   286→            const showBadge = item.tab === 'messages' && unreadCount > 0;
+   287→
+   288→            return (
+   289→              <button
+   290→                key={item.tab}
+   291→                onClick={() => handleNavClick(item.tab)}
+   292→                className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+   293→                  isActive
+   294→                    ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
+   295→                    : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
+   296→                }`}
+   297→                aria-current={isActive ? 'page' : undefined}
+   298→              >
+   299→                {isActive && (
+   300→                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+   301→                )}
+   302→                <Icon
+   303→                  className={`h-5 w-5 shrink-0 ${
+   304→                    isActive
+   305→                      ? 'text-primary'
+   306→                      : 'text-muted-foreground group-hover:text-foreground'
+   307→                  }`}
+   308→                />
+   309→                <span className="flex-1 text-left">{item.label}</span>
+   310→                {showBadge && (
+   311→                  <Badge
+   312→                    variant="destructive"
+   313→                    className="h-5 min-w-5 justify-center px-1.5 text-[10px]"
+   314→                  >
+   315→                    {unreadCount > 9 ? '9+' : unreadCount}
+   316→                  </Badge>
+   317→                )}
+   318→              </button>
+   319→            );
+   320→          })}
+   321→        </nav>
+   322→      </ScrollArea>
+   323→
+   324→      {/* Bottom section */}
+   325→      <div className="space-y-1 border-t px-3 py-3">
+   326→        <button
+   327→          onClick={() => handleNavClick('settings')}
+   328→          className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+   329→            dashboardTab === 'settings'
+   330→              ? 'bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-primary'
+   331→              : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-4'
+   332→          }`}
+   333→        >
+   334→          {dashboardTab === 'settings' && (
+   335→            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-gradient-to-b from-primary via-emerald to-teal" />
+   336→          )}
+   337→          <Settings className={`h-5 w-5 shrink-0 ${dashboardTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+   338→          <span className="flex-1 text-left">Settings</span>
+   339→        </button>
+   340→        <button
+   341→          onClick={handleSignOut}
+   342→          className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+   343→        >
+   344→          <LogOut className="h-5 w-5 shrink-0" />
+   345→          <span className="flex-1 text-left">Sign Out</span>
+   346→        </button>
+   347→      </div>
+   348→
+   349→      {/* User info card */}
+   350→      <div className="border-t px-3 py-3">
+   351→        <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2.5">
+   352→          <Avatar className="h-8 w-8">
+   353→            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+   354→              {initials}
+   355→            </AvatarFallback>
+   356→          </Avatar>
+   357→          <div className="min-w-0 flex-1">
+   358→            <p className="truncate text-sm font-medium leading-tight">
+   359→              {displayName}
+   360→            </p>
+   361→            <Badge
+   362→              variant="secondary"
+   363→              className="mt-0.5 px-1.5 py-0 text-[10px]"
+   364→            >
+   365→              {displayRole}
+   366→            </Badge>
+   367→          </div>
+   368→        </div>
+   369→      </div>
+   370→    </div>
+   371→  );
+   372→}
+   373→
+   374→// ============ NOTIFICATION DROPDOWN ============
+   375→function NotificationDropdown() {
+   376→  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+   377→    useNotificationStore();
+   378→  const { setDashboardTab } = useNavStore();
+   379→  const isMobile = useIsMobile();
+   380→
+   381→  const recentNotifications = useMemo(
+   382→    () => notifications.slice(0, 5),
+   383→    [notifications]
+   384→  );
+   385→
+   386→  const hasUnread = unreadCount > 0;
+   387→
+   388→  return (
+   389→    <DropdownMenu>
+   390→      <DropdownMenuTrigger asChild>
+   391→        <Button
+   392→          variant="ghost"
+   393→          size="icon"
+   394→          className="relative h-9 w-9"
+   395→          aria-label={`Notifications${hasUnread ? ` (${unreadCount} unread)` : ''}`}
+   396→        >
+   397→          <Bell className="h-[18px] w-[18px]" />
+   398→          {hasUnread && (
+   399→            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
+   400→              {unreadCount > 9 ? '9+' : unreadCount}
+   401→            </span>
+   402→          )}
+   403→        </Button>
+   404→      </DropdownMenuTrigger>
+   405→      <DropdownMenuContent
+   406→        align="end"
+   407→        className="w-80 p-0"
+   408→        sideOffset={8}
+   409→      >
+   410→        <div className="flex items-center justify-between border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-teal-500/5">
+   411→          <DropdownMenuLabel className="p-0 text-sm font-semibold">
+   412→            Notifications
+   413→          </DropdownMenuLabel>
+   414→          {hasUnread && (
+   415→            <Button
+   416→              variant="ghost"
+   417→              size="sm"
+   418→              className="h-auto px-2 py-1 text-xs text-primary hover:text-primary"
+   419→              onClick={(e) => {
+   420→                e.stopPropagation();
+   421→                markAllAsRead();
+   422→              }}
+   423→            >
+   424→              Mark all as read
+   425→            </Button>
+   426→          )}
+   427→        </div>
+   428→        <ScrollArea className="max-h-72">
+   429→          {recentNotifications.length === 0 ? (
+   430→            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+   431→              <Bell className="mb-2 h-8 w-8 opacity-40" />
+   432→              <p className="text-sm">No notifications</p>
+   433→            </div>
+   434→          ) : (
+   435→            <div>
+   436→              {recentNotifications.map((notification) => {
+   437→                const IconComponent = getNotificationIcon(notification.type);
+   438→                const iconColor = getNotificationIconColor(notification.type);
+   439→                return (
+   440→                  <DropdownMenuItem
+   441→                    key={notification.id}
+   442→                    className={`flex cursor-pointer items-start gap-3 px-4 py-3.5 border-l-2 ${
+   443→                      notification.type === 'delivery_update' ? 'border-l-emerald-400' :
+   444→                      notification.type === 'new_message' ? 'border-l-primary' :
+   445→                      notification.type === 'payment' || notification.type === 'quote_received' ? 'border-l-teal-400' :
+   446→                      notification.type === 'alert' ? 'border-l-amber-400' :
+   447→                      'border-l-transparent'
+   448→                    } ${!notification.isRead ? 'bg-primary/[0.02]' : ''}`}
+   449→                    onClick={() => markAsRead(notification.id)}
+   450→                  >
+   451→                    <div
+   452→                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted ${iconColor}`}
+   453→                    >
+   454→                      <IconComponent className="h-4 w-4" />
+   455→                    </div>
+   456→                    <div className="min-w-0 flex-1">
+   457→                      <div className="flex items-center gap-2">
+   458→                        <p className="truncate text-sm font-medium">
+   459→                          {notification.title}
+   460→                        </p>
+   461→                        {!notification.isRead && (
+   462→                          <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+   463→                        )}
+   464→                      </div>
+   465→                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+   466→                        {notification.message}
+   467→                      </p>
+   468→                      <p className="mt-1 text-[11px] text-muted-foreground/70">
+   469→                        {getTimeAgo(notification.createdAt)}
+   470→                      </p>
+   471→                    </div>
+   472→                  </DropdownMenuItem>
+   473→                );
+   474→              })}
+   475→            </div>
+   476→          )}
+   477→        </ScrollArea>
+   478→        {notifications.length > 0 && (
+   479→          <>
+   480→            <Separator />
+   481→            <div className="px-2 py-2">
+   482→              <Button
+   483→                variant="ghost"
+   484→                size="sm"
+   485→                className="w-full justify-center text-xs text-primary hover:text-primary"
+   486→                onClick={() => setDashboardTab('notifications')}
+   487→              >
+   488→                View All Notifications
+   489→                <ChevronRight className="ml-1 h-3 w-3" />
+   490→              </Button>
+   491→            </div>
+   492→          </>
+   493→        )}
+   494→      </DropdownMenuContent>
+   495→    </DropdownMenu>
+   496→  );
+   497→}
+   498→
+   499→// ============ USER DROPDOWN ============
+   500→function UserDropdown() {
+   501→  const { currentUser, logout } = useAuthStore();
+   502→  const { setDashboardTab } = useNavStore();
+   503→
+   504→  const initials = currentUser ? getInitials(currentUser.name) : '??';
+   505→  const displayName = currentUser?.name ?? 'Unknown';
+   506→  const displayRole = currentUser
+   507→    ? roleLabels[currentUser.role] ?? currentUser.role
+   508→    : 'User';
+   509→
+   510→  const handleSignOut = useCallback(() => {
+   511→    logout();
+   512→    useNavStore.getState().setView('marketing');
+   513→  }, [logout]);
+   514→
+   515→  return (
+   516→    <DropdownMenu>
+   517→      <DropdownMenuTrigger asChild>
+   518→        <Button
+   519→          variant="ghost"
+   520→          className="relative flex h-9 items-center gap-2 rounded-full px-2"
+   521→        >
+   522→          <div className="relative h-7 w-7 rounded-full p-[2px] bg-gradient-to-br from-primary to-teal-500">
+   523→          <Avatar className="h-full w-full">
+   524→            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+   525→              {initials}
+   526→            </AvatarFallback>
+   527→          </Avatar>
+   528→          </div>
+   529→          <span className="hidden text-sm font-medium lg:inline-block">
+   530→            {displayName}
+   531→          </span>
+   532→        </Button>
+   533→      </DropdownMenuTrigger>
+   534→      <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
+   535→        <DropdownMenuLabel className="font-normal">
+   536→          <div className="flex flex-col space-y-1">
+   537→            <p className="text-sm font-medium leading-none">{displayName}</p>
+   538→            <p className="text-xs leading-none text-muted-foreground">
+   539→              {displayRole}
+   540→            </p>
+   541→          </div>
+   542→        </DropdownMenuLabel>
+   543→        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+   544→        <DropdownMenuItem className="cursor-pointer">
+   545→          <UserIcon className="mr-2 h-4 w-4" />
+   546→          My Profile
+   547→        </DropdownMenuItem>
+   548→        <DropdownMenuItem
+   549→          className="cursor-pointer"
+   550→          onClick={() => setDashboardTab('settings')}
+   551→        >
+   552→          <Settings className="mr-2 h-4 w-4" />
+   553→          Settings
+   554→        </DropdownMenuItem>
+   555→        <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+   556→        <DropdownMenuItem
+   557→          className="cursor-pointer text-destructive focus:text-destructive"
+   558→          onClick={handleSignOut}
+   559→        >
+   560→          <LogOut className="mr-2 h-4 w-4" />
+   561→          Sign Out
+   562→        </DropdownMenuItem>
+   563→      </DropdownMenuContent>
+   564→    </DropdownMenu>
+   565→  );
+   566→}
+   567→
+   568→// ============ DASHBOARD HEADER ============
+   569→function DashboardHeader() {
+   570→  const {
+   571→    dashboardTab,
+   572→    setDashboardTab,
+   573→    setTrackingNumber,
+   574→    trackingNumber,
+   575→    selectDelivery,
+   576→  } = useNavStore();
+   577→  const { theme, setTheme } = useTheme();
+   578→  const isMobile = useIsMobile();
+   579→  const { setSidebarOpen } = useNavStore();
+   580→
+   581→  const { currentUser } = useAuthStore();
+   582→  const role = currentUser?.role ?? 'customer';
+   583→  const title = getTabTitleForRole(dashboardTab, role);
+   584→
+   585→  // Quick search state
+   586→  const [quickSearchQuery, setQuickSearchQuery] = useState('');
+   587→  const [showQuickSearch, setShowQuickSearch] = useState(false);
+   588→  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+   589→  const searchContainerRef = useRef<HTMLDivElement>(null);
+   590→  const searchInputRef = useRef<HTMLInputElement>(null);
+   591→
+   592→  // Search results memoized
+   593→  const quickSearchResults = useMemo(() => {
+   594→    const q = quickSearchQuery.trim().toLowerCase();
+   595→    if (q.length < 2) return { deliveries: [], customers: [], drivers: [] };
+   596→
+   597→    const maxPerType = 3;
+   598→    const deliveryResults = deliveries
+   599→      .filter(
+   600→        (d) =>
+   601→          d.trackingNumber.toLowerCase().includes(q) ||
+   602→          d.customerName.toLowerCase().includes(q)
+   603→      )
+   604→      .slice(0, maxPerType)
+   605→      .map((d) => ({
+   606→        id: d.id,
+   607→        type: 'delivery' as const,
+   608→        title: d.trackingNumber,
+   609→        subtitle: d.customerName,
+   610→        badge: statusLabels[d.status] || d.status,
+   611→        badgeColor: statusColors[d.status] || '',
+   612→      }));
+   613→
+   614→    const customerResults = customers
+   615→      .filter(
+   616→        (c) =>
+   617→          c.name.toLowerCase().includes(q) ||
+   618→          c.email.toLowerCase().includes(q)
+   619→      )
+   620→      .slice(0, maxPerType)
+   621→      .map((c) => ({
+   622→        id: c.id,
+   623→        type: 'customer' as const,
+   624→        title: c.name,
+   625→        subtitle: c.email,
+   626→        badge: 'Customer',
+   627→        badgeColor: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+   628→      }));
+   629→
+   630→    const driverResults = drivers
+   631→      .filter(
+   632→        (d) =>
+   633→          d.name.toLowerCase().includes(q) ||
+   634→          d.phone.includes(q)
+   635→      )
+   636→      .slice(0, maxPerType)
+   637→      .map((d) => ({
+   638→        id: d.id,
+   639→        type: 'driver' as const,
+   640→        title: d.name,
+   641→        subtitle: d.phone,
+   642→        badge: `Driver · ${d.status.replace('_', ' ')}`,
+   643→        badgeColor: d.status === 'available' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+   644→      }));
+   645→
+   646→    return { deliveries: deliveryResults, customers: customerResults, drivers: driverResults };
+   647→  }, [quickSearchQuery]);
+   648→
+   649→  // Flat results for keyboard navigation
+   650→  const flatResults = useMemo(() => {
+   651→    return [
+   652→      ...quickSearchResults.deliveries.map((r) => ({ ...r, group: 'Deliveries' })),
+   653→      ...quickSearchResults.customers.map((r) => ({ ...r, group: 'Customers' })),
+   654→      ...quickSearchResults.drivers.map((r) => ({ ...r, group: 'Drivers' })),
+   655→    ];
+   656→  }, [quickSearchResults]);
+   657→
+   658→  const totalResults = flatResults.length;
+   659→
+   660→  // Click outside to close
+   661→  useEffect(() => {
+   662→    const handleClickOutside = (e: MouseEvent) => {
+   663→      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+   664→        setShowQuickSearch(false);
+   665→      }
+   666→    };
+   667→    document.addEventListener('mousedown', handleClickOutside);
+   668→    return () => document.removeEventListener('mousedown', handleClickOutside);
+   669→  }, []);
+   670→
+   671→  const handleResultClick = useCallback(
+   672→    (result: typeof flatResults[number]) => {
+   673→      setShowQuickSearch(false);
+   674→      setQuickSearchQuery('');
+   675→      if (result.type === 'delivery') {
+   676→        selectDelivery(result.id);
+   677→        setDashboardTab('deliveries');
+   678→      } else if (result.type === 'customer') {
+   679→        setDashboardTab('customers');
+   680→      } else if (result.type === 'driver') {
+   681→        setDashboardTab('drivers');
+   682→      }
+   683→    },
+   684→    [selectDelivery, setDashboardTab]
+   685→  );
+   686→
+   687→  // Keyboard navigation
+   688→  useEffect(() => {
+   689→    const handleKeyDown = (e: KeyboardEvent) => {
+   690→      if (!showQuickSearch || totalResults === 0) return;
+   691→      if (e.key === 'ArrowDown') {
+   692→        e.preventDefault();
+   693→        setHighlightedIndex((prev) => (prev < totalResults - 1 ? prev + 1 : 0));
+   694→      } else if (e.key === 'ArrowUp') {
+   695→        e.preventDefault();
+   696→        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : totalResults - 1));
+   697→      } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+   698→        e.preventDefault();
+   699→        handleResultClick(flatResults[highlightedIndex]);
+   700→      } else if (e.key === 'Escape') {
+   701→        setShowQuickSearch(false);
+   702→        searchInputRef.current?.blur();
+   703→      }
+   704→    };
+   705→    document.addEventListener('keydown', handleKeyDown);
+   706→    return () => document.removeEventListener('keydown', handleKeyDown);
+   707→  }, [showQuickSearch, totalResults, highlightedIndex, handleResultClick]);
+   708→
+   709→  const handleQuickTrack = useCallback(
+   710→    (e: React.FormEvent<HTMLFormElement>) => {
+   711→      e.preventDefault();
+   712→      const val = quickSearchQuery.trim() || trackingNumber.trim();
+   713→      if (val) {
+   714→        setTrackingNumber(val);
+   715→        setDashboardTab('tracking');
+   716→        setShowQuickSearch(false);
+   717→      }
+   718→    },
+   719→    [quickSearchQuery, trackingNumber, setTrackingNumber, setDashboardTab]
+   720→  );
+   721→
+   722→  return (
+   723→    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-card px-4 md:px-6">
+   724→      {/* Left: hamburger + breadcrumb / mobile title */}
+   725→      <div className="flex min-w-0 items-center gap-3">
+   726→        {isMobile && (
+   727→          <Button
+   728→            variant="ghost"
+   729→            size="icon"
+   730→            className="h-9 w-9 shrink-0"
+   731→            onClick={() => setSidebarOpen(true)}
+   732→            aria-label="Open menu"
+   733→          >
+   734→            <Menu className="h-5 w-5" />
+   735→          </Button>
+   736→        )}
+   737→        <div className="hidden md:block">
+   738→          <Breadcrumb>
+   739→            <BreadcrumbList>
+   740→              <BreadcrumbItem>
+   741→                <BreadcrumbPage className="text-sm font-medium">
+   742→                  {title}
+   743→                </BreadcrumbPage>
+   744→              </BreadcrumbItem>
+   745→            </BreadcrumbList>
+   746→          </Breadcrumb>
+   747→        </div>
+   748→        {isMobile && (
+   749→          <h1 className="truncate text-sm font-semibold">{title}</h1>
+   750→        )}
+   751→      </div>
+   752→
+   753→      {/* Right: search, theme, notifications, user */}
+   754→      <div className="ml-auto flex items-center gap-2">
+   755→        {/* Quick search — desktop only */}
+   756→        <form onSubmit={handleQuickTrack} className="hidden md:block">
+   757→          <div ref={searchContainerRef} className="relative">
+   758→            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+   759→            <Input
+   760→              ref={searchInputRef}
+   761→              type="text"
+   762→              placeholder="Search deliveries, customers, drivers..."
+   763→              value={quickSearchQuery}
+   764→              onChange={(e) => {
+   765→                setQuickSearchQuery(e.target.value);
+   766→                setShowQuickSearch(true);
+   767→                setHighlightedIndex(-1);
+   768→              }}
+   769→              onFocus={() => {
+   770→                if (quickSearchQuery.trim().length >= 2) setShowQuickSearch(true);
+   771→              }}
+   772→              className="h-9 w-56 bg-muted/50 pl-8 pr-3 text-sm lg:w-72 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/30"
+   773→            />
+   774→
+   775→            {/* Search dropdown */}
+   776→            {showQuickSearch && quickSearchQuery.trim().length >= 2 && (
+   777→              <div className="absolute left-0 top-full z-50 mt-1.5 w-80 lg:w-96 rounded-xl border bg-background/95 backdrop-blur-sm shadow-lg overflow-hidden">
+   778→                {totalResults === 0 ? (
+   779→                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+   780→                    <Search className="h-8 w-8 mb-2 opacity-40" />
+   781→                    <p className="text-sm">No results found</p>
+   782→                    <p className="text-xs mt-1">Try a different search term</p>
+   783→                  </div>
+   784→                ) : (
+   785→                  <ScrollArea className="max-h-80">
+   786→                    <div className="p-1.5">
+   787→                      {/* Deliveries group */}
+   788→                      {quickSearchResults.deliveries.length > 0 && (
+   789→                        <div>
+   790→                          <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Deliveries</p>
+   791→                          {quickSearchResults.deliveries.map((r) => {
+   792→                            const idx = flatResults.findIndex((f) => f.id === r.id && f.type === 'delivery');
+   793→                            return (
+   794→                              <button
+   795→                                key={r.id}
+   796→                                type="button"
+   797→                                onClick={() => handleResultClick({ ...r, group: 'Deliveries' })}
+   798→                                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+   799→                                  highlightedIndex === idx ? 'bg-primary/10 text-primary' : 'hover:bg-muted/80'
+   800→                                }`}
+   801→                              >
+   802→                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+   803→                                  highlightedIndex === idx ? 'bg-primary/20' : 'bg-muted'
+   804→                                }`}>
+   805→                                  <Package className="h-4 w-4 text-primary" />
+   806→                                </div>
+   807→                                <div className="min-w-0 flex-1">
+   808→                                  <p className="truncate font-medium">{r.title}</p>
+   809→                                  <p className="truncate text-xs text-muted-foreground">{r.subtitle}</p>
+   810→                                </div>
+   811→                                <Badge variant="secondary" className={`shrink-0 text-[10px] ${r.badgeColor}`}>
+   812→                                  {r.badge}
+   813→                                </Badge>
+   814→                              </button>
+   815→                            );
+   816→                          })}
+   817→                        </div>
+   818→                      )}
+   819→
+   820→                      {/* Customers group */}
+   821→                      {quickSearchResults.customers.length > 0 && (
+   822→                        <div>
+   823→                          <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Customers</p>
+   824→                          {quickSearchResults.customers.map((r) => {
+   825→                            const idx = flatResults.findIndex((f) => f.id === r.id && f.type === 'customer');
+   826→                            return (
+   827→                              <button
+   828→                                key={r.id}
+   829→                                type="button"
+   830→                                onClick={() => handleResultClick({ ...r, group: 'Customers' })}
+   831→                                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+   832→                                  highlightedIndex === idx ? 'bg-primary/10 text-primary' : 'hover:bg-muted/80'
+   833→                                }`}
+   834→                              >
+   835→                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+   836→                                  highlightedIndex === idx ? 'bg-primary/20' : 'bg-muted'
+   837→                                }`}>
+   838→                                  <UserIcon className="h-4 w-4 text-violet-500" />
+   839→                                </div>
+   840→                                <div className="min-w-0 flex-1">
+   841→                                  <p className="truncate font-medium">{r.title}</p>
+   842→                                  <p className="truncate text-xs text-muted-foreground">{r.subtitle}</p>
+   843→                                </div>
+   844→                                <Badge variant="secondary" className={`shrink-0 text-[10px] ${r.badgeColor}`}>
+   845→                                  {r.badge}
+   846→                                </Badge>
+   847→                              </button>
+   848→                            );
+   849→                          })}
+   850→                        </div>
+   851→                      )}
+   852→
+   853→                      {/* Drivers group */}
+   854→                      {quickSearchResults.drivers.length > 0 && (
+   855→                        <div>
+   856→                          <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Drivers</p>
+   857→                          {quickSearchResults.drivers.map((r) => {
+   858→                            const idx = flatResults.findIndex((f) => f.id === r.id && f.type === 'driver');
+   859→                            return (
+   860→                              <button
+   861→                                key={r.id}
+   862→                                type="button"
+   863→                                onClick={() => handleResultClick({ ...r, group: 'Drivers' })}
+   864→                                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+   865→                                  highlightedIndex === idx ? 'bg-primary/10 text-primary' : 'hover:bg-muted/80'
+   866→                                }`}
+   867→                              >
+   868→                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+   869→                                  highlightedIndex === idx ? 'bg-primary/20' : 'bg-muted'
+   870→                                }`}>
+   871→                                  <Truck className="h-4 w-4 text-amber-500" />
+   872→                                </div>
+   873→                                <div className="min-w-0 flex-1">
+   874→                                  <p className="truncate font-medium">{r.title}</p>
+   875→                                  <p className="truncate text-xs text-muted-foreground">{r.subtitle}</p>
+   876→                                </div>
+   877→                                <Badge variant="secondary" className={`shrink-0 text-[10px] ${r.badgeColor}`}>
+   878→                                  {r.badge}
+   879→                                </Badge>
+   880→                              </button>
+   881→                            );
+   882→                          })}
+   883→                        </div>
+   884→                      )}
+   885→
+   886→                      {/* Footer hint */}
+   887→                      <div className="mt-1 border-t px-2.5 py-1.5 flex items-center gap-3 text-[10px] text-muted-foreground">
+   888→                        <span className="flex items-center gap-1"><kbd className="rounded border bg-muted px-1 font-mono text-[9px]">↑↓</kbd> Navigate</span>
+   889→                        <span className="flex items-center gap-1"><kbd className="rounded border bg-muted px-1 font-mono text-[9px]">↵</kbd> Select</span>
+   890→                        <span className="flex items-center gap-1"><kbd className="rounded border bg-muted px-1 font-mono text-[9px]">esc</kbd> Close</span>
+   891→                      </div>
+   892→                    </div>
+   893→                  </ScrollArea>
+   894→                )}
+   895→              </div>
+   896→            )}
+   897→          </div>
+   898→        </form>
+   899→
+   900→        {/* Theme toggle */}
+   901→        <Button
+   902→          variant="ghost"
+   903→          size="icon"
+   904→          className="h-9 w-9"
+   905→          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+   906→          aria-label="Toggle theme"
+   907→        >
+   908→          <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+   909→          <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+   910→        </Button>
+   911→
+   912→        {/* Notifications */}
+   913→        <NotificationDropdown />
+   914→
+   915→        {/* User avatar */}
+   916→        <UserDropdown />
+   917→      </div>
+   918→    </header>
+   919→  );
+   920→}
+   921→
+   922→// ============ TAB RENDERER ============
+   923→function TabRenderer({ tab }: { tab: DashboardTab }) {
+   924→  const Component = tabComponentMap[tab];
+   925→  if (!Component) {
+   926→    return (
+   927→      <div className="flex items-center justify-center py-20 text-muted-foreground">
+   928→        Unknown tab
+   929→      </div>
+   930→    );
+   931→  }
+   932→  return <Component />;
+   933→}
+   934→
+   935→// ============ MAIN DASHBOARD LAYOUT ============
+   936→export function DashboardLayout() {
+   937→  const isMobile = useIsMobile();
+   938→  const { dashboardTab, sidebarOpen, setSidebarOpen, setDashboardTab } = useNavStore();
+   939→  const { currentUser } = useAuthStore();
+   940→  const { notifications } = useNotificationStore();
+   941→
+   942→  // Initialize notification store with mock data on first render
+   943→  useEffect(() => {
+   944→    if (notifications.length === 0 && currentUser) {
+   945→      const userNotifs = mockNotifications.filter(
+   946→        (n) => n.userId === currentUser.id
+   947→      );
+   948→      if (userNotifs.length > 0) {
+   949→        const store = useNotificationStore.getState();
+   950→        if (store.notifications.length === 0) {
+   951→          const unread = userNotifs.filter((n) => !n.isRead).length;
+   952→          useNotificationStore.setState({
+   953→            notifications: userNotifs,
+   954→            unreadCount: unread,
+   955→          });
+   956→        }
+   957→      }
+   958→    }
+   959→  }, [currentUser, notifications.length]);
+   960→
+   961→  // Set default tab for role on login
+   962→  useEffect(() => {
+   963→    if (currentUser) {
+   964→      const navItems = getNavItemsForRole(currentUser.role);
+   965→      const currentTab = useNavStore.getState().dashboardTab;
+   966→      const validTabs = navItems.map((n) => n.tab);
+   967→      if (!validTabs.includes(currentTab)) {
+   968→        setDashboardTab(navItems[0].tab);
+   969→      }
+   970→    }
+   971→  }, [currentUser, setDashboardTab]);
+   972→
+   973→  // Close mobile sidebar on tab change
+   974→  useEffect(() => {
+   975→    if (isMobile) {
+   976→      setSidebarOpen(false);
+   977→    }
+   978→  }, [dashboardTab, isMobile, setSidebarOpen]);
+   979→
+   980→  return (
+   981→    <div className="flex h-screen overflow-hidden bg-background">
+   982→      {/* Desktop sidebar */}
+   983→      {!isMobile && (
+   984→        <aside className="hidden w-64 shrink-0 border-r bg-card shadow-sm md:flex md:flex-col">
+   985→          <SidebarNavContent />
+   986→        </aside>
+   987→      )}
+   988→
+   989→      {/* Mobile sidebar (Sheet) */}
+   990→      {isMobile && (
+   991→        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+   992→          <SheetContent side="left" className="w-72 p-0">
+   993→            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+   994→            <SidebarNavContent onNavigate={() => setSidebarOpen(false)} />
+   995→          </SheetContent>
+   996→        </Sheet>
+   997→      )}
+   998→
+   999→      {/* Main content area */}
+  1000→      <div className="flex flex-1 flex-col overflow-hidden">
+  1001→        <DashboardHeader />
+  1002→        {/* Gradient top-border accent */}
+  1003→        <div className="h-1 bg-gradient-to-r from-primary via-emerald to-teal shrink-0" />
+  1004→        <main className="flex-1 scroll-smooth overflow-y-auto p-4 md:p-6">
+  1005→          <TabRenderer tab={dashboardTab} />
+  1006→        </main>
+  1007→      </div>
+  1008→    </div>
+  1009→  );
+  1010→}

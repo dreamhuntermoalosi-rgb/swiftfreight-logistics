@@ -44,7 +44,8 @@ import {
   Package, Search, MapPin, ArrowRight, Plus, X, Clock, Truck, CheckCircle2,
   Circle, MoreHorizontal, Eye, LayoutGrid, List, ChevronUp, ChevronDown,
   FileText, UserPlus, Calendar, Phone, Building2, Weight, Star, Camera, User,
-  Download, CheckCircle, Printer, CreditCard, Columns3,
+  Download, CheckCircle, Printer, CreditCard, Columns3, ShieldAlert, ShieldCheck,
+  AlertTriangle, Box, Droplets, Monitor, FileCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -402,6 +403,37 @@ function NewDeliveryForm({ onSuccess }: { onSuccess: (d: Delivery) => void }) {
 }
 
 // Delivery Detail Sheet
+// ============ DECLARATION TAG ============
+function DeclarationTag({
+  icon: Icon,
+  label,
+  active,
+  color,
+  activeColor,
+  textColor,
+}: {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  color: string;
+  activeColor: string;
+  textColor: string;
+}) {
+  return (
+    <div
+      className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors"
+      style={{
+        backgroundColor: active ? activeColor : color,
+        color: active ? textColor : '#9E9E9E',
+        border: `1px solid ${active ? textColor : '#E0E0E0'}`,
+      }}
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </div>
+  );
+}
+
 function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery | null; open: boolean; onClose: () => void }) {
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
@@ -502,6 +534,47 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
               )}
               <div className="flex justify-between"><span className="text-muted-foreground">Priority</span>
                 <Badge className={`${priorityColors[delivery.priority] || ''} capitalize`} variant="secondary">{delivery.priority}</Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Package Declaration */}
+          <Card style={{ backgroundColor: '#F8FFF8', borderColor: '#C8E6C9' }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <FileCheck className="h-4 w-4" style={{ color: '#2E7D32' }} /> Package Declaration
+                </span>
+                <Badge
+                  className="text-[10px] font-semibold"
+                  style={{ backgroundColor: '#E8F5E9', color: '#2E7D32' }}
+                >
+                  <ShieldCheck className="h-3 w-3 mr-1" /> Accepted
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-3">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="text-xs"
+                  style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', borderColor: '#A5D6A7' }}
+                >
+                  {delivery.packageWeight > 10 ? 'Large Parcel' : delivery.packageWeight > 2 ? 'Medium Parcel' : 'Small Parcel'}
+                </Badge>
+                <span className="text-xs" style={{ color: '#9E9E9E' }}>
+                  Declared on {new Date(delivery.createdAt).toLocaleDateString('en-LS', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <DeclarationTag icon={AlertTriangle} label="Dangerous Goods" active={delivery.declaredValue != null && delivery.declaredValue > 5000} color="#FEE2E2" activeColor="#FECACA" textColor="#B91C1C" />
+                <DeclarationTag icon={Box} label="Fragile" active={delivery.priority === 'urgent'} color="#F3F4F6" activeColor="#FEF3C7" textColor="#92400E" />
+                <DeclarationTag icon={Monitor} label="Electronics" active={delivery.packageDescription.toLowerCase().includes('phone') || delivery.packageDescription.toLowerCase().includes('tv') || delivery.packageDescription.toLowerCase().includes('laptop')} color="#F3F4F6" activeColor="#DBEAFE" textColor="#1E40AF" />
+                <DeclarationTag icon={Droplets} label="Liquids" active={false} color="#F3F4F6" activeColor="#E0E7FF" textColor="#3730A3" />
+                <DeclarationTag icon={FileText} label="Documents" active={delivery.packageWeight < 1} color="#F3F4F6" activeColor="#E8F5E9" textColor="#2E7D32" />
+              </div>
+              <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ backgroundColor: 'white', border: '1px solid #E0E0E0', color: '#212121' }}>
+                &quot;I declare that the contents of this package are accurately described above. The package does not contain any prohibited, dangerous, or illegal goods. I understand that SwiftFreight reserves the right to inspect any package and may refuse carriage if the contents are found to be misrepresented.&quot;
               </div>
             </CardContent>
           </Card>
@@ -610,6 +683,18 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
               )}
               <Button variant="outline" size="sm" onClick={() => toast.info('Invoice generation would start')}>
                 <FileText className="mr-2 h-4 w-4" /> Generate Invoice
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                style={{ borderColor: '#EF4444', color: '#EF4444' }}
+                onClick={() => {
+                  onClose();
+                  useNavStore.getState().setDashboardTab('safety');
+                }}
+              >
+                <ShieldAlert className="h-4 w-4" /> Report Issue
               </Button>
             </div>
           </div>

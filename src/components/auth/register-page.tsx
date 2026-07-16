@@ -9,11 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { User as UserType } from '@/lib/types';
 import {
   Truck, Mail, Lock, ArrowLeft, Eye, EyeOff, UserPlus,
-  Building2, Phone, UserIcon, MapPin, Briefcase,
+  Building2, Phone, UserIcon, MapPin, Briefcase, ShieldAlert, LockIcon,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -50,7 +51,9 @@ export function RegisterPage() {
   const [custPassword, setCustPassword] = useState('');
   const [custConfirmPassword, setCustConfirmPassword] = useState('');
   const [custCity, setCustCity] = useState('');
+  const [custNationalId, setCustNationalId] = useState('');
   const [custTerms, setCustTerms] = useState(false);
+  const [custParcelDeclaration, setCustParcelDeclaration] = useState(false);
 
   // Company fields
   const [compName, setCompName] = useState('');
@@ -70,6 +73,7 @@ export function RegisterPage() {
     if (custPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     if (custPassword !== custConfirmPassword) { toast.error('Passwords do not match'); return; }
     if (!custCity) { toast.error('Please select your city'); return; }
+    if (!custParcelDeclaration) { toast.error('Please accept the parcel declaration to continue'); return; }
     if (!custTerms) { toast.error('Please accept the terms and conditions'); return; }
 
     setIsLoading(true);
@@ -121,7 +125,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50/50">
+    <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
       {/* Top bar */}
       <header className="w-full px-4 sm:px-6 py-4">
         <div className="max-w-lg mx-auto flex items-center gap-3">
@@ -143,12 +147,12 @@ export function RegisterPage() {
           transition={{ duration: 0.4 }}
           className="w-full max-w-lg"
         >
-          <Card className="relative border-0 shadow-lg shadow-gray-200/60">
-            {/* Decorative gradient line at top */}
-            <div className="h-1 rounded-t-xl gradient-top-bar" />
+          <Card className="relative bg-white border border-[#E0E0E0] shadow-sm">
+            {/* Decorative green line at top */}
+            <div className="h-1 rounded-t-xl bg-[#2E7D32]" />
             <CardHeader className="text-center space-y-2 pb-2">
               <div className="flex justify-center mb-1">
-                <div className="bg-emerald-600 p-2 rounded-xl">
+                <div className="bg-[#2E7D32] p-2 rounded-xl">
                   <Truck className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -169,7 +173,7 @@ export function RegisterPage() {
                       Company
                     </TabsTrigger>
                     {/* Sliding indicator */}
-                    <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-4px)] rounded-md bg-emerald-600 transition-transform duration-300 ease-out ${activeTab === 'company' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`} />
+                    <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-4px)] rounded-md bg-[#2E7D32] transition-transform duration-300 ease-out ${activeTab === 'company' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`} />
                   </TabsList>
                 </div>
 
@@ -185,7 +189,7 @@ export function RegisterPage() {
                           placeholder="Mmathapelo Mphatsoe"
                           value={custName}
                           onChange={(e) => setCustName(e.target.value)}
-                          className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                         />
                       </div>
                     </div>
@@ -201,12 +205,14 @@ export function RegisterPage() {
                             placeholder="you@email.co.ls"
                             value={custEmail}
                             onChange={(e) => setCustEmail(e.target.value)}
-                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cust-phone">Phone</Label>
+                        <Label htmlFor="cust-phone">
+                          Phone Number <span className="text-red-500">*</span>
+                        </Label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -215,9 +221,10 @@ export function RegisterPage() {
                             placeholder="+266 2xxx xxxx"
                             value={custPhone}
                             onChange={(e) => setCustPhone(e.target.value)}
-                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                         </div>
+                        <p className="text-[11px] text-muted-foreground">Lesotho country code: +266</p>
                       </div>
                     </div>
 
@@ -232,7 +239,7 @@ export function RegisterPage() {
                             placeholder="Min. 6 characters"
                             value={custPassword}
                             onChange={(e) => setCustPassword(e.target.value)}
-                            className="pl-9 pr-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                           <button
                             type="button"
@@ -253,7 +260,7 @@ export function RegisterPage() {
                             placeholder="Re-enter password"
                             value={custConfirmPassword}
                             onChange={(e) => setCustConfirmPassword(e.target.value)}
-                            className="pl-9 pr-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                           <button
                             type="button"
@@ -269,7 +276,7 @@ export function RegisterPage() {
                     <div className="space-y-2">
                       <Label htmlFor="cust-city">City</Label>
                       <Select value={custCity} onValueChange={setCustCity}>
-                        <SelectTrigger>
+                        <SelectTrigger className="border-[#E0E0E0]">
                           <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
                           <SelectValue placeholder="Select your city" />
                         </SelectTrigger>
@@ -281,24 +288,77 @@ export function RegisterPage() {
                       </Select>
                     </div>
 
+                    {/* KYC: National ID / Passport */}
+                    <div className="space-y-2">
+                      <Label htmlFor="cust-national-id" className="flex items-center gap-2">
+                        National ID / Passport Number
+                        <span className="text-[11px] text-muted-foreground font-normal">(optional)</span>
+                      </Label>
+                      <div className="relative">
+                        <ShieldAlert className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="cust-national-id"
+                          placeholder="e.g. 1234567890 or passport number"
+                          value={custNationalId}
+                          onChange={(e) => setCustNationalId(e.target.value)}
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                        />
+                      </div>
+                      <p className="text-[11px] text-amber-600 flex items-center gap-1">
+                        <ShieldAlert className="h-3 w-3" />
+                        Required for shipments over M5,000
+                      </p>
+                    </div>
+
+                    {/* Platform Disclaimer */}
+                    <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-3">
+                      <p className="text-[12px] text-[#1B5E20] leading-relaxed">
+                        SwiftFreight is a technology platform. Courier companies are responsible for transporting goods. Customers are responsible for declaring package contents accurately.
+                      </p>
+                    </div>
+
+                    {/* Package Declaration */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Label className="text-sm font-semibold text-[#2E7D32]">Package Declaration</Label>
+                        <Badge variant="outline" className="bg-[#2E7D32]/10 text-[#2E7D32] border-[#2E7D32]/30 text-[10px] px-1.5 py-0 flex items-center gap-1">
+                          <LockIcon className="h-2.5 w-2.5" />
+                          Required
+                        </Badge>
+                      </div>
+                      <div className="bg-white border border-[#E0E0E0] rounded-lg p-3">
+                        <div className="flex items-start gap-2.5">
+                          <Checkbox
+                            id="cust-parcel-declaration"
+                            checked={custParcelDeclaration}
+                            onCheckedChange={(checked) => setCustParcelDeclaration(checked === true)}
+                            className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+                          />
+                          <Label htmlFor="cust-parcel-declaration" className="text-[12px] font-normal text-muted-foreground leading-relaxed cursor-pointer">
+                            I declare that this parcel does not contain prohibited, illegal, dangerous, counterfeit, or undeclared goods. I understand that false declarations may result in account suspension and reporting to the relevant authorities.
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex items-start gap-2 pt-1">
                       <Checkbox
                         id="cust-terms"
                         checked={custTerms}
                         onCheckedChange={(checked) => setCustTerms(checked === true)}
-                        className="mt-0.5"
+                        className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
                       />
                       <Label htmlFor="cust-terms" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
                         I agree to the{' '}
-                        <button type="button" className="text-emerald-600 hover:underline">Terms of Service</button>
+                        <button type="button" className="text-[#2E7D32] hover:underline">Terms of Service</button>
                         {' '}and{' '}
-                        <button type="button" className="text-emerald-600 hover:underline">Privacy Policy</button>
+                        <button type="button" className="text-[#2E7D32] hover:underline">Privacy Policy</button>
                       </Label>
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                      className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -328,7 +388,7 @@ export function RegisterPage() {
                           placeholder="Mountain Express Logistics"
                           value={compName}
                           onChange={(e) => setCompName(e.target.value)}
-                          className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                         />
                       </div>
                     </div>
@@ -344,7 +404,7 @@ export function RegisterPage() {
                             placeholder="info@company.co.ls"
                             value={compEmail}
                             onChange={(e) => setCompEmail(e.target.value)}
-                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                         </div>
                       </div>
@@ -358,7 +418,7 @@ export function RegisterPage() {
                             placeholder="+266 2xxx xxxx"
                             value={compPhone}
                             onChange={(e) => setCompPhone(e.target.value)}
-                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                         </div>
                       </div>
@@ -368,7 +428,7 @@ export function RegisterPage() {
                       <div className="space-y-2">
                         <Label>Company Type</Label>
                         <Select value={compType} onValueChange={setCompType}>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-[#E0E0E0]">
                             <Briefcase className="h-4 w-4 text-muted-foreground mr-2" />
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
@@ -388,15 +448,14 @@ export function RegisterPage() {
                             placeholder="Your full name"
                             value={compOwnerName}
                             onChange={(e) => setCompOwnerName(e.target.value)}
-                            className="pl-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Plan Selection */}
-                    {/* Gradient divider before plan selector */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent my-2" />
+                    <div className="h-px bg-[#E0E0E0] my-2" />
                     <div className="space-y-2">
                       <Label>Plan</Label>
                       <div className="grid grid-cols-3 gap-3">
@@ -407,19 +466,19 @@ export function RegisterPage() {
                             onClick={() => setCompPlan(plan.value)}
                             className={`relative rounded-lg border-2 p-3 text-left transition-all duration-200 hover:scale-[1.02] ${
                               compPlan === plan.value
-                                ? 'gradient-border-animated bg-emerald-50 dark:bg-emerald-950/20'
-                                : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600 bg-white dark:bg-card'
+                                ? 'border-[#2E7D32] bg-[#E8F5E9]'
+                                : 'border-[#E0E0E0] hover:border-[#BDBDBD] bg-white'
                             }`}
                           >
                             {compPlan === plan.value && (
-                              <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                                <svg className="h-3 w-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-[#2E7D32] flex items-center justify-center">
+                                <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                               </div>
                             )}
                             <p className="font-semibold text-sm">{plan.label}</p>
-                            <p className="text-emerald-700 dark:text-emerald-400 font-bold text-lg leading-tight">{plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+                            <p className="text-[#2E7D32] font-bold text-lg leading-tight">{plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
                             <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{plan.desc}</p>
                           </button>
                         ))}
@@ -436,7 +495,7 @@ export function RegisterPage() {
                           placeholder="Min. 6 characters"
                           value={compPassword}
                           onChange={(e) => setCompPassword(e.target.value)}
-                          className="pl-9 pr-9 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                          className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                         />
                         <button
                           type="button"
@@ -453,20 +512,20 @@ export function RegisterPage() {
                         id="comp-terms"
                         checked={compTerms}
                         onCheckedChange={(checked) => setCompTerms(checked === true)}
-                        className="mt-0.5"
+                        className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
                       />
                       <Label htmlFor="comp-terms" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
                         I agree to the{' '}
-                        <button type="button" className="text-emerald-600 hover:underline">Terms of Service</button>
+                        <button type="button" className="text-[#2E7D32] hover:underline">Terms of Service</button>
                         ,{' '}
-                        <button type="button" className="text-emerald-600 hover:underline">Privacy Policy</button>
+                        <button type="button" className="text-[#2E7D32] hover:underline">Privacy Policy</button>
                         , and the selected plan&apos;s billing terms
                       </Label>
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                      className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -491,7 +550,7 @@ export function RegisterPage() {
                 Already have an account?{' '}
                 <button
                   onClick={() => setView('login')}
-                  className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                  className="text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
                 >
                   Sign In
                 </button>

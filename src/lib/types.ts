@@ -260,7 +260,7 @@ export interface AnalyticsData {
 }
 
 // ============ APP STATE ============
-export type AppView = 'marketing' | 'login' | 'register' | 'forgot-password' | 'dashboard';
+export type AppView = 'marketing' | 'login' | 'register' | 'forgot-password' | 'dashboard' | 'onboarding' | 'knowledge-base' | 'feature-requests' | 'training';
 export type DashboardTab =
   | 'overview'
   | 'deliveries'
@@ -276,7 +276,9 @@ export type DashboardTab =
   | 'warehouse'
   | 'quotations'
   | 'notifications'
-  | 'settings';
+  | 'settings'
+  | 'safety'
+  | 'chain-of-custody';
 
 export interface Quotation {
   id: string;
@@ -299,4 +301,55 @@ export interface Invoice {
   status: 'paid' | 'pending' | 'overdue';
   dueDate: string;
   createdAt: string;
+}
+
+// ============ PACKAGE DECLARATION ============
+export interface PackageDeclaration {
+  id: string;
+  deliveryId: string;
+  packageCategory: string;
+  description: string;
+  estimatedValue: number;
+  weight: number;
+  dimensions?: string;
+  isDangerousGoods: boolean;
+  isFragile: boolean;
+  isElectronics: boolean;
+  isLiquids: boolean;
+  isDocuments: boolean;
+  parcelPhotos?: string[];
+  declarationText: string;
+  acceptedAt: string;
+}
+
+// ============ CHAIN OF CUSTODY ============
+export interface ChainOfCustodyEntry {
+  id: string;
+  deliveryId: string;
+  fromParty: string;
+  toParty: string;
+  fromName: string;
+  toName: string;
+  gpsLocation?: string;
+  latitude?: number;
+  longitude?: number;
+  photoUrl?: string;
+  signatureUrl?: string;
+  notes?: string;
+  timestamp: string;
+}
+
+// ============ INCIDENT REPORT ============
+export interface IncidentReport {
+  id: string;
+  deliveryId?: string;
+  reporterId: string;
+  reporterName: string;
+  reporterRole: 'driver' | 'customer';
+  incidentType: string;
+  description: string;
+  status: 'open' | 'investigating' | 'resolved' | 'dismissed';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  createdAt: string;
+  updatedAt: string;
 }

@@ -7,10 +7,14 @@ import { LoginPage } from '@/components/auth/login-page';
 import { RegisterPage } from '@/components/auth/register-page';
 import { ForgotPasswordPage } from '@/components/auth/forgot-password-page';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
+import { OnboardingPage } from '@/components/onboarding/onboarding-page';
+import { KnowledgeBasePage } from '@/components/onboarding/knowledge-base-page';
+import { FeatureRequestsPage } from '@/components/onboarding/feature-requests-page';
+import { TrainingPage } from '@/components/onboarding/training-page';
 
 export default function Home() {
-  const { currentView, setView, setDashboardTab } = useNavStore();
-  const { isAuthenticated, logout } = useAuthStore();
+  const { currentView, setView } = useNavStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Handle browser back/forward
   useEffect(() => {
@@ -23,7 +27,7 @@ export default function Home() {
 
   // After logout, go back to marketing
   useEffect(() => {
-    if (!isAuthenticated && (currentView === 'dashboard')) {
+    if (!isAuthenticated && (currentView === 'dashboard' || currentView === 'onboarding')) {
       setView('marketing');
     }
   }, [isAuthenticated, currentView, setView]);
@@ -35,6 +39,10 @@ export default function Home() {
       {currentView === 'register' && <RegisterPage />}
       {currentView === 'forgot-password' && <ForgotPasswordPage />}
       {currentView === 'dashboard' && <DashboardLayout />}
+      {currentView === 'onboarding' && <OnboardingPage />}
+      {currentView === 'knowledge-base' && <KnowledgeBasePage />}
+      {currentView === 'feature-requests' && <FeatureRequestsPage />}
+      {currentView === 'training' && <TrainingPage />}
     </div>
   );
 }

@@ -30,6 +30,8 @@ import {
   User as UserIcon,
   FileText,
   Warehouse,
+  Shield,
+  GitBranch,
 } from 'lucide-react';
 import { useNavStore, useAuthStore, useNotificationStore } from '@/lib/store';
 import { deliveries, customers, drivers, statusLabels, statusColors } from '@/lib/mock-data';
@@ -135,6 +137,8 @@ const commonNavItems: NavItem[] = [
   { tab: 'deliveries', label: 'Deliveries', icon: Package },
   { tab: 'tracking', label: 'Tracking', icon: MapPin },
   { tab: 'messages', label: 'Messages', icon: MessageSquare },
+  { tab: 'safety', label: 'Safety', icon: Shield },
+  { tab: 'chain-of-custody', label: 'Chain of Custody', icon: GitBranch },
 ];
 
 const staffNavItems: NavItem[] = [
@@ -144,6 +148,8 @@ const staffNavItems: NavItem[] = [
   { tab: 'warehouse', label: 'Warehouse', icon: Warehouse },
   { tab: 'dispatch', label: 'Dispatch', icon: Radio },
   { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag },
+  { tab: 'safety', label: 'Safety', icon: Shield },
+  { tab: 'chain-of-custody', label: 'Chain of Custody', icon: GitBranch },
   { tab: 'notifications', label: 'Notifications', icon: Bell },
   { tab: 'invoices', label: 'Invoices', icon: Receipt },
   { tab: 'quotations', label: 'Quotations', icon: FileText },
@@ -155,6 +161,7 @@ const driverNavItems: NavItem[] = [
   { tab: 'deliveries', label: 'My Jobs', icon: ClipboardList },
   { tab: 'fleet', label: 'My Vehicle', icon: Truck },
   { tab: 'messages', label: 'Messages', icon: MessageSquare },
+  { tab: 'safety', label: 'Safety', icon: Shield },
 ];
 
 const customerNavItems: NavItem[] = [
@@ -164,6 +171,8 @@ const customerNavItems: NavItem[] = [
   { tab: 'sourcing', label: 'Sourcing Requests', icon: ShoppingBag },
   { tab: 'messages', label: 'Messages', icon: MessageSquare },
   { tab: 'invoices', label: 'Invoices', icon: Receipt },
+  { tab: 'safety', label: 'Report Issue', icon: Shield },
+  { tab: 'chain-of-custody', label: 'Chain of Custody', icon: GitBranch },
 ];
 
 function getNavItemsForRole(role: UserRole): NavItem[] {
@@ -201,6 +210,8 @@ const tabTitles: Record<DashboardTab, string> = {
   invoices: 'Invoices',
   quotations: 'Quotations',
   notifications: 'Notifications',
+  safety: 'Safety',
+  'chain-of-custody': 'Chain of Custody',
   settings: 'Settings',
 };
 

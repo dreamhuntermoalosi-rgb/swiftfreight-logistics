@@ -18,11 +18,11 @@ import {
 import { motion } from 'framer-motion';
 
 const demoAccounts = [
-  { label: 'Company Owner', user: demoUsers[1] as User, color: 'text-emerald-700 border-l-[3px] border-l-emerald-500 hover:bg-emerald-50' },
-  { label: 'Operations Manager', user: demoUsers[2] as User, color: 'text-sky-700 border-l-[3px] border-l-sky-500 hover:bg-sky-50' },
-  { label: 'Dispatcher', user: demoUsers[3] as User, color: 'text-amber-700 border-l-[3px] border-l-amber-500 hover:bg-amber-50' },
-  { label: 'Driver', user: demoUsers[5] as User, color: 'text-violet-700 border-l-[3px] border-l-violet-500 hover:bg-violet-50' },
-  { label: 'Customer', user: demoUsers[6] as User, color: 'text-rose-700 border-l-[3px] border-l-rose-500 hover:bg-rose-50' },
+  { label: 'Company Owner', user: demoUsers[1] as User, color: 'text-[#2E7D32] border-l-[3px] border-l-[#2E7D32] hover:bg-[#E8F5E9]' },
+  { label: 'Operations Manager', user: demoUsers[2] as User, color: 'text-[#1B5E20] border-l-[3px] border-l-[#1B5E20] hover:bg-[#E8F5E9]' },
+  { label: 'Dispatcher', user: demoUsers[3] as User, color: 'text-[#388E3C] border-l-[3px] border-l-[#388E3C] hover:bg-[#E8F5E9]' },
+  { label: 'Driver', user: demoUsers[5] as User, color: 'text-[#43A047] border-l-[3px] border-l-[#43A047] hover:bg-[#E8F5E9]' },
+  { label: 'Customer', user: demoUsers[6] as User, color: 'text-[#66BB6A] border-l-[3px] border-l-[#66BB6A] hover:bg-[#E8F5E9]' },
 ];
 
 export function LoginPage() {
@@ -68,10 +68,8 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Panel — Branding */}
-      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600 text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tl from-teal-500/20 via-transparent to-emerald-400/20 animate-[gradientShift_8s_ease-in-out_infinite_alternate] pointer-events-none" />
-        {/* Geometric pattern overlay (CSS only) */}
+      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-[#2E7D32] text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
+        {/* Subtle pattern overlay (CSS only) */}
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
           backgroundImage: `linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white)`,
           backgroundSize: '40px 70px',
@@ -110,7 +108,7 @@ export function LoginPage() {
             </div>
             <h1 className="text-3xl lg:text-4xl font-bold leading-tight mb-4">
               Logistics management<br />
-              <span className="text-emerald-200">made simple</span>
+              <span className="text-[#C8E6C9]">made simple</span>
             </h1>
             <p className="text-white/70 text-lg max-w-md leading-relaxed">
               Streamline your delivery operations across Lesotho and South Africa with real-time tracking and smart dispatch.
@@ -131,7 +129,7 @@ export function LoginPage() {
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
                 <div className="bg-white/10 rounded-lg p-1.5">
-                  <Icon className="h-4 w-4 text-emerald-200" />
+                  <Icon className="h-4 w-4 text-[#C8E6C9]" />
                 </div>
                 <span className="text-white/85 text-sm">{text}</span>
               </div>
@@ -151,7 +149,7 @@ export function LoginPage() {
       </div>
 
       {/* Right Panel — Login Form */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gray-50/50">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-[#FAFAFA]">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -167,13 +165,13 @@ export function LoginPage() {
             Back to home
           </button>
 
-          <Card className="relative border-0 shadow-xl shadow-emerald-500/[0.06] ring-1 ring-black/[0.04]">
+          <Card className="relative bg-white border border-[#E0E0E0] shadow-sm">
             <CardHeader className="space-y-1 pb-4">
               <div className="flex items-center gap-2 md:hidden mb-2">
-                <div className="bg-emerald-600 p-1.5 rounded-lg">
+                <div className="bg-[#2E7D32] p-1.5 rounded-lg">
                   <Truck className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-lg font-bold text-emerald-700">SwiftFreight</span>
+                <span className="text-lg font-bold text-[#2E7D32]">SwiftFreight</span>
               </div>
               <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
               <CardDescription>Sign in to your account to continue</CardDescription>
@@ -192,7 +190,7 @@ export function LoginPage() {
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-9"
+                      className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                       autoComplete="email"
                     />
                   </div>
@@ -209,7 +207,7 @@ export function LoginPage() {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9 pr-9"
+                      className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
                       autoComplete="current-password"
                     />
                     <button
@@ -230,6 +228,7 @@ export function LoginPage() {
                       id="remember"
                       checked={rememberMe}
                       onCheckedChange={(checked) => setRememberMe(checked === true)}
+                      className="data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
                     />
                     <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
                       Remember me
@@ -239,7 +238,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setView('forgot-password')}
-                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                    className="text-sm text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
                   >
                     Forgot Password?
                   </button>
@@ -248,7 +247,7 @@ export function LoginPage() {
                 {/* Submit */}
                 <Button
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium btn-shimmer"
+                  className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -276,7 +275,7 @@ export function LoginPage() {
                       key={demo.label}
                       variant="outline"
                       size="sm"
-                      className={`text-xs font-medium ${demo.color} transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]`}
+                      className={`text-xs font-medium ${demo.color} border-[#E0E0E0] transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]`}
                       onClick={() => handleDemoLogin(demo.user)}
                     >
                       {demo.label}
@@ -291,7 +290,7 @@ export function LoginPage() {
                 Don&apos;t have an account?{' '}
                 <button
                   onClick={() => setView('register')}
-                  className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                  className="text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
                 >
                   Sign Up
                 </button>

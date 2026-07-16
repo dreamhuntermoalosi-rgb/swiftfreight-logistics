@@ -63,6 +63,8 @@ model User {
   driverProfile   DriverProfile?
   sourcingRequests SourcingRequest[] @relation("CustomerSourcing")
   sourcingQuoted   SourcingRequest[] @relation("AgentSourcing")
+  kyc               KycVerification?
+  reportedIncidents IncidentReport[] @relation("ReportedIncidents")
 }
 
 // ============ CUSTOMER PROFILES ============
@@ -167,10 +169,13 @@ model Delivery {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  timeline         DeliveryTimeline[]
-  quotations       Quotation[]
-  invoice          Invoice?
-  messages         Message[]
+  timeline            DeliveryTimeline[]
+  quotations          Quotation[]
+  invoice             Invoice?
+  messages            Message[]
+  chainOfCustody      ChainOfCustody[]
+  packageDeclaration  PackageDeclaration?
+  incidents           IncidentReport[]
 }
 
 // ============ DELIVERY TIMELINE ============
@@ -259,6 +264,82 @@ model SourcingRequest {
   quotedPrice Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ============ PACKAGE DECLARATIONS ============
+model PackageDeclaration {
+  id              String   @id @default(cuid())
+  deliveryId      String   @unique
+  delivery        Delivery @relation(fields: [deliveryId], references: [id])
+  packageCategory String
+  description     String
+  estimatedValue  Float
+  weight          Float
+  dimensions      String?
+  isDangerousGoods Boolean @default(false)
+  isFragile       Boolean @default(false)
+  isElectronics   Boolean @default(false)
+  isLiquids       Boolean @default(false)
+  isDocuments     Boolean @default(false)
+  parcelPhotos    String?
+  declarationText String
+  acceptedAt      DateTime @default(now())
+  ipAddress       String?
+  createdAt       DateTime @default(now())
+}
+
+// ============ KYC VERIFICATION ============
+model KycVerification {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  user                    User      @relation(fields: [userId], references: [id])
+  phoneVerified           Boolean   @default(false)
+  phoneVerifiedAt         DateTime?
+  emailVerified           Boolean   @default(false)
+  emailVerifiedAt         DateTime?
+  nationalId              String?
+  nationalIdVerified      Boolean   @default(false)
+  selfieVerified          Boolean   @default(false)
+  proofOfAddress          String?
+  proofOfAddressVerified  Boolean   @default(false)
+  verificationLevel       String    @default("basic")
+  badge                   String    @default("none")
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+// ============ CHAIN OF CUSTODY ============
+model ChainOfCustody {
+  id          String   @id @default(cuid())
+  deliveryId  String
+  delivery    Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  fromParty   String
+  toParty     String
+  fromName    String
+  toName      String
+  gpsLocation String?
+  latitude    Float?
+  longitude   Float?
+  photoUrl    String?
+  signatureUrl String?
+  notes       String?
+  timestamp   DateTime @default(now())
+}
+
+// ============ INCIDENT REPORTS ============
+model IncidentReport {
+  id            String    @id @default(cuid())
+  deliveryId    String?
+  delivery      Delivery? @relation(fields: [deliveryId], references: [id])
+  reporterId    String
+  reporter      User      @relation("ReportedIncidents", fields: [reporterId], references: [id])
+  reporterRole  String
+  incidentType  String
+  description   String
+  status        String    @default("open")
+  priority      String    @default("medium")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 // ============ TRAILER MARKETPLACE (Future Ready) ============

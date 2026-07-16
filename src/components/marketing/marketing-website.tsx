@@ -389,11 +389,11 @@ export function MarketingWebsite() {
       <main className="flex-1">
 
         {/* ═══════════════════ 2. HERO ═══════════════════ */}
-        <section className="bg-white py-16 sm:py-20 lg:py-24">
+        <section className="bg-white py-12 sm:py-16 lg:py-24">
           <div className="mx-auto max-w-[1200px] px-6">
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
               {/* Left — Copy */}
-              <div>
+              <div className="text-center lg:text-left">
                 <h1 className="text-3xl font-bold tracking-tight text-[#212121] sm:text-4xl lg:text-5xl leading-[1.15]">
                   Run Logistics.
                   <br />
@@ -423,8 +423,10 @@ export function MarketingWebsite() {
                 </div>
               </div>
 
-              {/* Right — Dashboard Preview */}
-              <DashboardPreview />
+              {/* Right — Dashboard Preview — hidden on small screens, visible on lg+ */}
+              <div className="hidden lg:block">
+                <DashboardPreview />
+              </div>
             </div>
           </div>
         </section>
@@ -545,12 +547,16 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 5. STAKEHOLDER TOOLS ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section className="bg-[#F5F5F5] py-16 sm:py-20">
+          <section className="bg-[#1B3A1B] py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
-              <SectionHeading
-                title="Powerful tools for every role"
-                description="Whether you run a fleet, drive a vehicle, or need something delivered — SwiftFreight has you covered."
-              />
+              <div className="mx-auto max-w-2xl text-center">
+                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                  Powerful tools for every role
+                </h2>
+                <p className="mt-3 text-base leading-relaxed text-white/70 sm:text-lg">
+                  Whether you run a fleet, drive a vehicle, or need something delivered — SwiftFreight has you covered.
+                </p>
+              </div>
               <div className="mt-12 grid gap-5 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {[
                   {
@@ -638,12 +644,16 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 7. TESTIMONIALS ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section className="bg-[#F5F5F5] py-16 sm:py-20">
+          <section className="bg-[#1B3A1B] py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
-              <SectionHeading
-                title="See what our customers say"
-                description="Real feedback from logistics businesses running on SwiftFreight in Lesotho."
-              />
+              <div className="mx-auto max-w-2xl text-center">
+                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                  See what our customers say
+                </h2>
+                <p className="mt-3 text-base leading-relaxed text-white/70 sm:text-lg">
+                  Real feedback from logistics businesses running on SwiftFreight in Lesotho.
+                </p>
+              </div>
               <div className="mt-12 grid gap-6 sm:mt-14 lg:grid-cols-3">
                 {[
                   {
@@ -993,7 +1003,7 @@ export function MarketingWebsite() {
       </main>
 
       {/* ═══════════════════ 11. FOOTER ═══════════════════ */}
-      <footer className="border-t border-[#E0E0E0] bg-white">
+      <footer className="border-t border-[#2E4A2E] bg-[#1B3A1B]">
         <div className="mx-auto max-w-[1200px] px-6 py-12 sm:py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             {/* Brand */}
@@ -1002,34 +1012,45 @@ export function MarketingWebsite() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2E7D32]">
                   <Truck className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-lg font-bold tracking-tight text-[#212121]">
-                  Swift<span className="text-[#2E7D32]">Freight</span>
+                <span className="text-lg font-bold tracking-tight text-white">
+                  Swift<span className="text-[#4CAF50]">Freight</span>
                 </span>
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-[#757575]">
+              <p className="mt-3 text-sm leading-relaxed text-white/60">
                 The intelligent logistics operating system built for Africa.
               </p>
-              {/* Social */}
-              <div className="mt-5 flex gap-2.5">
-                {[
-                  { label: 'X', icon: 'X' },
-                  { label: 'LinkedIn', icon: 'in' },
-                  { label: 'Facebook', icon: 'f' },
-                ].map((s) => (
-                  <button
-                    key={s.label}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F5F5] text-xs font-semibold text-[#757575] transition-colors hover:bg-[#E8F5E9] hover:text-[#2E7D32]"
-                    aria-label={s.label}
-                  >
-                    {s.icon}
-                  </button>
-                ))}
+              {/* Social Icons — Real SVGs */}
+              <div className="mt-5 flex gap-3">
+                {/* X / Twitter */}
+                <a
+                  href="#"
+                  aria-label="X (Twitter)"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all hover:bg-[#2E7D32] hover:text-white"
+                >
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                {/* LinkedIn */}
+                <a
+                  href="#"
+                  aria-label="LinkedIn"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all hover:bg-[#2E7D32] hover:text-white"
+                >
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                {/* Facebook */}
+                <a
+                  href="#"
+                  aria-label="Facebook"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all hover:bg-[#2E7D32] hover:text-white"
+                >
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
               </div>
             </div>
 
             {/* Product */}
             <div>
-              <h4 className="text-sm font-semibold text-[#212121]">Product</h4>
+              <h4 className="text-sm font-semibold text-white">Product</h4>
               <ul className="mt-4 space-y-2.5">
                 {[
                   { label: 'Features', href: '#features' },
@@ -1040,13 +1061,13 @@ export function MarketingWebsite() {
                   <li key={link.label}>
                     {link.href ? (
                       <button
-                        className="text-sm text-[#757575] transition-colors hover:text-[#212121]"
+                        className="text-sm text-white/50 transition-colors hover:text-white"
                         onClick={() => scrollTo(link.href)}
                       >
                         {link.label}
                       </button>
                     ) : (
-                      <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+                      <span className="text-sm text-white/50 transition-colors hover:text-white cursor-pointer">
                         {link.label}
                       </span>
                     )}
@@ -1057,11 +1078,11 @@ export function MarketingWebsite() {
 
             {/* Solutions */}
             <div>
-              <h4 className="text-sm font-semibold text-[#212121]">Solutions</h4>
+              <h4 className="text-sm font-semibold text-white">Solutions</h4>
               <ul className="mt-4 space-y-2.5">
                 {['For Couriers', 'For Drivers', 'For Businesses', 'For Sourcing Agents'].map((link) => (
                   <li key={link}>
-                    <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+                    <span className="text-sm text-white/50 transition-colors hover:text-white cursor-pointer">
                       {link}
                     </span>
                   </li>
@@ -1071,11 +1092,11 @@ export function MarketingWebsite() {
 
             {/* Resources */}
             <div>
-              <h4 className="text-sm font-semibold text-[#212121]">Resources</h4>
+              <h4 className="text-sm font-semibold text-white">Resources</h4>
               <ul className="mt-4 space-y-2.5">
                 {['Help Center', 'Guides', 'Blog', 'Status'].map((link) => (
                   <li key={link}>
-                    <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+                    <span className="text-sm text-white/50 transition-colors hover:text-white cursor-pointer">
                       {link}
                     </span>
                   </li>
@@ -1085,7 +1106,7 @@ export function MarketingWebsite() {
 
             {/* Company */}
             <div>
-              <h4 className="text-sm font-semibold text-[#212121]">Company</h4>
+              <h4 className="text-sm font-semibold text-white">Company</h4>
               <ul className="mt-4 space-y-2.5">
                 {[
                   { label: 'About Us', href: null },
@@ -1095,13 +1116,13 @@ export function MarketingWebsite() {
                   <li key={link.label}>
                     {link.href ? (
                       <button
-                        className="text-sm text-[#757575] transition-colors hover:text-[#212121]"
+                        className="text-sm text-white/50 transition-colors hover:text-white"
                         onClick={() => scrollTo(link.href)}
                       >
                         {link.label}
                       </button>
                     ) : (
-                      <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+                      <span className="text-sm text-white/50 transition-colors hover:text-white cursor-pointer">
                         {link.label}
                       </span>
                     )}
@@ -1112,13 +1133,13 @@ export function MarketingWebsite() {
           </div>
 
           {/* Bottom bar */}
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#E0E0E0] pt-8 sm:flex-row">
-            <p className="text-sm text-[#9E9E9E]">
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+            <p className="text-sm text-white/40">
               &copy; 2025 SwiftFreight. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <span className="text-sm text-[#9E9E9E] cursor-pointer hover:text-[#212121] transition-colors">Privacy Policy</span>
-              <span className="text-sm text-[#9E9E9E] cursor-pointer hover:text-[#212121] transition-colors">Terms of Service</span>
+              <span className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Privacy Policy</span>
+              <span className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Terms of Service</span>
             </div>
           </div>
         </div>

@@ -1,0 +1,691 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { useNavStore, useAuthStore } from '@/lib/store';
+     5→import type { UserRole } from '@/lib/types';
+     6→import { Button } from '@/components/ui/button';
+     7→import { Card, CardContent } from '@/components/ui/card';
+     8→import { Input } from '@/components/ui/input';
+     9→import { Badge } from '@/components/ui/badge';
+    10→import { motion, AnimatePresence } from 'framer-motion';
+    11→import {
+    12→  ArrowLeft,
+    13→  ArrowRight,
+    14→  Truck,
+    15→  Package,
+    16→  Users,
+    17→  LayoutDashboard,
+    18→  MapPin,
+    19→  BarChart3,
+    20→  Settings,
+    21→  Shield,
+    22→  CheckCircle2,
+    23→  Wrench,
+    24→  Warehouse,
+    25→  ClipboardList,
+    26→  FileSearch,
+    27→  Route,
+    28→  Star,
+    29→  ChevronLeft,
+    30→  Sparkles,
+    31→} from 'lucide-react';
+    32→
+    33→// ─────────────────────────────────────────────────────────────────────────────
+    34→// ROLE CONFIGURATION
+    35→// ─────────────────────────────────────────────────────────────────────────────
+    36→
+    37→interface RoleConfig {
+    38→  title: string;
+    39→  description: string;
+    40→  capabilities: { icon: React.ReactNode; title: string; description: string }[];
+    41→  questions: { id: string; label: string; placeholder: string; type?: string; options?: string[] }[];
+    42→  features: { icon: React.ReactNode; title: string; description: string; article?: string }[];
+    43→}
+    44→
+    45→const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
+    46→  super_admin: {
+    47→    title: 'Super Administrator',
+    48→    description: 'You have full control over the SwiftFreight platform, managing tenant companies, system settings, and overall platform health.',
+    49→    capabilities: [
+    50→      { icon: <Shield className="h-5 w-5" />, title: 'Platform Governance', description: 'Manage all tenant companies and system-wide settings' },
+    51→      { icon: <Users className="h-5 w-5" />, title: 'User Management', description: 'Oversee users across all organizations' },
+    52→      { icon: <BarChart3 className="h-5 w-5" />, title: 'System Analytics', description: 'Monitor platform-wide performance and metrics' },
+    53→      { icon: <Settings className="h-5 w-5" />, title: 'Configuration', description: 'Configure platform features, pricing, and integrations' },
+    54→    ],
+    55→    questions: [
+    56→      { id: 'primary_focus', label: "What's your primary focus?", placeholder: 'e.g., Platform growth, Technical operations...', options: ['Platform Growth', 'Technical Operations', 'Customer Success', 'Financial Oversight'] },
+    57→      { id: 'tenant_count', label: 'How many tenant companies do you manage?', placeholder: 'e.g., 5-10 companies', options: ['1-5 companies', '5-20 companies', '20-50 companies', '50+ companies'] },
+    58→    ],
+    59→    features: [
+    60→      { icon: <LayoutDashboard className="h-5 w-5" />, title: 'Admin Dashboard', description: 'Comprehensive overview of platform metrics, tenant health, and system status.', article: 'Understanding the Dashboard' },
+    61→      { icon: <Users className="h-5 w-5" />, title: 'Tenant Management', description: 'Create, configure, and manage all tenant companies on the platform.', article: 'Setting Up Your Company' },
+    62→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Platform Analytics', description: 'Deep-dive into cross-company analytics, revenue tracking, and growth trends.', article: 'Understanding Delivery Analytics' },
+    63→      { icon: <Settings className="h-5 w-5" />, title: 'System Settings', description: 'Configure global settings, feature flags, and integration endpoints.', article: 'Two-Factor Authentication' },
+    64→      { icon: <Shield className="h-5 w-5" />, title: 'Access Control', description: 'Define role-based permissions and manage security policies.', article: 'Managing Users' },
+    65→    ],
+    66→  },
+    67→  company_owner: {
+    68→    title: 'Company Owner',
+    69→    description: 'As a company owner, you oversee your entire logistics operation — from fleet management to customer satisfaction.',
+    70→    capabilities: [
+    71→      { icon: <LayoutDashboard className="h-5 w-5" />, title: 'Business Overview', description: 'View real-time business metrics and financial performance' },
+    72→      { icon: <Users className="h-5 w-5" />, title: 'Team Management', description: 'Add and manage drivers, dispatchers, and operations staff' },
+    73→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Revenue Tracking', description: 'Monitor income, expenses, and profitability at a glance' },
+    74→      { icon: <Settings className="h-5 w-5" />, title: 'Company Settings', description: 'Configure pricing, service areas, and business preferences' },
+    75→    ],
+    76→    questions: [
+    77→      { id: 'vehicle_count', label: 'How many vehicles do you operate?', placeholder: 'e.g., 5-10 vehicles', options: ['1-5 vehicles', '5-15 vehicles', '15-50 vehicles', '50+ vehicles'] },
+    78→      { id: 'weekly_deliveries', label: 'How many deliveries per week?', placeholder: 'e.g., 50-100 deliveries', options: ['Under 20', '20-50', '50-100', '100-500', '500+'] },
+    79→    ],
+    80→    features: [
+    81→      { icon: <LayoutDashboard className="h-5 w-5" />, title: 'Business Dashboard', description: 'High-level view of your operations including revenue, deliveries, and team performance.', article: 'Understanding the Dashboard' },
+    82→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Reports & Analytics', description: 'Generate detailed reports on deliveries, revenue, driver performance, and more.', article: 'Understanding Delivery Analytics' },
+    83→      { icon: <Truck className="h-5 w-5" />, title: 'Fleet Overview', description: 'See all your vehicles, their status, and maintenance schedules in one place.', article: 'Adding Vehicles' },
+    84→      { icon: <FileSearch className="h-5 w-5" />, title: 'Invoice Management', description: 'View, manage, and export invoices. Track payments and outstanding balances.', article: 'Understanding Your Invoice' },
+    85→    ],
+    86→  },
+    87→  operations_manager: {
+    88→    title: 'Operations Manager',
+    89→    description: 'You keep the wheels turning — managing day-to-day logistics operations, ensuring timely deliveries, and optimizing workflows.',
+    90→    capabilities: [
+    91→      { icon: <ClipboardList className="h-5 w-5" />, title: 'Delivery Oversight', description: 'Monitor all active deliveries and resolve issues in real-time' },
+    92→      { icon: <Route className="h-5 w-5" />, title: 'Route Optimization', description: 'Optimize delivery routes across Lesotho and cross-border' },
+    93→      { icon: <Users className="h-5 w-5" />, title: 'Staff Coordination', description: 'Coordinate drivers and dispatchers for maximum efficiency' },
+    94→      { icon: <Star className="h-5 w-5" />, title: 'Quality Control', description: 'Track delivery ratings and ensure service standards' },
+    95→    ],
+    96→    questions: [
+    97→      { id: 'biggest_challenge', label: "What's your biggest operations challenge?", placeholder: 'e.g., Route planning, Driver shortage...', options: ['Route Planning', 'Driver Shortage', 'Delivery Delays', 'Customer Communication', 'Cross-Border Compliance'] },
+    98→      { id: 'tracking_method', label: 'How do you currently track deliveries?', placeholder: 'e.g., Phone calls, WhatsApp groups...', options: ['Phone Calls', 'WhatsApp Groups', 'Spreadsheets', 'Another Software', 'Paper Records'] },
+    99→    ],
+   100→    features: [
+   101→      { icon: <LayoutDashboard className="h-5 w-5" />, title: 'Operations Dashboard', description: 'Live view of all active deliveries, pending issues, and team status.', article: 'Understanding the Dashboard' },
+   102→      { icon: <ClipboardList className="h-5 w-5" />, title: 'Delivery Management', description: 'Create, track, and manage all deliveries from request to completion.', article: 'Creating a Delivery Request' },
+   103→      { icon: <MapPin className="h-5 w-5" />, title: 'Live Tracking', description: 'Real-time tracking of all vehicles and deliveries across Lesotho.', article: 'Tracking Your Parcel' },
+   104→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Performance Reports', description: 'On-time rates, delivery volumes, and operational efficiency metrics.', article: 'Understanding Delivery Analytics' },
+   105→      { icon: <Wrench className="h-5 w-5" />, title: 'Incident Management', description: 'Report and track delivery incidents, delays, and resolutions.', article: 'Reporting Incidents' },
+   106→    ],
+   107→  },
+   108→  dispatcher: {
+   109→    title: 'Dispatcher',
+   110→    description: 'You are the critical link between customers and drivers — assigning deliveries, managing driver availability, and keeping everything moving.',
+   111→    capabilities: [
+   112→      { icon: <Truck className="h-5 w-5" />, title: 'Driver Assignment', description: 'Assign deliveries to available drivers based on location and capacity' },
+   113→      { icon: <MapPin className="h-5 w-5" />, title: 'Real-Time Tracking', description: 'Track driver locations and delivery progress live' },
+   114→      { icon: <Package className="h-5 w-5" />, title: 'Order Management', description: 'Process new delivery requests and prioritize urgent orders' },
+   115→      { icon: <Users className="h-5 w-5" />, title: 'Driver Communication', description: 'Chat with drivers and provide route guidance' },
+   116→    ],
+   117→    questions: [
+   118→      { id: 'assignment_method', label: 'How do you currently assign drivers?', placeholder: 'e.g., Manually based on location...', options: ['Manually by Location', 'First Available', 'Rotating Schedule', 'Based on Vehicle Type'] },
+   119→      { id: 'daily_dispatches', label: "What's your average daily dispatches?", placeholder: 'e.g., 15-20 dispatches', options: ['Under 10', '10-25', '25-50', '50-100', '100+'] },
+   120→    ],
+   121→    features: [
+   122→      { icon: <LayoutDashboard className="h-5 w-5" />, title: 'Dispatch Board', description: 'Visual board showing pending, active, and completed dispatches.', article: 'Understanding the Dashboard' },
+   123→      { icon: <Truck className="h-5 w-5" />, title: 'Smart Assignment', description: 'Assign drivers based on proximity, vehicle type, and availability.', article: 'Accepting Assignments' },
+   124→      { icon: <MapPin className="h-5 w-5" />, title: 'Live Map', description: 'See all driver locations on a real-time map of Lesotho.', article: 'Tracking Your Parcel' },
+   125→      { icon: <Package className="h-5 w-5" />, title: 'Delivery Queue', description: 'Manage incoming requests and prioritize based on urgency.', article: 'Creating a Delivery Request' },
+   126→    ],
+   127→  },
+   128→  fleet_manager: {
+   129→    title: 'Fleet Manager',
+   130→    description: 'You ensure every vehicle is road-ready, properly maintained, and operating at peak efficiency.',
+   131→    capabilities: [
+   132→      { icon: <Truck className="h-5 w-5" />, title: 'Vehicle Registry', description: 'Manage all vehicles, their details, and documentation' },
+   133→      { icon: <Wrench className="h-5 w-5" />, title: 'Maintenance Scheduling', description: 'Schedule and track vehicle servicing and repairs' },
+   134→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Fleet Analytics', description: 'Track fuel costs, mileage, and vehicle utilization' },
+   135→      { icon: <Shield className="h-5 w-5" />, title: 'Compliance Tracking', description: 'Monitor insurance, licensing, and roadworthiness' },
+   136→    ],
+   137→    questions: [
+   138→      { id: 'fleet_size', label: 'How many vehicles in your fleet?', placeholder: 'e.g., 10 vehicles', options: ['1-5 vehicles', '5-15 vehicles', '15-50 vehicles', '50+ vehicles'] },
+   139→      { id: 'maintenance_tracking', label: 'Do you manage maintenance schedules?', placeholder: 'Select an option', options: ['Yes, with software', 'Yes, manually (paper/spreadsheet)', 'Not currently tracking', 'Planning to start'] },
+   140→    ],
+   141→    features: [
+   142→      { icon: <Truck className="h-5 w-5" />, title: 'Vehicle Management', description: 'Complete vehicle registry with details, documents, and status tracking.', article: 'Adding Vehicles' },
+   143→      { icon: <Wrench className="h-5 w-5" />, title: 'Maintenance Tracker', description: 'Schedule service appointments, track repair history, and set reminders.', article: 'Maintenance Scheduling' },
+   144→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Fleet Analytics', description: 'Utilization rates, cost-per-km, and fleet performance insights.', article: 'Understanding Delivery Analytics' },
+   145→      { icon: <Shield className="h-5 w-5" />, title: 'Document Compliance', description: 'Track insurance expiry, license renewals, and roadworthiness certificates.', article: 'Safety & Compliance' },
+   146→    ],
+   147→  },
+   148→  driver: {
+   149→    title: 'Driver',
+   150→    description: 'You are on the front line of delivery — picking up, transporting, and delivering parcels across Lesotho.',
+   151→    capabilities: [
+   152→      { icon: <Package className="h-5 w-5" />, title: 'Delivery Execution', description: 'Accept assignments, navigate routes, and complete deliveries' },
+   153→      { icon: <MapPin className="h-5 w-5" />, title: 'GPS Navigation', description: 'Built-in navigation to delivery destinations across Lesotho' },
+   154→      { icon: <CheckCircle2 className="h-5 w-5" />, title: 'Proof of Delivery', description: 'Capture photos and signatures as delivery confirmation' },
+   155→      { icon: <Users className="h-5 w-5" />, title: 'Customer Communication', description: 'Chat directly with customers about their deliveries' },
+   156→    ],
+   157→    questions: [
+   158→      { id: 'own_vehicle', label: 'Do you have your own vehicle?', placeholder: 'Select an option', options: ['Yes, my own vehicle', 'Company-provided vehicle', 'I rent/hire vehicles', 'Not applicable'] },
+   159→      { id: 'delivery_areas', label: 'What areas do you typically deliver to?', placeholder: 'e.g., Maseru, Leribe, Berea...', options: ['Maseru Only', 'Maseru & Surrounding Districts', 'All 10 Districts', 'Cross-Border (South Africa)'] },
+   160→    ],
+   161→    features: [
+   162→      { icon: <Package className="h-5 w-5" />, title: 'My Deliveries', description: 'View all assigned deliveries, their status, and pickup/dropoff details.', article: 'Accepting Assignments' },
+   163→      { icon: <MapPin className="h-5 w-5" />, title: 'In-App Navigation', description: 'Turn-by-turn navigation to every delivery destination in Lesotho.', article: 'Updating Delivery Status' },
+   164→      { icon: <CheckCircle2 className="h-5 w-5" />, title: 'Proof of Delivery', description: 'Take photos, collect signatures, and confirm successful deliveries.', article: 'Uploading Proof of Delivery' },
+   165→      { icon: <Star className="h-5 w-5" />, title: 'My Ratings', description: 'View customer ratings and build your reputation on the platform.', article: 'Getting Started' },
+   166→    ],
+   167→  },
+   168→  customer: {
+   169→    title: 'Customer',
+   170→    description: 'Send parcels across Lesotho and beyond with ease — track every delivery in real-time and manage your shipping needs.',
+   171→    capabilities: [
+   172→      { icon: <Package className="h-5 w-5" />, title: 'Send Parcels', description: 'Create delivery requests with pickup and dropoff details' },
+   173→      { icon: <MapPin className="h-5 w-5" />, title: 'Live Tracking', description: 'Track your parcels in real-time from pickup to delivery' },
+   174→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Delivery History', description: 'View past deliveries, receipts, and delivery confirmations' },
+   175→      { icon: <FileSearch className="h-5 w-5" />, title: 'Sourcing Requests', description: 'Request products to be sourced and delivered from South Africa' },
+   176→    ],
+   177→    questions: [
+   178→      { id: 'shipping_frequency', label: 'How often do you send parcels?', placeholder: 'Select an option', options: ['Daily', 'Several times a week', 'Weekly', 'Monthly', 'Occasionally'] },
+   179→      { id: 'goods_type', label: 'What types of goods do you typically ship?', placeholder: 'Select an option', options: ['Documents & Small Items', 'Clothing & Textiles', 'Electronics', 'Building Materials', 'Food & Perishables', 'Mixed / Various'] },
+   180→    ],
+   181→    features: [
+   182→      { icon: <Package className="h-5 w-5" />, title: 'Request a Delivery', description: 'Fill in pickup and delivery details, get a quote, and ship in minutes.', article: 'Creating a Delivery Request' },
+   183→      { icon: <MapPin className="h-5 w-5" />, title: 'Track My Parcel', description: 'Enter a tracking number or view all your active shipments.', article: 'Tracking Your Parcel' },
+   184→      { icon: <CheckCircle2 className="h-5 w-5" />, title: 'Delivery Status', description: 'Understand every status from "Collected" to "Delivered".', article: 'Understanding Delivery Statuses' },
+   185→      { icon: <FileSearch className="h-5 w-5" />, title: 'Sourcing Service', description: 'Have products sourced from South Africa and delivered to your door.', article: 'How Sourcing Works' },
+   186→      { icon: <FileSearch className="h-5 w-5" />, title: 'My Invoices', description: 'View, download, and pay for your delivery invoices.', article: 'Understanding Your Invoice' },
+   187→    ],
+   188→  },
+   189→  sourcing_agent: {
+   190→    title: 'Sourcing Agent',
+   191→    description: 'You help customers find and purchase products from South Africa, managing the sourcing pipeline from request to delivery.',
+   192→    capabilities: [
+   193→      { icon: <FileSearch className="h-5 w-5" />, title: 'Request Management', description: 'View and manage incoming sourcing requests from customers' },
+   194→      { icon: <Package className="h-5 w-5" />, title: 'Quote & Procure', description: 'Provide quotes, purchase products, and arrange delivery' },
+   195→      { icon: <Users className="h-5 w-5" />, title: 'Customer Communication', description: 'Chat with customers about product availability and pricing' },
+   196→      { icon: <ClipboardList className="h-5 w-5" />, title: 'Pipeline Tracking', description: 'Track all sourcing requests from quote to delivery' },
+   197→    ],
+   198→    questions: [
+   199→      { id: 'product_types', label: 'What products do you typically source?', placeholder: 'e.g., Electronics, Clothing...', options: ['Electronics', 'Clothing & Textiles', 'Building Materials', 'Automotive Parts', 'Food & Beverages', 'General Merchandise'] },
+   200→      { id: 'monthly_requests', label: 'How many sourcing requests do you handle monthly?', placeholder: 'e.g., 20-30 requests', options: ['Under 10', '10-25', '25-50', '50-100', '100+'] },
+   201→    ],
+   202→    features: [
+   203→      { icon: <FileSearch className="h-5 w-5" />, title: 'Sourcing Queue', description: 'View all pending, active, and completed sourcing requests.', article: 'How Sourcing Works' },
+   204→      { icon: <ClipboardList className="h-5 w-5" />, title: 'Request Pipeline', description: 'Manage requests through every stage from quote to delivery.', article: 'Managing Sourcing Requests' },
+   205→      { icon: <Package className="h-5 w-5" />, title: 'Delivery Integration', description: 'Seamlessly convert sourced products into delivery orders.', article: 'Creating a Delivery Request' },
+   206→      { icon: <Users className="h-5 w-5" />, title: 'Customer Chat', description: 'Communicate with customers about product details and timelines.', article: 'Getting Started' },
+   207→    ],
+   208→  },
+   209→  trailer_owner: {
+   210→    title: 'Trailer Owner',
+   211→    description: 'You own trailers that logistics companies can rent or partner with, providing extra capacity for heavy or bulk deliveries.',
+   212→    capabilities: [
+   213→      { icon: <Truck className="h-5 w-5" />, title: 'Trailer Registry', description: 'List and manage all your trailers with specifications and availability' },
+   214→      { icon: <Calendar className="h-5 w-5" />, title: 'Booking Management', description: 'Accept, schedule, and manage trailer booking requests' },
+   215→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Revenue Tracking', description: 'Track earnings, utilization rates, and booking history' },
+   216→      { icon: <Wrench className="h-5 w-5" />, title: 'Maintenance Logs', description: 'Keep track of trailer servicing and roadworthiness' },
+   217→    ],
+   218→    questions: [
+   219→      { id: 'trailer_count', label: 'How many trailers do you have?', placeholder: 'e.g., 3 trailers', options: ['1 trailer', '2-5 trailers', '5-10 trailers', '10+ trailers'] },
+   220→      { id: 'trailer_types', label: 'What types of trailers?', placeholder: 'Select all that apply', options: ['Flatbed', 'Enclosed/Box', 'Refrigerated', 'Tanker', 'Curtain-Sider', 'Lowbed'] },
+   221→    ],
+   222→    features: [
+   223→      { icon: <Truck className="h-5 w-5" />, title: 'My Trailers', description: 'Register and manage all your trailers with full specifications.', article: 'Adding Vehicles' },
+   224→      { icon: <Calendar className="h-5 w-5" />, title: 'Booking Calendar', description: 'View and manage trailer availability and upcoming bookings.', article: 'Getting Started' },
+   225→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Earnings Dashboard', description: 'Track revenue, utilization, and payment history.', article: 'Understanding Your Invoice' },
+   226→      { icon: <Wrench className="h-5 w-5" />, title: 'Maintenance Tracker', description: 'Log service history and set maintenance reminders.', article: 'Maintenance Scheduling' },
+   227→    ],
+   228→  },
+   229→  warehouse_partner: {
+   230→    title: 'Warehouse Partner',
+   231→    description: 'You provide warehousing and storage services — receiving, storing, and dispatching goods as part of the logistics network.',
+   232→    capabilities: [
+   233→      { icon: <Warehouse className="h-5 w-5" />, title: 'Inventory Management', description: 'Track goods received, stored, and dispatched from your warehouse' },
+   234→      { icon: <Package className="h-5 w-5" />, title: 'Goods Receiving', description: 'Receive and log incoming parcels and bulk shipments' },
+   235→      { icon: <ClipboardList className="h-5 w-5" />, title: 'Dispatch Coordination', description: 'Coordinate outgoing shipments with transport partners' },
+   236→      { icon: <BarChart3 className="h-5 w-5" />, title: 'Capacity Planning', description: 'Monitor warehouse utilization and plan capacity' },
+   237→    ],
+   238→    questions: [
+   239→      { id: 'warehouse_capacity', label: "What's your warehouse capacity?", placeholder: 'e.g., 500 sq meters', options: ['Under 200 sqm', '200-500 sqm', '500-1000 sqm', '1000-5000 sqm', '5000+ sqm'] },
+   240→      { id: 'cross_border', label: 'Do you handle cross-border goods?', placeholder: 'Select an option', options: ['Yes, Lesotho-South Africa', 'Yes, regional (multiple countries)', 'No, domestic only', 'Planning to start'] },
+   241→    ],
+   242→    features: [
+   243→      { icon: <Warehouse className="h-5 w-5" />, title: 'Warehouse Dashboard', description: 'Overview of inventory levels, inbound, and outbound shipments.', article: 'Understanding the Dashboard' },
+   244→      { icon: <Package className="h-5 w-5" />, title: 'Goods Management', description: 'Receive, store, and dispatch goods with full audit trail.', article: 'Getting Started' },
+   245→      { icon: <ClipboardList className="h-5 w-5" />, title: 'Dispatch Queue', description: 'Manage outgoing shipments and coordinate with drivers.', article: 'Creating a Delivery Request' },
+   246→      { icon: <Shield className="h-5 w-5" />, title: 'Compliance Center', description: 'Handle customs documentation and cross-border requirements.', article: 'Package Declaration Requirements' },
+   247→    ],
+   248→  },
+   249→};
+   250→
+   251→const ROLE_LABELS: Record<UserRole, string> = {
+   252→  super_admin: 'Super Admin',
+   253→  company_owner: 'Company Owner',
+   254→  operations_manager: 'Operations Manager',
+   255→  dispatcher: 'Dispatcher',
+   256→  fleet_manager: 'Fleet Manager',
+   257→  driver: 'Driver',
+   258→  customer: 'Customer',
+   259→  sourcing_agent: 'Sourcing Agent',
+   260→  trailer_owner: 'Trailer Owner',
+   261→  warehouse_partner: 'Warehouse Partner',
+   262→};
+   263→
+   264→const TOTAL_STEPS = 5;
+   265→
+   266→// ─────────────────────────────────────────────────────────────────────────────
+   267→// COMPONENT
+   268→// ─────────────────────────────────────────────────────────────────────────────
+   269→
+   270→export function OnboardingPage() {
+   271→  const { setView } = useNavStore();
+   272→  const { currentUser } = useAuthStore();
+   273→
+   274→  const role: UserRole = currentUser?.role ?? 'customer';
+   275→  const config = ROLE_CONFIGS[role];
+   276→
+   277→  const [step, setStep] = useState(1);
+   278→  const [answers, setAnswers] = useState<Record<string, string>>({});
+   279→
+   280→  const handleAnswer = (id: string, value: string) => {
+   281→    setAnswers((prev) => ({ ...prev, [id]: value }));
+   282→  };
+   283→
+   284→  const handleSkip = () => {
+   285→    setView('dashboard');
+   286→  };
+   287→
+   288→  const handleNext = () => {
+   289→    if (step < TOTAL_STEPS) setStep(step + 1);
+   290→  };
+   291→
+   292→  const handleBack = () => {
+   293→    if (step > 1) setStep(step - 1);
+   294→  };
+   295→
+   296→  const handleGoToDashboard = () => {
+   297→    setView('dashboard');
+   298→  };
+   299→
+   300→  const completedItems = [
+   301→    `Role set up as ${ROLE_LABELS[role]}`,
+   302→    'Account profile configured',
+   303→    'Quick questions answered',
+   304→    'Platform tour completed',
+   305→  ];
+   306→
+   307→  return (
+   308→    <div className="min-h-screen bg-white flex flex-col">
+   309→      {/* Top Bar */}
+   310→      <header className="flex items-center justify-between px-4 sm:px-6 py-4 border-b" style={{ borderColor: '#E0E0E0' }}>
+   311→        <button
+   312→          onClick={() => setView('marketing')}
+   313→          className="flex items-center gap-2 text-sm font-medium hover:opacity-70"
+   314→          style={{ color: '#2E7D32' }}
+   315→        >
+   316→          <ChevronLeft className="h-4 w-4" />
+   317→          Back to Home
+   318→        </button>
+   319→        <button
+   320→          onClick={handleSkip}
+   321→          className="text-sm font-medium px-3 py-1.5 rounded-md hover:opacity-70"
+   322→          style={{ color: '#757575' }}
+   323→        >
+   324→          Skip
+   325→        </button>
+   326→      </header>
+   327→
+   328→      {/* Main Content */}
+   329→      <main className="flex-1 flex flex-col lg:flex-row">
+   330→        {/* Left Side - Progress & Welcome */}
+   331→        <div
+   332→          className="w-full lg:w-[400px] xl:w-[440px] p-6 sm:p-10 flex flex-col justify-center border-b lg:border-b-0 lg:border-r"
+   333→          style={{ borderColor: '#E0E0E0', background: '#F5F5F5' }}
+   334→        >
+   335→          <motion.div
+   336→            initial={{ opacity: 0, x: -20 }}
+   337→            animate={{ opacity: 1, x: 0 }}
+   338→            transition={{ duration: 0.4 }}
+   339→          >
+   340→            <div className="flex items-center gap-2 mb-6">
+   341→              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#E8F5E9' }}>
+   342→                <Truck className="h-5 w-5" style={{ color: '#2E7D32' }} />
+   343→              </div>
+   344→              <span className="text-lg font-bold" style={{ color: '#212121' }}>SwiftFreight</span>
+   345→            </div>
+   346→
+   347→            <h1 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: '#212121' }}>
+   348→              {step === 5 ? "You're all set!" : 'Welcome to SwiftFreight!'}
+   349→            </h1>
+   350→            <p className="text-sm leading-relaxed mb-8" style={{ color: '#757575' }}>
+   351→              {step === 5
+   352→                ? `Your onboarding as a ${ROLE_LABELS[role]} is complete. Here's a summary of what you configured.`
+   353→                : "Let's get you set up and familiar with the platform. This will only take a few minutes."}
+   354→            </p>
+   355→
+   356→            {/* Progress Steps */}
+   357→            <div className="space-y-3">
+   358→              {[
+   359→                { num: 1, label: 'Welcome' },
+   360→                { num: 2, label: 'Role Introduction' },
+   361→                { num: 3, label: 'Quick Questions' },
+   362→                { num: 4, label: 'Platform Tour' },
+   363→                { num: 5, label: 'Complete' },
+   364→              ].map((s) => (
+   365→                <div key={s.num} className="flex items-center gap-3">
+   366→                  <div
+   367→                    className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold shrink-0"
+   368→                    style={{
+   369→                      background: step >= s.num ? '#2E7D32' : '#E0E0E0',
+   370→                      color: step >= s.num ? '#FFFFFF' : '#757575',
+   371→                    }}
+   372→                  >
+   373→                    {step > s.num ? <CheckCircle2 className="h-4 w-4" /> : s.num}
+   374→                  </div>
+   375→                  <span
+   376→                    className="text-sm"
+   377→                    style={{
+   378→                      color: step >= s.num ? '#212121' : '#757575',
+   379→                      fontWeight: step === s.num ? 600 : 400,
+   380→                    }}
+   381→                  >
+   382→                    {s.label}
+   383→                  </span>
+   384→                </div>
+   385→              ))}
+   386→            </div>
+   387→
+   388→            <div className="mt-8">
+   389→              <span className="text-xs font-medium" style={{ color: '#757575' }}>
+   390→                Step {step} of {TOTAL_STEPS}
+   391→              </span>
+   392→            </div>
+   393→          </motion.div>
+   394→        </div>
+   395→
+   396→        {/* Right Side - Step Content */}
+   397→        <div className="flex-1 p-6 sm:p-10 overflow-y-auto">
+   398→          <AnimatePresence mode="wait">
+   399→            <motion.div
+   400→              key={step}
+   401→              initial={{ opacity: 0, y: 12 }}
+   402→              animate={{ opacity: 1, y: 0 }}
+   403→              exit={{ opacity: 0, y: -12 }}
+   404→              transition={{ duration: 0.3 }}
+   405→              className="max-w-2xl mx-auto"
+   406→            >
+   407→              {step === 1 && (
+   408→                <div>
+   409→                  <div className="flex items-center gap-3 mb-2">
+   410→                    <Sparkles className="h-6 w-6" style={{ color: '#2E7D32' }} />
+   411→                    <Badge
+   412→                      className="text-xs font-medium px-3 py-1"
+   413→                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+   414→                    >
+   415→                      Step 1
+   416→                    </Badge>
+   417→                  </div>
+   418→                  <h2 className="text-2xl font-bold mb-2" style={{ color: '#212121' }}>
+   419→                    Welcome, {currentUser?.name ?? 'there'}!
+   420→                  </h2>
+   421→                  <p className="text-sm leading-relaxed mb-8" style={{ color: '#757575' }}>
+   422→                    SwiftFreight is Lesotho&apos;s leading logistics platform, connecting courier companies, drivers,
+   423→                    customers, and partners in one intelligent ecosystem. Whether you&apos;re shipping a parcel
+   424→                    across Maseru or managing a fleet of 50 vehicles, we&apos;ve got you covered.
+   425→                  </p>
+   426→
+   427→                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+   428→                    {[
+   429→                      { icon: <Truck className="h-5 w-5" />, label: 'Real-Time Tracking', desc: 'Track every delivery live' },
+   430→                      { icon: <MapPin className="h-5 w-5" />, label: '10 Districts Covered', desc: 'Nationwide delivery network' },
+   431→                      { icon: <Shield className="h-5 w-5" />, label: 'Secure & Reliable', desc: 'Proof of delivery on every shipment' },
+   432→                      { icon: <Star className="h-5 w-5" />, label: 'Rated & Trusted', desc: 'Community-driven quality' },
+   433→                    ].map((item) => (
+   434→                      <Card key={item.label} className="border-0 shadow-sm" style={{ background: '#F5F5F5' }}>
+   435→                        <CardContent className="p-4 flex items-start gap-3">
+   436→                          <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#E8F5E9' }}>
+   437→                            <span style={{ color: '#2E7D32' }}>{item.icon}</span>
+   438→                          </div>
+   439→                          <div>
+   440→                            <p className="text-sm font-semibold" style={{ color: '#212121' }}>{item.label}</p>
+   441→                            <p className="text-xs mt-0.5" style={{ color: '#757575' }}>{item.desc}</p>
+   442→                          </div>
+   443→                        </CardContent>
+   444→                      </Card>
+   445→                    ))}
+   446→                  </div>
+   447→                </div>
+   448→              )}
+   449→
+   450→              {step === 2 && (
+   451→                <div>
+   452→                  <div className="flex items-center gap-3 mb-2">
+   453→                    <Users className="h-6 w-6" style={{ color: '#2E7D32' }} />
+   454→                    <Badge
+   455→                      className="text-xs font-medium px-3 py-1"
+   456→                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+   457→                    >
+   458→                      Step 2
+   459→                    </Badge>
+   460→                  </div>
+   461→                  <h2 className="text-2xl font-bold mb-2" style={{ color: '#212121' }}>
+   462→                    Your Role: {config.title}
+   463→                  </h2>
+   464→                  <p className="text-sm leading-relaxed mb-6" style={{ color: '#757575' }}>
+   465→                    {config.description}
+   466→                  </p>
+   467→
+   468→                  <h3 className="text-sm font-semibold mb-4" style={{ color: '#212121' }}>
+   469→                    Key Capabilities
+   470→                  </h3>
+   471→                  <div className="space-y-3 mb-8">
+   472→                    {config.capabilities.map((cap) => (
+   473→                      <Card key={cap.title} className="border-0 shadow-sm" style={{ background: '#F5F5F5' }}>
+   474→                        <CardContent className="p-4 flex items-start gap-3">
+   475→                          <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#E8F5E9' }}>
+   476→                            <span style={{ color: '#2E7D32' }}>{cap.icon}</span>
+   477→                          </div>
+   478→                          <div>
+   479→                            <p className="text-sm font-semibold" style={{ color: '#212121' }}>{cap.title}</p>
+   480→                            <p className="text-xs mt-0.5" style={{ color: '#757575' }}>{cap.description}</p>
+   481→                          </div>
+   482→                        </CardContent>
+   483→                      </Card>
+   484→                    ))}
+   485→                  </div>
+   486→                </div>
+   487→              )}
+   488→
+   489→              {step === 3 && (
+   490→                <div>
+   491→                  <div className="flex items-center gap-3 mb-2">
+   492→                    <ClipboardList className="h-6 w-6" style={{ color: '#2E7D32' }} />
+   493→                    <Badge
+   494→                      className="text-xs font-medium px-3 py-1"
+   495→                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+   496→                    >
+   497→                      Step 3
+   498→                    </Badge>
+   499→                  </div>
+   500→                  <h2 className="text-2xl font-bold mb-2" style={{ color: '#212121' }}>
+   501→                    Quick Questions
+   502→                  </h2>
+   503→                  <p className="text-sm leading-relaxed mb-6" style={{ color: '#757575' }}>
+   504→                    Help us personalize your experience. These questions are optional but help us tailor the platform to your needs.
+   505→                  </p>
+   506→
+   507→                  <div className="space-y-6">
+   508→                    {config.questions.map((q) => (
+   509→                      <div key={q.id}>
+   510→                        <label className="block text-sm font-medium mb-2" style={{ color: '#212121' }}>
+   511→                          {q.label}
+   512→                        </label>
+   513→                        {q.options ? (
+   514→                          <div className="flex flex-wrap gap-2">
+   515→                            {q.options.map((opt) => (
+   516→                              <button
+   517→                                key={opt}
+   518→                                onClick={() => handleAnswer(q.id, opt)}
+   519→                                className="text-xs px-3 py-2 rounded-lg border font-medium transition-all"
+   520→                                style={{
+   521→                                  background: answers[q.id] === opt ? '#2E7D32' : '#FFFFFF',
+   522→                                  color: answers[q.id] === opt ? '#FFFFFF' : '#212121',
+   523→                                  borderColor: answers[q.id] === opt ? '#2E7D32' : '#E0E0E0',
+   524→                                }}
+   525→                              >
+   526→                                {opt}
+   527→                              </button>
+   528→                            ))}
+   529→                          </div>
+   530→                        ) : (
+   531→                          <Input
+   532→                            placeholder={q.placeholder}
+   533→                            value={answers[q.id] ?? ''}
+   534→                            onChange={(e) => handleAnswer(q.id, e.target.value)}
+   535→                            className="max-w-md"
+   536→                            style={{ borderColor: '#E0E0E0' }}
+   537→                          />
+   538→                        )}
+   539→                      </div>
+   540→                    ))}
+   541→                  </div>
+   542→                </div>
+   543→              )}
+   544→
+   545→              {step === 4 && (
+   546→                <div>
+   547→                  <div className="flex items-center gap-3 mb-2">
+   548→                    <LayoutDashboard className="h-6 w-6" style={{ color: '#2E7D32' }} />
+   549→                    <Badge
+   550→                      className="text-xs font-medium px-3 py-1"
+   551→                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+   552→                    >
+   553→                      Step 4
+   554→                    </Badge>
+   555→                  </div>
+   556→                  <h2 className="text-2xl font-bold mb-2" style={{ color: '#212121' }}>
+   557→                    Platform Tour
+   558→                  </h2>
+   559→                  <p className="text-sm leading-relaxed mb-6" style={{ color: '#757575' }}>
+   560→                    Here are the key features available to you as a {config.title}. Click &quot;Learn More&quot; to explore our Knowledge Base.
+   561→                  </p>
+   562→
+   563→                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+   564→                    {config.features.map((feat) => (
+   565→                      <Card key={feat.title} className="border-0 shadow-sm" style={{ background: '#F5F5F5' }}>
+   566→                        <CardContent className="p-4">
+   567→                          <div className="flex items-start gap-3">
+   568→                            <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#E8F5E9' }}>
+   569→                              <span style={{ color: '#2E7D32' }}>{feat.icon}</span>
+   570→                            </div>
+   571→                            <div className="flex-1 min-w-0">
+   572→                              <p className="text-sm font-semibold" style={{ color: '#212121' }}>{feat.title}</p>
+   573→                              <p className="text-xs mt-1 leading-relaxed" style={{ color: '#757575' }}>
+   574→                                {feat.description}
+   575→                              </p>
+   576→                              {feat.article && (
+   577→                                <button
+   578→                                  onClick={() => setView('knowledge-base')}
+   579→                                  className="text-xs font-medium mt-2 inline-flex items-center gap-1 hover:underline"
+   580→                                  style={{ color: '#2E7D32' }}
+   581→                                >
+   582→                                  Learn More <ArrowRight className="h-3 w-3" />
+   583→                                </button>
+   584→                              )}
+   585→                            </div>
+   586→                          </div>
+   587→                        </CardContent>
+   588→                      </Card>
+   589→                    ))}
+   590→                  </div>
+   591→                </div>
+   592→              )}
+   593→
+   594→              {step === 5 && (
+   595→                <div>
+   596→                  <div className="flex items-center justify-center mb-6">
+   597→                    <motion.div
+   598→                      initial={{ scale: 0 }}
+   599→                      animate={{ scale: 1 }}
+   600→                      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+   601→                      className="flex items-center justify-center w-20 h-20 rounded-full"
+   602→                      style={{ background: '#E8F5E9' }}
+   603→                    >
+   604→                      <CheckCircle2 className="h-10 w-10" style={{ color: '#2E7D32' }} />
+   605→                    </motion.div>
+   606→                  </div>
+   607→                  <h2 className="text-2xl font-bold text-center mb-2" style={{ color: '#212121' }}>
+   608→                    You&apos;re all set!
+   609→                  </h2>
+   610→                  <p className="text-sm text-center leading-relaxed mb-8" style={{ color: '#757575' }}>
+   611→                    Your onboarding is complete. Here&apos;s a summary of what you configured.
+   612→                  </p>
+   613→
+   614→                  <Card className="border-0 shadow-sm mb-8" style={{ background: '#F5F5F5' }}>
+   615→                    <CardContent className="p-6">
+   616→                      <h3 className="text-sm font-semibold mb-4" style={{ color: '#212121' }}>
+   617→                        Setup Summary
+   618→                      </h3>
+   619→                      <div className="space-y-3">
+   620→                        {completedItems.map((item) => (
+   621→                          <div key={item} className="flex items-center gap-3">
+   622→                            <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: '#2E7D32' }} />
+   623→                            <span className="text-sm" style={{ color: '#212121' }}>{item}</span>
+   624→                          </div>
+   625→                        ))}
+   626→                        {Object.entries(answers).length > 0 && (
+   627→                          <div className="mt-4 pt-4 border-t" style={{ borderColor: '#E0E0E0' }}>
+   628→                            <p className="text-xs font-medium mb-2" style={{ color: '#757575' }}>Your Responses:</p>
+   629→                            {Object.entries(answers).map(([key, value]) => (
+   630→                              <div key={key} className="flex items-center gap-2 mb-1">
+   631→                                <span className="text-xs" style={{ color: '#757575' }}>{key.replace(/_/g, ' ')}:</span>
+   632→                                <span className="text-xs font-medium" style={{ color: '#212121' }}>{value}</span>
+   633→                              </div>
+   634→                            ))}
+   635→                          </div>
+   636→                        )}
+   637→                      </div>
+   638→                    </CardContent>
+   639→                  </Card>
+   640→
+   641→                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+   642→                    <Button
+   643→                      onClick={handleGoToDashboard}
+   644→                      className="font-medium px-8 py-3"
+   645→                      style={{ background: '#2E7D32', color: '#FFFFFF' }}
+   646→                    >
+   647→                      Go to Dashboard
+   648→                      <ArrowRight className="h-4 w-4 ml-2" />
+   649→                    </Button>
+   650→                    <Button
+   651→                      variant="outline"
+   652→                      onClick={() => setView('knowledge-base')}
+   653→                      className="font-medium px-8 py-3"
+   654→                      style={{ borderColor: '#E0E0E0', color: '#212121' }}
+   655→                    >
+   656→                      Explore Knowledge Base
+   657→                    </Button>
+   658→                  </div>
+   659→                </div>
+   660→              )}
+   661→            </motion.div>
+   662→          </AnimatePresence>
+   663→
+   664→          {/* Navigation Buttons */}
+   665→          {step < TOTAL_STEPS && (
+   666→            <div className="flex items-center justify-between mt-8 max-w-2xl mx-auto">
+   667→              <Button
+   668→                variant="outline"
+   669→                onClick={handleBack}
+   670→                disabled={step === 1}
+   671→                className="font-medium"
+   672→                style={{ borderColor: '#E0E0E0', color: step === 1 ? '#E0E0E0' : '#212121' }}
+   673→              >
+   674→                <ArrowLeft className="h-4 w-4 mr-2" />
+   675→                Back
+   676→              </Button>
+   677→              <Button
+   678→                onClick={handleNext}
+   679→                className="font-medium px-6"
+   680→                style={{ background: '#2E7D32', color: '#FFFFFF' }}
+   681→              >
+   682→                Next
+   683→                <ArrowRight className="h-4 w-4 ml-2" />
+   684→              </Button>
+   685→            </div>
+   686→          )}
+   687→        </div>
+   688→      </main>
+   689→    </div>
+   690→  );
+   691→}

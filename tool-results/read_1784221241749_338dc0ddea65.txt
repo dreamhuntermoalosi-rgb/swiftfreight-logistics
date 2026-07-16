@@ -1,0 +1,1140 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, type FormEvent } from 'react';
+     4→import { useNavStore } from '@/lib/store';
+     5→import { Button } from '@/components/ui/button';
+     6→import {
+     7→  Card,
+     8→  CardContent,
+     9→  CardDescription,
+    10→  CardHeader,
+    11→  CardTitle,
+    12→} from '@/components/ui/card';
+    13→import { Badge } from '@/components/ui/badge';
+    14→import {
+    15→  Accordion,
+    16→  AccordionContent,
+    17→  AccordionItem,
+    18→  AccordionTrigger,
+    19→} from '@/components/ui/accordion';
+    20→import { Input } from '@/components/ui/input';
+    21→import {
+    22→  Sheet,
+    23→  SheetContent,
+    24→  SheetTrigger,
+    25→  SheetTitle,
+    26→} from '@/components/ui/sheet';
+    27→import { motion } from 'framer-motion';
+    28→import {
+    29→  Truck,
+    30→  Menu,
+    31→  ArrowRight,
+    32→  Building2,
+    33→  MapPin,
+    34→  Car,
+    35→  Package,
+    36→  Users,
+    37→  Warehouse,
+    38→  BarChart3,
+    39→  FileText,
+    40→  CheckCircle2,
+    41→  Phone,
+    42→  Mail,
+    43→  MapPinned,
+    44→  Send,
+    45→  Check,
+    46→  Star,
+    47→  ArrowUp,
+    48→  Clock,
+    49→  Eye,
+    50→  TrendingUp,
+    51→  PackageSearch,
+    52→  LayoutDashboard,
+    53→  Navigation,
+    54→  ChevronRight,
+    55→  Smartphone,
+    56→} from 'lucide-react';
+    57→
+    58→// ─────────────────────────────────────────────────────────────────────────────
+    59→// NAV LINKS
+    60→// ─────────────────────────────────────────────────────────────────────────────
+    61→const NAV_LINKS = [
+    62→  { label: 'Features', href: '#features' },
+    63→  { label: 'How It Works', href: '#how-it-works' },
+    64→  { label: 'Pricing', href: '#pricing' },
+    65→  { label: 'FAQ', href: '#faq' },
+    66→] as const;
+    67→
+    68→// ─────────────────────────────────────────────────────────────────────────────
+    69→// SMOOTH SCROLL HELPER
+    70→// ─────────────────────────────────────────────────────────────────────────────
+    71→function scrollTo(href: string) {
+    72→  const el = document.querySelector(href);
+    73→  if (el) {
+    74→    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    75→  }
+    76→}
+    77→
+    78→// ─────────────────────────────────────────────────────────────────────────────
+    79→// FADE-IN ON SCROLL WRAPPER
+    80→// ─────────────────────────────────────────────────────────────────────────────
+    81→function FadeIn({
+    82→  children,
+    83→  className,
+    84→  delay = 0,
+    85→}: {
+    86→  children: React.ReactNode;
+    87→  className?: string;
+    88→  delay?: number;
+    89→}) {
+    90→  return (
+    91→    <motion.div
+    92→      initial={{ opacity: 0, y: 20 }}
+    93→      whileInView={{ opacity: 1, y: 0 }}
+    94→      viewport={{ once: true, margin: '-50px' }}
+    95→      transition={{ duration: 0.45, delay, ease: 'easeOut' }}
+    96→      className={className}
+    97→    >
+    98→      {children}
+    99→    </motion.div>
+   100→  );
+   101→}
+   102→
+   103→// ─────────────────────────────────────────────────────────────────────────────
+   104→// SECTION HEADING
+   105→// ─────────────────────────────────────────────────────────────────────────────
+   106→function SectionHeading({
+   107→  title,
+   108→  description,
+   109→}: {
+   110→  title: string;
+   111→  description: string;
+   112→}) {
+   113→  return (
+   114→    <div className="mx-auto max-w-2xl text-center">
+   115→      <h2 className="text-2xl font-bold tracking-tight text-[#212121] sm:text-3xl lg:text-4xl">
+   116→        {title}
+   117→      </h2>
+   118→      <p className="mt-3 text-base leading-relaxed text-[#757575] sm:text-lg">
+   119→        {description}
+   120→      </p>
+   121→    </div>
+   122→  );
+   123→}
+   124→
+   125→// ─────────────────────────────────────────────────────────────────────────────
+   126→// DASHBOARD PREVIEW (Hero Right Side)
+   127→// ─────────────────────────────────────────────────────────────────────────────
+   128→function DashboardPreview() {
+   129→  return (
+   130→    <div className="relative w-full max-w-[420px] mx-auto lg:mx-0">
+   131→      {/* Main dashboard card */}
+   132→      <div className="rounded-2xl border border-[#E0E0E0] bg-white p-4 shadow-xl shadow-black/[0.06]">
+   133→        {/* Header */}
+   134→        <div className="flex items-center justify-between mb-4">
+   135→          <div className="flex items-center gap-2">
+   136→            <div className="h-6 w-6 rounded-md bg-[#2E7D32] flex items-center justify-center">
+   137→              <Truck className="h-3.5 w-3.5 text-white" />
+   138→            </div>
+   139→            <span className="text-sm font-semibold text-[#212121]">Dashboard Overview</span>
+   140→          </div>
+   141→          <div className="flex gap-1.5">
+   142→            <div className="h-2.5 w-2.5 rounded-full bg-[#2E7D32]/20" />
+   143→            <div className="h-2.5 w-2.5 rounded-full bg-[#E8F5E9]" />
+   144→            <div className="h-2.5 w-2.5 rounded-full bg-[#E8F5E9]" />
+   145→          </div>
+   146→        </div>
+   147→
+   148→        {/* Metric cards */}
+   149→        <div className="grid grid-cols-4 gap-2 mb-4">
+   150→          {[
+   151→            { value: '1,248', label: 'Total' },
+   152→            { value: '326', label: 'Active' },
+   153→            { value: '892', label: 'Done' },
+   154→            { value: '98.6%', label: 'On-Time' },
+   155→          ].map((m) => (
+   156→            <div key={m.label} className="rounded-lg bg-[#E8F5E9] px-2 py-2.5 text-center">
+   157→              <div className="text-sm font-bold text-[#2E7D32]">{m.value}</div>
+   158→              <div className="text-[10px] text-[#757575] mt-0.5">{m.label}</div>
+   159→            </div>
+   160→          ))}
+   161→        </div>
+   162→
+   163→        {/* Map placeholder */}
+   164→        <div className="rounded-lg bg-[#E8F5E9] h-32 mb-4 relative overflow-hidden">
+   165→          {/* Grid lines for map feel */}
+   166→          <svg className="absolute inset-0 w-full h-full opacity-[0.15]" xmlns="http://www.w3.org/2000/svg">
+   167→            <defs>
+   168→              <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+   169→                <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#2E7D32" strokeWidth="0.5" />
+   170→              </pattern>
+   171→            </defs>
+   172→            <rect width="100%" height="100%" fill="url(#map-grid)" />
+   173→          </svg>
+   174→          {/* Location pins */}
+   175→          <div className="absolute top-[25%] left-[30%]">
+   176→            <div className="relative">
+   177→              <div className="h-4 w-4 rounded-full bg-[#2E7D32] border-2 border-white shadow-md" />
+   178→              <div className="absolute -inset-1.5 rounded-full bg-[#2E7D32]/20 animate-ping" />
+   179→            </div>
+   180→          </div>
+   181→          <div className="absolute top-[55%] left-[55%]">
+   182→            <div className="h-3.5 w-3.5 rounded-full bg-[#2E7D32] border-2 border-white shadow-md" />
+   183→          </div>
+   184→          <div className="absolute top-[35%] left-[70%]">
+   185→            <div className="h-3.5 w-3.5 rounded-full bg-[#4CAF50] border-2 border-white shadow-md" />
+   186→          </div>
+   187→          <div className="absolute top-[70%] left-[25%]">
+   188→            <div className="h-3 w-3 rounded-full bg-[#4CAF50] border-2 border-white shadow-md" />
+   189→          </div>
+   190→          <div className="absolute top-[20%] left-[50%]">
+   191→            <div className="h-2.5 w-2.5 rounded-full bg-[#81C784] border-2 border-white shadow" />
+   192→          </div>
+   193→          {/* Map label */}
+   194→          <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
+   195→            <span className="text-[10px] font-medium text-[#212121]">Live Tracking</span>
+   196→          </div>
+   197→        </div>
+   198→
+   199→        {/* Recent deliveries list */}
+   200→        <div className="space-y-2">
+   201→          <div className="text-xs font-semibold text-[#212121] mb-2">Recent Deliveries</div>
+   202→          {[
+   203→            { id: '#695201', from: 'Maseru', to: 'Butha-Buthe', status: 'Out for Delivery', color: 'bg-[#FF9800] text-white' },
+   204→            { id: '#695198', from: 'Mafikeng', to: 'Maseru', status: 'Delivered', color: 'bg-[#2E7D32] text-white' },
+   205→            { id: '#695187', from: 'Leribe', to: 'Qacha\'s Nek', status: 'In Transit', color: 'bg-[#1976D2] text-white' },
+   206→          ].map((d) => (
+   207→            <div key={d.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+   208→              <div className="flex items-center gap-2.5">
+   209→                <Package className="h-3.5 w-3.5 text-[#757575]" />
+   210→                <div>
+   211→                  <div className="text-[11px] font-semibold text-[#212121]">Delivery {d.id}</div>
+   212→                  <div className="text-[10px] text-[#9E9E9E]">{d.from} → {d.to}</div>
+   213→                </div>
+   214→              </div>
+   215→              <span className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${d.color}`}>
+   216→                {d.status}
+   217→              </span>
+   218→            </div>
+   219→          ))}
+   220→        </div>
+   221→      </div>
+   222→
+   223→      {/* Floating phone mockup */}
+   224→      <div className="absolute -bottom-6 -right-6 w-[140px] z-10 hidden sm:block">
+   225→        <div className="rounded-2xl border border-[#E0E0E0] bg-white shadow-xl shadow-black/[0.1] overflow-hidden">
+   226→          {/* Phone status bar */}
+   227→          <div className="bg-[#2E7D32] px-3 py-2 flex items-center justify-between">
+   228→            <span className="text-[8px] text-white/80 font-medium">9:41</span>
+   229→            <div className="flex gap-1">
+   230→              <div className="h-1.5 w-2.5 rounded-sm bg-white/60" />
+   231→              <div className="h-1.5 w-1.5 rounded-full bg-white/60" />
+   232→            </div>
+   233→          </div>
+   234→          {/* Phone content */}
+   235→          <div className="p-2.5">
+   236→            <div className="text-[9px] font-bold text-[#212121] mb-2">SwiftFreight</div>
+   237→            <div className="space-y-1.5">
+   238→              {[
+   239→                { icon: Package, label: 'My Deliveries', count: '12' },
+   240→                { icon: MapPin, label: 'Track Parcel', count: null },
+   241→                { icon: FileText, label: 'My Quotes', count: '3' },
+   242→              ].map((item) => (
+   243→                <div key={item.label} className="flex items-center justify-between rounded-md bg-gray-50 px-2 py-1.5">
+   244→                  <div className="flex items-center gap-1.5">
+   245→                    <item.icon className="h-3 w-3 text-[#2E7D32]" />
+   246→                    <span className="text-[8px] font-medium text-[#212121]">{item.label}</span>
+   247→                  </div>
+   248→                  {item.count && (
+   249→                    <span className="rounded-full bg-[#2E7D32] px-1.5 py-0.5 text-[7px] font-bold text-white">{item.count}</span>
+   250→                  )}
+   251→                </div>
+   252→              ))}
+   253→            </div>
+   254→          </div>
+   255→        </div>
+   256→      </div>
+   257→    </div>
+   258→  );
+   259→}
+   260→
+   261→// ═══════════════════════════════════════════════════════════════════════════════
+   262→// MARKETING WEBSITE
+   263→// ═══════════════════════════════════════════════════════════════════════════════
+   264→export function MarketingWebsite() {
+   265→  const { setView } = useNavStore();
+   266→  const [mobileOpen, setMobileOpen] = useState(false);
+   267→  const [showBackToTop, setShowBackToTop] = useState(false);
+   268→  const [faqOpenIndex, setFaqOpenIndex] = useState<string | undefined>(undefined);
+   269→  const [contactName, setContactName] = useState('');
+   270→  const [contactEmail, setContactEmail] = useState('');
+   271→  const [contactCompany, setContactCompany] = useState('');
+   272→  const [contactPhone, setContactPhone] = useState('');
+   273→  const [contactSubmitted, setContactSubmitted] = useState(false);
+   274→
+   275→  useEffect(() => {
+   276→    const onScroll = () => {
+   277→      setShowBackToTop(window.scrollY > 600);
+   278→    };
+   279→    window.addEventListener('scroll', onScroll, { passive: true });
+   280→    return () => window.removeEventListener('scroll', onScroll);
+   281→  }, []);
+   282→
+   283→  const handleContactSubmit = (e: FormEvent) => {
+   284→    e.preventDefault();
+   285→    setContactSubmitted(true);
+   286→    setContactName('');
+   287→    setContactEmail('');
+   288→    setContactCompany('');
+   289→    setContactPhone('');
+   290→    setTimeout(() => setContactSubmitted(false), 5000);
+   291→  };
+   292→
+   293→  const handleNavClick = (href: string) => {
+   294→    setMobileOpen(false);
+   295→    scrollTo(href);
+   296→  };
+   297→
+   298→  return (
+   299→    <div className="flex min-h-screen flex-col bg-white">
+   300→
+   301→      {/* ═══════════════════ 1. NAVIGATION ═══════════════════ */}
+   302→      <header className="sticky top-0 z-50 w-full border-b border-[#E0E0E0] bg-white">
+   303→        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6">
+   304→          {/* Logo */}
+   305→          <button
+   306→            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+   307→            className="flex items-center gap-2 focus:outline-none"
+   308→          >
+   309→            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2E7D32]">
+   310→              <Truck className="h-4 w-4 text-white" />
+   311→            </div>
+   312→            <span className="text-lg font-bold tracking-tight text-[#212121]">
+   313→              Swift<span className="text-[#2E7D32]">Freight</span>
+   314→            </span>
+   315→          </button>
+   316→
+   317→          {/* Desktop Nav */}
+   318→          <nav className="hidden items-center gap-1 md:flex">
+   319→            {NAV_LINKS.map((link) => (
+   320→              <button
+   321→                key={link.href}
+   322→                onClick={() => scrollTo(link.href)}
+   323→                className="rounded-md px-3.5 py-2 text-sm font-medium text-[#212121] transition-colors hover:text-[#2E7D32] focus:outline-none"
+   324→              >
+   325→                {link.label}
+   326→              </button>
+   327→            ))}
+   328→          </nav>
+   329→
+   330→          {/* Desktop Actions */}
+   331→          <div className="hidden items-center gap-3 md:flex">
+   332→            <Button
+   333→              variant="outline"
+   334→              className="h-9 border-[#2E7D32] bg-white px-5 text-sm font-medium text-[#2E7D32] hover:bg-[#E8F5E9] hover:border-[#2E7D32] hover:text-[#2E7D32] transition-colors"
+   335→              onClick={() => setView('login')}
+   336→            >
+   337→              Log In
+   338→            </Button>
+   339→            <Button
+   340→              className="h-9 bg-[#2E7D32] px-5 text-sm font-semibold text-white hover:bg-[#1B5E20] transition-colors"
+   341→              onClick={() => setView('register')}
+   342→            >
+   343→              Book a Demo
+   344→            </Button>
+   345→          </div>
+   346→
+   347→          {/* Mobile Menu */}
+   348→          <div className="md:hidden">
+   349→            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+   350→              <SheetTrigger asChild>
+   351→                <Button variant="ghost" size="icon" className="h-9 w-9 text-[#212121]">
+   352→                  <Menu className="h-5 w-5" />
+   353→                  <span className="sr-only">Open menu</span>
+   354→                </Button>
+   355→              </SheetTrigger>
+   356→              <SheetContent side="right" className="w-72 pt-12">
+   357→                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+   358→                <nav className="flex flex-col gap-1 px-4">
+   359→                  {NAV_LINKS.map((link) => (
+   360→                    <button
+   361→                      key={link.href}
+   362→                      onClick={() => handleNavClick(link.href)}
+   363→                      className="rounded-md px-3 py-2.5 text-left text-sm font-medium text-[#212121] transition-colors hover:bg-[#E8F5E9]"
+   364→                    >
+   365→                      {link.label}
+   366→                    </button>
+   367→                  ))}
+   368→                  <div className="my-4 h-px bg-[#E0E0E0]" />
+   369→                  <Button
+   370→                    variant="outline"
+   371→                    className="border-[#2E7D32] text-[#2E7D32] hover:bg-[#E8F5E9]"
+   372→                    onClick={() => { setMobileOpen(false); setView('login'); }}
+   373→                  >
+   374→                    Log In
+   375→                  </Button>
+   376→                  <Button
+   377→                    className="mt-2 bg-[#2E7D32] text-white hover:bg-[#1B5E20]"
+   378→                    onClick={() => { setMobileOpen(false); setView('register'); }}
+   379→                  >
+   380→                    Book a Demo
+   381→                  </Button>
+   382→                </nav>
+   383→              </SheetContent>
+   384→            </Sheet>
+   385→          </div>
+   386→        </div>
+   387→      </header>
+   388→
+   389→      <main className="flex-1">
+   390→
+   391→        {/* ═══════════════════ 2. HERO ═══════════════════ */}
+   392→        <section className="bg-white py-16 sm:py-20 lg:py-24">
+   393→          <div className="mx-auto max-w-[1200px] px-6">
+   394→            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+   395→              {/* Left — Copy */}
+   396→              <div>
+   397→                <h1 className="text-3xl font-bold tracking-tight text-[#212121] sm:text-4xl lg:text-5xl leading-[1.15]">
+   398→                  Run Logistics.
+   399→                  <br />
+   400→                  <span className="text-[#2E7D32]">Smarter. Faster. Stronger.</span>
+   401→                </h1>
+   402→                <p className="mt-5 text-base leading-relaxed text-[#757575] sm:text-lg max-w-lg">
+   403→                  SwiftFreight is the all-in-one logistics platform for courier companies, fleet operators and businesses in Lesotho and beyond. Manage deliveries, fleets, drivers, sourcing, tracking and customers from one powerful system.
+   404→                </p>
+   405→                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+   406→                  <Button
+   407→                    size="lg"
+   408→                    className="h-11 bg-[#2E7D32] px-7 text-sm font-bold text-white hover:bg-[#1B5E20] transition-colors"
+   409→                    onClick={() => setView('register')}
+   410→                  >
+   411→                    Book a Demo
+   412→                    <ArrowRight className="ml-2 h-4 w-4" />
+   413→                  </Button>
+   414→                  <Button
+   415→                    size="lg"
+   416→                    variant="outline"
+   417→                    className="h-11 border-[#2E7D32] bg-white px-7 text-sm font-semibold text-[#2E7D32] hover:bg-[#E8F5E9] hover:border-[#2E7D32] hover:text-[#2E7D32] transition-colors"
+   418→                    onClick={() => scrollTo('#features')}
+   419→                  >
+   420→                    Explore Platform
+   421→                    <ChevronRight className="ml-2 h-4 w-4" />
+   422→                  </Button>
+   423→                </div>
+   424→              </div>
+   425→
+   426→              {/* Right — Dashboard Preview */}
+   427→              <DashboardPreview />
+   428→            </div>
+   429→          </div>
+   430→        </section>
+   431→
+   432→        {/* ═══════════════════ 3. PLATFORM OVERVIEW ═══════════════════ */}
+   433→        <FadeIn>
+   434→          <section id="features" className="bg-white py-16 sm:py-20">
+   435→            <div className="mx-auto max-w-[1200px] px-6">
+   436→              <SectionHeading
+   437→                title="One Platform. Every Logistics Need."
+   438→                description="Digitize and automate your entire logistics operation with powerful modules built for the way you work."
+   439→              />
+   440→              <div className="mt-12 grid gap-4 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+   441→                {[
+   442→                  {
+   443→                    icon: Package,
+   444→                    title: 'Delivery Management',
+   445→                    desc: 'Create, assign, and track every delivery from request to proof of delivery.',
+   446→                  },
+   447→                  {
+   448→                    icon: Car,
+   449→                    title: 'Fleet & Driver Management',
+   450→                    desc: 'Manage vehicles, maintenance schedules, driver performance and documentation.',
+   451→                  },
+   452→                  {
+   453→                    icon: MapPin,
+   454→                    title: 'Real-time Tracking',
+   455→                    desc: 'Live status updates and GPS tracking so everyone knows where every parcel is.',
+   456→                  },
+   457→                  {
+   458→                    icon: PackageSearch,
+   459→                    title: 'Sourcing Requests',
+   460→                    desc: 'Customers request products, agents source and deliver — all tracked in one place.',
+   461→                  },
+   462→                  {
+   463→                    icon: BarChart3,
+   464→                    title: 'Analytics Center',
+   465→                    desc: 'Revenue, delivery performance, and growth insights to make better decisions.',
+   466→                  },
+   467→                ].map((feature) => (
+   468→                  <div
+   469→                    key={feature.title}
+   470→                    className="rounded-xl bg-[#E8F5E9] p-6 transition-all duration-200 hover:shadow-md hover:shadow-[#2E7D32]/10"
+   471→                  >
+   472→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#2E7D32] shadow-sm">
+   473→                      <feature.icon className="h-5 w-5" />
+   474→                    </div>
+   475→                    <h3 className="mt-4 text-sm font-semibold text-[#212121]">
+   476→                      {feature.title}
+   477→                    </h3>
+   478→                    <p className="mt-1.5 text-xs leading-relaxed text-[#757575]">
+   479→                      {feature.desc}
+   480→                    </p>
+   481→                  </div>
+   482→                ))}
+   483→              </div>
+   484→            </div>
+   485→          </section>
+   486→        </FadeIn>
+   487→
+   488→        {/* ═══════════════════ 4. HOW IT WORKS ═══════════════════ */}
+   489→        <FadeIn delay={0.05}>
+   490→          <section id="how-it-works" className="bg-white py-16 sm:py-20">
+   491→            <div className="mx-auto max-w-[1200px] px-6">
+   492→              <SectionHeading
+   493→                title="From request to delivery in four simple steps"
+   494→                description="A seamless workflow that keeps your business and your customers informed at every step."
+   495→              />
+   496→              <div className="mt-12 grid gap-8 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4">
+   497→                {[
+   498→                  {
+   499→                    step: '01',
+   500→                    icon: FileText,
+   501→                    title: 'Create Request',
+   502→                    desc: 'Customer submits a delivery or sourcing request through the platform with all the details.',
+   503→                  },
+   504→                  {
+   505→                    step: '02',
+   506→                    icon: Navigation,
+   507→                    title: 'Assign & Dispatch',
+   508→                    desc: 'Your team reviews the request, assigns a driver and vehicle, and dispatches the job.',
+   509→                  },
+   510→                  {
+   511→                    step: '03',
+   512→                    icon: MapPin,
+   513→                    title: 'Track in Real-time',
+   514→                    desc: 'Both your team and the customer can follow the parcel status at every checkpoint.',
+   515→                  },
+   516→                  {
+   517→                    step: '04',
+   518→                    icon: CheckCircle2,
+   519→                    title: 'Deliver & Confirm',
+   520→                    desc: 'Driver captures proof of delivery with photo and signature. Customer provides feedback.',
+   521→                  },
+   522→                ].map((item, index) => (
+   523→                  <div key={item.step} className="relative text-center">
+   524→                    {/* Connector line */}
+   525→                    {index < 3 && (
+   526→                      <div className="absolute top-8 left-[calc(50%+28px)] hidden h-px w-[calc(100%-56px)] lg:block" aria-hidden="true">
+   527→                        <div className="h-full w-full bg-[#E0E0E0]" />
+   528→                        <div className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-[#E0E0E0]" />
+   529→                      </div>
+   530→                    )}
+   531→                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8F5E9] text-[#2E7D32] ring-1 ring-[#2E7D32]/10">
+   532→                      <item.icon className="h-6 w-6" />
+   533→                      <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#2E7D32] text-[9px] font-bold text-white">
+   534→                        {item.step}
+   535→                      </div>
+   536→                    </div>
+   537→                    <h3 className="mt-4 text-sm font-semibold text-[#212121]">{item.title}</h3>
+   538→                    <p className="mt-2 text-xs leading-relaxed text-[#757575]">{item.desc}</p>
+   539→                  </div>
+   540→                ))}
+   541→              </div>
+   542→            </div>
+   543→          </section>
+   544→        </FadeIn>
+   545→
+   546→        {/* ═══════════════════ 5. STAKEHOLDER TOOLS ═══════════════════ */}
+   547→        <FadeIn delay={0.05}>
+   548→          <section className="bg-[#F5F5F5] py-16 sm:py-20">
+   549→            <div className="mx-auto max-w-[1200px] px-6">
+   550→              <SectionHeading
+   551→                title="Powerful tools for every role"
+   552→                description="Whether you run a fleet, drive a vehicle, or need something delivered — SwiftFreight has you covered."
+   553→              />
+   554→              <div className="mt-12 grid gap-5 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+   555→                {[
+   556→                  {
+   557→                    icon: Building2,
+   558→                    title: 'Couriers & Fleet Owners',
+   559→                    desc: 'Manage your entire operation — dispatch, fleet, drivers, customers and revenue from one dashboard.',
+   560→                  },
+   561→                  {
+   562→                    icon: Car,
+   563→                    title: 'Drivers',
+   564→                    desc: 'Receive assignments, update delivery status, upload proof of delivery and track earnings.',
+   565→                  },
+   566→                  {
+   567→                    icon: Users,
+   568→                    title: 'Customers',
+   569→                    desc: 'Submit delivery requests, track parcels in real-time, view history and rate deliveries.',
+   570→                  },
+   571→                  {
+   572→                    icon: PackageSearch,
+   573→                    title: 'Sourcing Agents',
+   574→                    desc: 'Manage sourcing requests, provide quotations and coordinate cross-border procurement.',
+   575→                  },
+   576→                  {
+   577→                    icon: Truck,
+   578→                    title: 'Trailer Owners',
+   579→                    desc: 'List vehicles, track utilization, manage maintenance and receive rental revenue.',
+   580→                  },
+   581→                ].map((item) => (
+   582→                  <Card
+   583→                    key={item.title}
+   584→                    className="border-[#E0E0E0] bg-white transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+   585→                  >
+   586→                    <CardHeader className="pb-3">
+   587→                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#E8F5E9] text-[#2E7D32]">
+   588→                        <item.icon className="h-5 w-5" />
+   589→                      </div>
+   590→                      <CardTitle className="mt-3 text-sm font-semibold text-[#212121]">
+   591→                        {item.title}
+   592→                      </CardTitle>
+   593→                    </CardHeader>
+   594→                    <CardContent>
+   595→                      <p className="text-xs leading-relaxed text-[#757575]">{item.desc}</p>
+   596→                    </CardContent>
+   597→                  </Card>
+   598→                ))}
+   599→              </div>
+   600→            </div>
+   601→          </section>
+   602→        </FadeIn>
+   603→
+   604→        {/* ═══════════════════ 6. GROWTH STATS ═══════════════════ */}
+   605→        <FadeIn>
+   606→          <section className="bg-white py-16 sm:py-20">
+   607→            <div className="mx-auto max-w-[1200px] px-6">
+   608→              <SectionHeading
+   609→                title="Built to help your business grow"
+   610→                description="More efficiency. Happier customers. Higher profits."
+   611→              />
+   612→              <div className="mt-12 grid gap-6 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4">
+   613→                {[
+   614→                  { icon: Clock, metric: '80%', label: 'Faster Operations', desc: 'Automate repetitive tasks and reduce manual work across your entire workflow.' },
+   615→                  { icon: Package, metric: '3x', label: 'More Deliveries', desc: 'Handle more orders with the same team by eliminating bottlenecks and delays.' },
+   616→                  { icon: Eye, metric: '100%', label: 'Visibility', desc: 'Know where every vehicle, driver, and parcel is at all times — no more guessing.' },
+   617→                  { icon: TrendingUp, metric: '10x', label: 'Business Growth', desc: 'Scale from one vehicle to a full fleet without changing systems or adding complexity.' },
+   618→                ].map((item) => (
+   619→                  <div key={item.label} className="text-center">
+   620→                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8F5E9] text-[#2E7D32]">
+   621→                      <item.icon className="h-7 w-7" />
+   622→                    </div>
+   623→                    <div className="mt-4 text-3xl font-bold text-[#2E7D32] sm:text-4xl">
+   624→                      {item.metric}
+   625→                    </div>
+   626→                    <div className="mt-1 text-sm font-semibold text-[#212121]">
+   627→                      {item.label}
+   628→                    </div>
+   629→                    <p className="mt-2 text-xs leading-relaxed text-[#757575] max-w-[220px] mx-auto">
+   630→                      {item.desc}
+   631→                    </p>
+   632→                  </div>
+   633→                ))}
+   634→              </div>
+   635→            </div>
+   636→          </section>
+   637→        </FadeIn>
+   638→
+   639→        {/* ═══════════════════ 7. TESTIMONIALS ═══════════════════ */}
+   640→        <FadeIn delay={0.05}>
+   641→          <section className="bg-[#F5F5F5] py-16 sm:py-20">
+   642→            <div className="mx-auto max-w-[1200px] px-6">
+   643→              <SectionHeading
+   644→                title="See what our customers say"
+   645→                description="Real feedback from logistics businesses running on SwiftFreight in Lesotho."
+   646→              />
+   647→              <div className="mt-12 grid gap-6 sm:mt-14 lg:grid-cols-3">
+   648→                {[
+   649→                  {
+   650→                    quote: 'SwiftFreight transformed the way we run our deliveries. We save time, serve more customers and our operations are now fully automated.',
+   651→                    name: 'Thabo Mokone',
+   652→                    role: 'Operations Manager',
+   653→                    company: 'Lesotho Express',
+   654→                    stars: 5,
+   655→                  },
+   656→                  {
+   657→                    quote: 'The real-time tracking and dispatch board has been a game changer. Our customers love the visibility and our team spends less time on phone calls.',
+   658→                    name: 'Lerato Mahlape',
+   659→                    role: 'Director',
+   660→                    company: 'Rapid Logistics',
+   661→                    stars: 5,
+   662→                  },
+   663→                  {
+   664→                    quote: 'Finally, a system built for Africa, by Africans. It\'s solved all our logistics challenges. The team is responsive and the platform keeps getting better.',
+   665→                    name: 'Puleng Radebe',
+   666→                    role: 'Owner',
+   667→                    company: 'Mountain Couriers',
+   668→                    stars: 5,
+   669→                  },
+   670→                ].map((t) => (
+   671→                  <div
+   672→                    key={t.name}
+   673→                    className="rounded-xl border border-[#E0E0E0] bg-white p-6 transition-all duration-200 hover:shadow-md"
+   674→                  >
+   675→                    <div className="flex gap-1 mb-3">
+   676→                      {Array.from({ length: 5 }).map((_, i) => (
+   677→                        <Star
+   678→                          key={i}
+   679→                          className={`h-4 w-4 ${i < t.stars ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`}
+   680→                        />
+   681→                      ))}
+   682→                    </div>
+   683→                    <p className="text-sm leading-relaxed text-[#757575] mb-5">
+   684→                      &ldquo;{t.quote}&rdquo;
+   685→                    </p>
+   686→                    <div className="flex items-center gap-3 pt-4 border-t border-[#E0E0E0]">
+   687→                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8F5E9] text-[#2E7D32] font-semibold text-sm">
+   688→                        {t.name.charAt(0)}
+   689→                      </div>
+   690→                      <div>
+   691→                        <p className="text-sm font-semibold text-[#212121]">{t.name}</p>
+   692→                        <p className="text-xs text-[#9E9E9E]">{t.role}, {t.company}</p>
+   693→                      </div>
+   694→                    </div>
+   695→                  </div>
+   696→                ))}
+   697→              </div>
+   698→            </div>
+   699→          </section>
+   700→        </FadeIn>
+   701→
+   702→        {/* ═══════════════════ 8. PRICING ═══════════════════ */}
+   703→        <FadeIn delay={0.05}>
+   704→          <section id="pricing" className="bg-white py-16 sm:py-20">
+   705→            <div className="mx-auto max-w-[1200px] px-6">
+   706→              <SectionHeading
+   707→                title="Choose the plan that works for you"
+   708→                description="No hidden fees. No long-term contracts."
+   709→              />
+   710→              <div className="mt-12 grid gap-6 sm:mt-14 lg:grid-cols-3">
+   711→                {[
+   712→                  {
+   713→                    name: 'Starter',
+   714→                    price: 'M299',
+   715→                    period: '/month',
+   716→                    description: 'For small operations getting started with digital logistics.',
+   717→                    features: [
+   718→                      'Up to 5 Drivers',
+   719→                      'Up to 10 Vehicles',
+   720→                      'Delivery Management',
+   721→                      'Real-time Tracking',
+   722→                      'Basic Reports',
+   723→                    ],
+   724→                    cta: 'Get Started',
+   725→                    highlighted: false,
+   726→                  },
+   727→                  {
+   728→                    name: 'Professional',
+   729→                    price: 'M799',
+   730→                    period: '/month',
+   731→                    description: 'For growing companies that need advanced tools and analytics.',
+   732→                    features: [
+   733→                      'Up to 20 Drivers',
+   734→                      'Up to 30 Vehicles',
+   735→                      'Advanced Reports',
+   736→                      'Dedicated Support',
+   737→                      'Sourcing Requests',
+   738→                      'Priority Support',
+   739→                    ],
+   740→                    cta: 'Get Started',
+   741→                    highlighted: true,
+   742→                  },
+   743→                  {
+   744→                    name: 'Enterprise',
+   745→                    price: 'M1,999',
+   746→                    period: '/month',
+   747→                    description: 'Full-featured platform for large-scale logistics operations.',
+   748→                    features: [
+   749→                      'Unlimited Drivers',
+   750→                      'Unlimited Vehicles',
+   751→                      'Custom Reports',
+   752→                      'API Access',
+   753→                      'Dedicated Support',
+   754→                      'Custom Integrations',
+   755→                    ],
+   756→                    cta: 'Talk to Sales',
+   757→                    highlighted: false,
+   758→                  },
+   759→                ].map((plan) => (
+   760→                  <Card
+   761→                    key={plan.name}
+   762→                    className={`relative flex flex-col transition-all duration-200 hover:-translate-y-0.5 ${
+   763→                      plan.highlighted
+   764→                        ? 'border-2 border-[#2E7D32] bg-white shadow-lg shadow-[#2E7D32]/10 scale-[1.02] lg:scale-105'
+   765→                        : 'border-[#E0E0E0] bg-white hover:shadow-md'
+   766→                    }`}
+   767→                  >
+   768→                    {plan.highlighted && (
+   769→                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+   770→                        <Badge className="rounded-full bg-[#2E7D32] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+   771→                          <Star className="mr-1 h-3 w-3" />
+   772→                          Most Popular
+   773→                        </Badge>
+   774→                      </div>
+   775→                    )}
+   776→                    <CardHeader className="pb-2 pt-8 sm:pt-10">
+   777→                      <CardTitle className="text-base font-semibold text-[#212121]">
+   778→                        {plan.name}
+   779→                      </CardTitle>
+   780→                      <CardDescription className="mt-1 text-xs text-[#757575]">
+   781→                        {plan.description}
+   782→                      </CardDescription>
+   783→                      <div className="mt-4 flex items-baseline gap-1">
+   784→                        <span className={`text-3xl font-bold ${plan.highlighted ? 'text-[#2E7D32]' : 'text-[#212121]'}`}>
+   785→                          {plan.price}
+   786→                        </span>
+   787→                        <span className="text-sm text-[#9E9E9E]">{plan.period}</span>
+   788→                      </div>
+   789→                    </CardHeader>
+   790→                    <CardContent className="flex flex-1 flex-col pt-2">
+   791→                      <ul className="flex-1 space-y-3">
+   792→                        {plan.features.map((f) => (
+   793→                          <li key={f} className="flex items-start gap-2.5">
+   794→                            <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.highlighted ? 'text-[#2E7D32]' : 'text-[#4CAF50]'}`} />
+   795→                            <span className="text-sm text-[#757575]">{f}</span>
+   796→                          </li>
+   797→                        ))}
+   798→                      </ul>
+   799→                      <Button
+   800→                        className={`mt-8 h-10 w-full text-sm font-semibold transition-colors ${
+   801→                          plan.highlighted
+   802→                            ? 'bg-[#2E7D32] text-white hover:bg-[#1B5E20]'
+   803→                            : 'bg-white text-[#212121] border border-[#E0E0E0] hover:border-[#2E7D32] hover:text-[#2E7D32]'
+   804→                        }`}
+   805→                        onClick={() => {
+   806→                          if (plan.name === 'Enterprise') {
+   807→                            scrollTo('#cta');
+   808→                          } else {
+   809→                            setView('register');
+   810→                          }
+   811→                        }}
+   812→                      >
+   813→                        {plan.cta}
+   814→                        <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+   815→                      </Button>
+   816→                    </CardContent>
+   817→                  </Card>
+   818→                ))}
+   819→              </div>
+   820→            </div>
+   821→          </section>
+   822→        </FadeIn>
+   823→
+   824→        {/* ═══════════════════ 9. FAQ ═══════════════════ */}
+   825→        <FadeIn>
+   826→          <section id="faq" className="bg-[#F5F5F5] py-16 sm:py-20">
+   827→            <div className="mx-auto max-w-3xl px-6">
+   828→              <SectionHeading
+   829→                title="Everything you need to know"
+   830→                description="Common questions about SwiftFreight and how it works for your business."
+   831→              />
+   832→              <Accordion
+   833→                type="single"
+   834→                collapsible
+   835→                className="mt-10 w-full"
+   836→                value={faqOpenIndex}
+   837→                onValueChange={(val) => setFaqOpenIndex(val)}
+   838→              >
+   839→                {[
+   840→                  {
+   841→                    q: 'Is SwiftFreight suitable for small businesses?',
+   842→                    a: 'Absolutely. SwiftFreight is designed to grow with you. The Starter plan is affordable for small operations, and you can upgrade as your business expands. There is no minimum commitment.',
+   843→                  },
+   844→                  {
+   845→                    q: 'Can I track deliveries in real-time?',
+   846→                    a: 'Yes. Every delivery gets a live tracking timeline that both your team and your customers can see. Status updates happen automatically as the driver progresses through each stage.',
+   847→                  },
+   848→                  {
+   849→                    q: 'Can I request products from outside Lesotho?',
+   850→                    a: 'Yes. SwiftFreight includes a sourcing module that lets your customers request products from anywhere. Sourcing agents manage the procurement, and the entire process — from request to delivery — is tracked on the platform.',
+   851→                  },
+   852→                  {
+   853→                    q: 'Is training provided for my team?',
+   854→                    a: 'Yes. Every SwiftFreight plan includes onboarding support. We help you configure your workspace, train your staff on their specific roles, and provide ongoing support to ensure a smooth transition.',
+   855→                  },
+   856→                  {
+   857→                    q: 'Can I import my existing data?',
+   858→                    a: 'Yes. We support data import for customer lists, vehicle records, driver information, and delivery history. Our team can assist with migration during onboarding.',
+   859→                  },
+   860→                  {
+   861→                    q: 'Is my data secure on SwiftFreight?',
+   862→                    a: 'Absolutely. SwiftFreight uses bank-grade encryption, secure cloud hosting, and multi-tenant data isolation. Your company data is completely separated from other tenants and accessible only to your authorized users.',
+   863→                  },
+   864→                ].map((item, index) => (
+   865→                  <AccordionItem
+   866→                    key={index}
+   867→                    value={`faq-${index}`}
+   868→                    className={`border-[#E0E0E0] transition-all duration-200 ${faqOpenIndex === `faq-${index}` ? 'rounded-lg border-l-[3px] border-l-[#2E7D32] bg-white shadow-sm' : 'bg-white hover:bg-gray-50'}`}
+   869→                  >
+   870→                    <AccordionTrigger className="text-left text-sm font-medium text-[#212121] hover:no-underline sm:text-[15px] hover:text-[#2E7D32] transition-colors">
+   871→                      {item.q}
+   872→                    </AccordionTrigger>
+   873→                    <AccordionContent className="text-sm leading-relaxed text-[#757575] pl-1">
+   874→                      {item.a}
+   875→                    </AccordionContent>
+   876→                  </AccordionItem>
+   877→                ))}
+   878→              </Accordion>
+   879→            </div>
+   880→          </section>
+   881→        </FadeIn>
+   882→
+   883→        {/* ═══════════════════ 10. CTA WITH CONTACT FORM ═══════════════════ */}
+   884→        <FadeIn delay={0.05}>
+   885→          <section id="cta" className="bg-gradient-to-br from-[#2E7D32] to-[#1B5E20] py-16 sm:py-20">
+   886→            <div className="mx-auto max-w-[1200px] px-6">
+   887→              <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+   888→                {/* Left — Copy */}
+   889→                <div className="text-white">
+   890→                  <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+   891→                    Ready to transform your logistics?
+   892→                  </h2>
+   893→                  <p className="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">
+   894→                    Join growing businesses in Lesotho who are running smarter, faster and stronger with SwiftFreight.
+   895→                  </p>
+   896→                  <div className="mt-8 space-y-3">
+   897→                    {[
+   898→                      'Free Demo',
+   899→                      'Quick Setup',
+   900→                      'Local Support, Always',
+   901→                    ].map((item) => (
+   902→                      <div key={item} className="flex items-center gap-3">
+   903→                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
+   904→                          <Check className="h-4 w-4 text-white" />
+   905→                        </div>
+   906→                        <span className="text-sm font-medium text-white/90">{item}</span>
+   907→                      </div>
+   908→                    ))}
+   909→                  </div>
+   910→                  <div className="mt-8 flex items-center gap-6 text-sm text-white/60">
+   911→                    <div className="flex items-center gap-2">
+   912→                      <Mail className="h-4 w-4" />
+   913→                      <span>info@swiftfreight.ls</span>
+   914→                    </div>
+   915→                    <div className="flex items-center gap-2">
+   916→                      <Phone className="h-4 w-4" />
+   917→                      <span>+266 2234 5678</span>
+   918→                    </div>
+   919→                  </div>
+   920→                </div>
+   921→
+   922→                {/* Right — Form */}
+   923→                <div>
+   924→                  {contactSubmitted ? (
+   925→                    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/10 p-8 text-center backdrop-blur-sm">
+   926→                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+   927→                        <CheckCircle2 className="h-7 w-7 text-white" />
+   928→                      </div>
+   929→                      <h3 className="mt-4 text-lg font-semibold text-white">
+   930→                        Demo Booked!
+   931→                      </h3>
+   932→                      <p className="mt-2 text-sm text-white/70">
+   933→                        We&apos;ll be in touch within 24 hours.
+   934→                      </p>
+   935→                    </div>
+   936→                  ) : (
+   937→                    <form
+   938→                      onSubmit={handleContactSubmit}
+   939→                      className="space-y-3.5 rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-sm sm:p-8"
+   940→                    >
+   941→                      <div>
+   942→                        <Input
+   943→                          type="text"
+   944→                          placeholder="Your Name"
+   945→                          required
+   946→                          value={contactName}
+   947→                          onChange={(e) => setContactName(e.target.value)}
+   948→                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+   949→                        />
+   950→                      </div>
+   951→                      <div>
+   952→                        <Input
+   953→                          type="email"
+   954→                          placeholder="Your Email"
+   955→                          required
+   956→                          value={contactEmail}
+   957→                          onChange={(e) => setContactEmail(e.target.value)}
+   958→                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+   959→                        />
+   960→                      </div>
+   961→                      <div>
+   962→                        <Input
+   963→                          type="text"
+   964→                          placeholder="Company Name"
+   965→                          value={contactCompany}
+   966→                          onChange={(e) => setContactCompany(e.target.value)}
+   967→                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+   968→                        />
+   969→                      </div>
+   970→                      <div>
+   971→                        <Input
+   972→                          type="tel"
+   973→                          placeholder="Phone Number"
+   974→                          value={contactPhone}
+   975→                          onChange={(e) => setContactPhone(e.target.value)}
+   976→                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+   977→                        />
+   978→                      </div>
+   979→                      <Button
+   980→                        type="submit"
+   981→                        className="h-11 w-full bg-white font-semibold text-[#2E7D32] shadow-lg hover:bg-white/90 transition-colors"
+   982→                      >
+   983→                        <Send className="mr-2 h-4 w-4" />
+   984→                        Book My Demo
+   985→                      </Button>
+   986→                    </form>
+   987→                  )}
+   988→                </div>
+   989→              </div>
+   990→            </div>
+   991→          </section>
+   992→        </FadeIn>
+   993→      </main>
+   994→
+   995→      {/* ═══════════════════ 11. FOOTER ═══════════════════ */}
+   996→      <footer className="border-t border-[#E0E0E0] bg-white">
+   997→        <div className="mx-auto max-w-[1200px] px-6 py-12 sm:py-16">
+   998→          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+   999→            {/* Brand */}
+  1000→            <div className="lg:col-span-1">
+  1001→              <div className="flex items-center gap-2">
+  1002→                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2E7D32]">
+  1003→                  <Truck className="h-4 w-4 text-white" />
+  1004→                </div>
+  1005→                <span className="text-lg font-bold tracking-tight text-[#212121]">
+  1006→                  Swift<span className="text-[#2E7D32]">Freight</span>
+  1007→                </span>
+  1008→              </div>
+  1009→              <p className="mt-3 text-sm leading-relaxed text-[#757575]">
+  1010→                The intelligent logistics operating system built for Africa.
+  1011→              </p>
+  1012→              {/* Social */}
+  1013→              <div className="mt-5 flex gap-2.5">
+  1014→                {[
+  1015→                  { label: 'X', icon: 'X' },
+  1016→                  { label: 'LinkedIn', icon: 'in' },
+  1017→                  { label: 'Facebook', icon: 'f' },
+  1018→                ].map((s) => (
+  1019→                  <button
+  1020→                    key={s.label}
+  1021→                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F5F5] text-xs font-semibold text-[#757575] transition-colors hover:bg-[#E8F5E9] hover:text-[#2E7D32]"
+  1022→                    aria-label={s.label}
+  1023→                  >
+  1024→                    {s.icon}
+  1025→                  </button>
+  1026→                ))}
+  1027→              </div>
+  1028→            </div>
+  1029→
+  1030→            {/* Product */}
+  1031→            <div>
+  1032→              <h4 className="text-sm font-semibold text-[#212121]">Product</h4>
+  1033→              <ul className="mt-4 space-y-2.5">
+  1034→                {[
+  1035→                  { label: 'Features', href: '#features' },
+  1036→                  { label: 'Modules', href: '#features' },
+  1037→                  { label: 'Pricing', href: '#pricing' },
+  1038→                  { label: 'Integrations', href: null },
+  1039→                ].map((link) => (
+  1040→                  <li key={link.label}>
+  1041→                    {link.href ? (
+  1042→                      <button
+  1043→                        className="text-sm text-[#757575] transition-colors hover:text-[#212121]"
+  1044→                        onClick={() => scrollTo(link.href)}
+  1045→                      >
+  1046→                        {link.label}
+  1047→                      </button>
+  1048→                    ) : (
+  1049→                      <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+  1050→                        {link.label}
+  1051→                      </span>
+  1052→                    )}
+  1053→                  </li>
+  1054→                ))}
+  1055→              </ul>
+  1056→            </div>
+  1057→
+  1058→            {/* Solutions */}
+  1059→            <div>
+  1060→              <h4 className="text-sm font-semibold text-[#212121]">Solutions</h4>
+  1061→              <ul className="mt-4 space-y-2.5">
+  1062→                {['For Couriers', 'For Drivers', 'For Businesses', 'For Sourcing Agents'].map((link) => (
+  1063→                  <li key={link}>
+  1064→                    <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+  1065→                      {link}
+  1066→                    </span>
+  1067→                  </li>
+  1068→                ))}
+  1069→              </ul>
+  1070→            </div>
+  1071→
+  1072→            {/* Resources */}
+  1073→            <div>
+  1074→              <h4 className="text-sm font-semibold text-[#212121]">Resources</h4>
+  1075→              <ul className="mt-4 space-y-2.5">
+  1076→                {['Help Center', 'Guides', 'Blog', 'Status'].map((link) => (
+  1077→                  <li key={link}>
+  1078→                    <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+  1079→                      {link}
+  1080→                    </span>
+  1081→                  </li>
+  1082→                ))}
+  1083→              </ul>
+  1084→            </div>
+  1085→
+  1086→            {/* Company */}
+  1087→            <div>
+  1088→              <h4 className="text-sm font-semibold text-[#212121]">Company</h4>
+  1089→              <ul className="mt-4 space-y-2.5">
+  1090→                {[
+  1091→                  { label: 'About Us', href: null },
+  1092→                  { label: 'Careers', href: null },
+  1093→                  { label: 'Contact Us', href: '#cta' },
+  1094→                ].map((link) => (
+  1095→                  <li key={link.label}>
+  1096→                    {link.href ? (
+  1097→                      <button
+  1098→                        className="text-sm text-[#757575] transition-colors hover:text-[#212121]"
+  1099→                        onClick={() => scrollTo(link.href)}
+  1100→                      >
+  1101→                        {link.label}
+  1102→                      </button>
+  1103→                    ) : (
+  1104→                      <span className="text-sm text-[#757575] transition-colors hover:text-[#212121] cursor-pointer">
+  1105→                        {link.label}
+  1106→                      </span>
+  1107→                    )}
+  1108→                  </li>
+  1109→                ))}
+  1110→              </ul>
+  1111→            </div>
+  1112→          </div>
+  1113→
+  1114→          {/* Bottom bar */}
+  1115→          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#E0E0E0] pt-8 sm:flex-row">
+  1116→            <p className="text-sm text-[#9E9E9E]">
+  1117→              &copy; 2025 SwiftFreight. All rights reserved.
+  1118→            </p>
+  1119→            <div className="flex gap-6">
+  1120→              <span className="text-sm text-[#9E9E9E] cursor-pointer hover:text-[#212121] transition-colors">Privacy Policy</span>
+  1121→              <span className="text-sm text-[#9E9E9E] cursor-pointer hover:text-[#212121] transition-colors">Terms of Service</span>
+  1122→            </div>
+  1123→          </div>
+  1124→        </div>
+  1125→      </footer>
+  1126→
+  1127→      {/* ═══════════════════ BACK TO TOP ═══════════════════ */}
+  1128→      <motion.button
+  1129→        initial={false}
+  1130→        animate={{ opacity: showBackToTop ? 1 : 0, y: showBackToTop ? 0 : 16 }}
+  1131→        transition={{ duration: 0.2 }}
+  1132→        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  1133→        className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#2E7D32] text-white shadow-lg shadow-[#2E7D32]/25 transition-shadow hover:shadow-xl focus:outline-none"
+  1134→        aria-label="Back to top"
+  1135→      >
+  1136→        <ArrowUp className="h-5 w-5" />
+  1137→      </motion.button>
+  1138→    </div>
+  1139→  );
+  1140→}

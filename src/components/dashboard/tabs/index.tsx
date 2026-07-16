@@ -21,6 +21,8 @@ import { InvoicesTab as InvoicesTabReal } from './invoices-tab';
 import { QuotationsTab as QuotationsTabReal } from './quotations-tab';
 import { NotificationsTab as NotificationsTabReal } from './notifications-tab';
 import { WarehouseTab as WarehouseTabReal } from './warehouse-tab';
+import { SafetyTab as SafetyTabReal } from './safety-tab';
+import { ChainOfCustodyTab as ChainOfCustodyTabReal } from './chain-of-custody-tab';
 
 /**
  * Tab component barrel file.
@@ -44,6 +46,8 @@ export const InvoicesTab = InvoicesTabReal;
 export const QuotationsTab = QuotationsTabReal;
 export const NotificationsTab = NotificationsTabReal;
 export const WarehouseTab = WarehouseTabReal;
+export const SafetyTab = SafetyTabReal;
+export const ChainOfCustodyTab = ChainOfCustodyTabReal;
 export const SettingsTab = SettingsTabReal;
 
 // Map for dynamic lookup
@@ -62,5 +66,7 @@ export const tabComponentMap: Record<DashboardTab, React.ComponentType> = {
   quotations: QuotationsTab,
   notifications: NotificationsTab,
   warehouse: WarehouseTab,
+  safety: SafetyTab,
+  'chain-of-custody': ChainOfCustodyTab,
   settings: SettingsTab,
 };

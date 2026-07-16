@@ -1568,3 +1568,155 @@ Stage Summary:
 - Hero has dashboard preview visual with phone mockup
 - Contact form CTA with 4 fields replaces previous button-only CTA
 - All content is Lesotho-focused with no South Africa references
+
+---
+Task ID: 4
+Agent: full-stack-developer
+Task: Auth pages redesign + legal framework
+
+Work Log:
+- Updated AppView type in types.ts (already had new values from prior task)
+- Created 4 placeholder page components in src/components/onboarding/: onboarding-page, knowledge-base-page, feature-requests-page, training-page
+- Updated page.tsx SPA router with imports and conditional renders for all 4 new views, plus auth-gated redirect for onboarding/knowledge-base/feature-requests/training
+- Redesigned login-page.tsx with #2E7D32 Material green theme: solid bg-[#2E7D32] left panel (no gradient overlay), white card with border-[#E0E0E0], green accent colors on all interactive elements, consistent green demo account buttons
+- Redesigned register-page.tsx with #2E7D32 green theme: added KYC fields (National ID / Passport Number with M5,000+ hint), added Phone Number as required with +266 prefix hint, added platform disclaimer section, added Package Declaration checkbox with Lock icon and "Required" badge (must be checked to submit), all styled in green theme
+- Redesigned forgot-password-page.tsx with #2E7D32 green theme: clean white/green design, consistent with login
+- Updated Prisma schema: added 4 new models (PackageDeclaration, KycVerification, ChainOfCustody, IncidentReport), added relations to User (kyc, reportedIncidents) and Delivery (chainOfCustody, packageDeclaration, incidents)
+- Ran db:push successfully, schema applied
+- Created 3 API routes: /api/declarations (POST), /api/incidents (POST + GET with query filters), /api/kyc (POST upsert + GET with userId)
+- Fixed lint error: added missing Calendar import to onboarding-page.tsx
+- All lint checks pass with 0 errors
+
+Stage Summary:
+- 3 auth pages redesigned with consistent #2E7D32 Material green theme (white cards, green accents, clean borders)
+- Registration form now includes KYC verification fields and mandatory parcel declaration
+- Prisma schema extended with PackageDeclaration, KycVerification, ChainOfCustody, IncidentReport models
+- 3 new API routes created for declarations, incidents, and KYC operations
+- 4 placeholder onboarding/knowledge-base/feature-requests/training pages created and wired in router
+---
+Task ID: 6
+Agent: full-stack-developer
+Task: Safety Reporting UI and Chain of Custody View
+
+Work Log:
+- Updated types.ts: Added 'safety' | 'chain-of-custody' to DashboardTab union type
+- Added PackageDeclaration, ChainOfCustodyEntry, IncidentReport interfaces to types.ts
+- Created safety-tab.tsx with 3 role-based views:
+  - DriverView: Quick-tap incident type grid (8 types), modal for submission, "My Recent Reports" list
+  - CustomerView: Customer-specific incident types (7 types), same modal pattern, "My Reports" list
+  - ManagerView: KPI cards (Open, Critical, Resolved, Avg Resolution), filterable/sortable table, detail dialog
+- 8 realistic mock incident reports with Basotho names and Lesotho locations
+- Color-coded priority (critical=#FEE2E2, high=#FEF3C7) and status (investigating=#DBEAFE, resolved=#DCFCE7) indicators
+- Created chain-of-custody-tab.tsx with visual vertical timeline:
+  - Delivery selector dropdown with 3 mock delivery chains
+  - Each timeline entry shows: timestamp, from→to with role badges (Customer/Driver/Warehouse), GPS location, photo/signature placeholders, notes
+  - Status indicators: green check for completed, pulsing green dot for current, gray for pending
+- Updated tab index.tsx: Imported SafetyTab and ChainOfCustodyTab, added to tabComponentMap
+- Updated dashboard-layout.tsx: Added Shield/GitBranch icons, 'safety' and 'chain-of-custody' to all nav item arrays (common, staff, driver, customer), added tabTitles entries
+- Updated deliveries-tab.tsx: Added Package Declaration section in detail panel (category badge, declaration tags for Dangerous Goods/Fragile/Electronics/Liquids/Documents, declaration text, Accepted badge), added "Report Issue" button linking to safety tab
+- Moved SortIcon component outside ManagerView to fix react-hooks/static-components lint error
+- Cleaned unused imports (TrendingUp, BarChart3, Beaker, Separator)
+
+Stage Summary:
+- Safety tab fully functional for all 3 roles with mock data and real submission flow
+- Chain of Custody tab with 3 complete delivery examples and rich timeline UI
+- Both tabs wired into sidebar navigation for all user roles
+- Delivery detail panel enhanced with Package Declaration and Report Issue shortcut
+- All lint checks passing (0 errors, 0 warnings)
+
+---
+Task ID: 5
+Agent: full-stack-developer
+Task: Build Onboarding, Knowledge Base, Feature Requests, and Training pages
+
+Work Log:
+- Updated AppView type in src/lib/types.ts to add 'onboarding', 'knowledge-base', 'feature-requests', 'training'
+- Created src/components/onboarding/onboarding-page.tsx (~700 lines):
+  - 5-step onboarding wizard with left sidebar progress and right content panel
+  - Step 1: Welcome with 4 platform highlights
+  - Step 2: Role Introduction with 3-4 capabilities per role (10 roles)
+  - Step 3: Quick Questions with 2-3 role-specific questions (option buttons or text input)
+  - Step 4: Platform Tour with 4-6 feature cards with "Learn More" links to Knowledge Base
+  - Step 5: Complete with checklist summary and "Go to Dashboard" / "Explore Knowledge Base" buttons
+  - Skip button at top-right, Back/Next navigation, framer-motion animations
+  - Detects user role from useAuthStore, defaults to 'customer'
+- Created src/components/onboarding/knowledge-base-page.tsx (~520 lines):
+  - Search bar with real-time filtering across titles and content
+  - Left sidebar with 8 categories (Getting Started, Deliveries, For Drivers, Sourcing, Fleet Management, Safety & Compliance, Billing & Pricing, Account & Security)
+  - 23 articles total with 2-3 paragraphs of realistic Lesotho logistics content each
+  - Article list view with category badges, last updated dates, and preview text
+  - Article detail view with full content, back navigation
+  - "New Article" button for admin roles
+- Created src/components/onboarding/feature-requests-page.tsx (~480 lines):
+  - 10 pre-populated feature requests with realistic statuses and descriptions
+  - Status filter pills (All, Open, Planned, In Progress, Launched)
+  - Upvote button with local state counter
+  - Submit modal with title, category dropdown, description textarea
+  - Status badges with icons, role badges, category badges, date display
+  - framer-motion layout animations for card list
+- Created src/components/onboarding/training-page.tsx (~490 lines):
+  - 10 training sessions with role filtering (All Roles, Drivers, Dispatchers, Managers, Customers, Sourcing Agents, Fleet Managers)
+  - Grid layout with card design showing icon, title, duration, role badge, status
+  - "Start Training" opens Dialog with scroll-based progress bar
+  - Training content with 3 paragraphs of realistic material
+  - "Complete Training" button tracks completed sessions in local state
+  - "Coming Soon" disabled state for 2 sessions
+- Updated src/app/page.tsx to import and render all 4 new components
+- Cleaned up unused imports (Globe, Smartphone, Rocket, Package, BarChart3, Truck, Shield, FileText, Star, MapPin, Users, setDashboardTab, logout)
+- All lint checks passing (0 errors, 0 warnings)
+
+Stage Summary:
+- 4 new pages built: Onboarding wizard, Knowledge Base, Feature Requests, Training Center
+- All pages use white bg (#FFFFFF), green accent (#2E7D32), light green cards (#E8F5E9), #212121 text, #757575 secondary, #E0E0E0 borders
+- All pages responsive (mobile-first), use shadcn/ui components, lucide-react icons, framer-motion animations
+- All pages have "Back to Home" button calling setView('marketing')
+- Knowledge Base has 23 articles across 8 categories with Lesotho-specific logistics content
+- Feature Requests has 10 items with upvoting and submission modal
+- Training has 10 sessions with role filtering, progress tracking, and completion state
+
+---
+Task ID: 7
+Agent: Main Orchestrator
+Task: Quick fixes - footer icons, hero responsive, dark sections, onboarding pages, legal framework
+
+Work Log:
+- Fixed footer: replaced text-based social buttons with real SVG icons for X/Twitter, LinkedIn, Facebook
+- Changed footer background from white to dark green (#1B3A1B) with white text and white/50 link text
+- Social icons use white/10 bg circles, hover turns green (#2E7D32)
+- Made hero section responsive: dashboard preview hidden on mobile/tablet (hidden lg:block), hero text centered on mobile
+- Changed Stakeholder Tools and Testimonials section backgrounds from #F5F5F5 to #1B3A1B (dark green) with white headings
+- Updated dark section headings to use inline white text instead of SectionHeading component
+- Fixed subagent bugs: CalendarDays import missing in onboarding-page.tsx, PlayCircle2→PlayCircle in training-page.tsx
+- All lint checks pass
+
+Subagent work (Task 4 - Auth + Legal):
+- Redesigned login/register/forgot-password pages with #2E7D32 green theme
+- Added KYC fields to registration (phone with +266 prefix, National ID)
+- Added parcel declaration checkbox with legal text
+- Added platform liability disclaimer
+- Created 4 new Prisma models: PackageDeclaration, KycVerification, ChainOfCustody, IncidentReport
+- Created 3 API routes: /api/declarations, /api/incidents, /api/kyc
+- Created 4 onboarding placeholder pages
+
+Subagent work (Task 5 - Onboarding System):
+- Built 5-step onboarding wizard with role-specific content for all 10 roles
+- Built knowledge base with 23 articles across 8 categories, search, sidebar nav
+- Built feature requests portal with 10 pre-populated requests, upvoting, submit modal
+- Built training center with 10 sessions, role filtering, completion tracking
+
+Subagent work (Task 6 - Safety + Chain of Custody):
+- Built Safety tab (driver/customer/manager views) with one-tap incident reporting
+- Built Chain of Custody tab with visual timeline showing handovers
+- Added Package Declaration to delivery detail view
+- Updated sidebar navigation with Safety and Chain of Custody tabs
+- Added 3 new TypeScript interfaces to types.ts
+
+Stage Summary:
+- Marketing page: dark green sections, real social SVG icons, responsive hero, dark footer
+- Auth pages: green theme, KYC fields, parcel declaration, platform liability disclaimer
+- 4 new Prisma models for legal framework
+- 3 new API routes for declarations, incidents, KYC
+- Onboarding wizard, knowledge base, feature requests, training center pages built
+- Safety reporting tab with role-specific incident types
+- Chain of custody visual timeline tab
+- All South Africa references removed throughout the entire platform
