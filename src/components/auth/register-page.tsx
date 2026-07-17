@@ -310,13 +310,6 @@ export function RegisterPage() {
                       </p>
                     </div>
 
-                    {/* Platform Disclaimer */}
-                    <div className="bg-[#fff3e8] border border-[#ffe0c2] rounded-lg p-3">
-                      <p className="text-[12px] text-[#e06a10] leading-relaxed">
-                        SwiftFreight is a technology platform. Courier companies are responsible for transporting goods. Customers are responsible for declaring package contents accurately.
-                      </p>
-                    </div>
-
                     {/* Package Declaration */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 mb-1">
@@ -350,9 +343,9 @@ export function RegisterPage() {
                       />
                       <Label htmlFor="cust-terms" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
                         I agree to the{' '}
-                        <button type="button" className="text-[#fd7714] hover:underline">Terms of Service</button>
+                        <button type="button" onClick={() => setView('terms')} className="text-[#fd7714] hover:underline">Terms of Service</button>
                         {' '}and{' '}
-                        <button type="button" className="text-[#fd7714] hover:underline">Privacy Policy</button>
+                        <button type="button" onClick={() => setView('privacy')} className="text-[#fd7714] hover:underline">Privacy Policy</button>
                       </Label>
                     </div>
 
@@ -516,9 +509,9 @@ export function RegisterPage() {
                       />
                       <Label htmlFor="comp-terms" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
                         I agree to the{' '}
-                        <button type="button" className="text-[#fd7714] hover:underline">Terms of Service</button>
+                        <button type="button" onClick={() => setView('terms')} className="text-[#fd7714] hover:underline">Terms of Service</button>
                         ,{' '}
-                        <button type="button" className="text-[#fd7714] hover:underline">Privacy Policy</button>
+                        <button type="button" onClick={() => setView('privacy')} className="text-[#fd7714] hover:underline">Privacy Policy</button>
                         , and the selected plan&apos;s billing terms
                       </Label>
                     </div>

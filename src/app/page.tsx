@@ -11,6 +11,10 @@ import { OnboardingPage } from '@/components/onboarding/onboarding-page';
 import { KnowledgeBasePage } from '@/components/onboarding/knowledge-base-page';
 import { FeatureRequestsPage } from '@/components/onboarding/feature-requests-page';
 import { TrainingPage } from '@/components/onboarding/training-page';
+import { TermsOfServicePage } from '@/components/legal/terms-of-service';
+import { PrivacyPolicyPage } from '@/components/legal/privacy-policy';
+import { PlatformDisclaimerPage } from '@/components/legal/platform-disclaimer';
+import { LiabilityNoticePage } from '@/components/legal/liability-notice';
 
 export default function Home() {
   const { currentView, setView } = useNavStore();
@@ -43,6 +47,10 @@ export default function Home() {
       {currentView === 'knowledge-base' && <KnowledgeBasePage />}
       {currentView === 'feature-requests' && <FeatureRequestsPage />}
       {currentView === 'training' && <TrainingPage />}
+      {currentView === 'terms' && <TermsOfServicePage />}
+      {currentView === 'privacy' && <PrivacyPolicyPage />}
+      {currentView === 'disclaimer' && <PlatformDisclaimerPage />}
+      {currentView === 'liability' && <LiabilityNoticePage />}
     </div>
   );
 }

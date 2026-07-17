@@ -296,12 +296,6 @@ export function LoginPage() {
                 </button>
               </p>
             </CardFooter>
-            {/* Platform Disclaimer */}
-            <div className="bg-[#fff3e8] border border-[#ffe0c2] rounded-lg p-3 mb-2">
-              <p className="text-[11px] text-[#e06a10] leading-relaxed">
-                SwiftFreight is a technology platform connecting logistics companies, drivers, and customers in Lesotho. We do NOT operate as a courier or freight carrier. All logistics services are provided by independent third-party companies.
-              </p>
-            </div>
             {/* Powered by footer */}
             <p className="text-center text-[11px] text-muted-foreground/50 pb-4">
               Powered by <span className="font-medium text-muted-foreground/70">SwiftFreight Technologies</span>

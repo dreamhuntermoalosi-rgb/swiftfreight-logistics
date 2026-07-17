@@ -261,7 +261,7 @@ export interface AnalyticsData {
 }
 
 // ============ APP STATE ============
-export type AppView = 'marketing' | 'login' | 'register' | 'forgot-password' | 'dashboard' | 'onboarding' | 'knowledge-base' | 'feature-requests' | 'training';
+export type AppView = 'marketing' | 'login' | 'register' | 'forgot-password' | 'dashboard' | 'onboarding' | 'knowledge-base' | 'feature-requests' | 'training' | 'terms' | 'privacy' | 'disclaimer' | 'liability';
 export type DashboardTab =
   | 'overview'
   | 'deliveries'

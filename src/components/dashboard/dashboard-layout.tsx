@@ -184,6 +184,15 @@ function getNavItemsForRole(role: UserRole): NavItem[] {
   if (role === 'customer') {
     return customerNavItems;
   }
+  if (role === 'sourcing_agent') {
+    return [...commonNavItems, { tab: 'sourcing', label: 'Sourcing', icon: ShoppingBag }, { tab: 'notifications', label: 'Notifications', icon: Bell }, { tab: 'messages', label: 'Messages', icon: MessageSquare }];
+  }
+  if (role === 'warehouse_partner') {
+    return [...commonNavItems, { tab: 'warehouse', label: 'Warehouse', icon: Warehouse }, { tab: 'notifications', label: 'Notifications', icon: Bell }];
+  }
+  if (role === 'trailer_owner') {
+    return [...commonNavItems, { tab: 'fleet', label: 'My Trailers', icon: Truck }, { tab: 'messages', label: 'Messages', icon: MessageSquare }];
+  }
   return commonNavItems;
 }
 

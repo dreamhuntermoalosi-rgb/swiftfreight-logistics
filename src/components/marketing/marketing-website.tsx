@@ -1196,10 +1196,10 @@ export function MarketingWebsite() {
               &copy; 2025 SwiftFreight. All rights reserved.
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <span className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Privacy Policy</span>
-              <span className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Terms of Service</span>
-              <span className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Platform Disclaimer</span>
-              <span className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Liability Notice</span>
+              <button onClick={() => setView('privacy')} className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Privacy Policy</button>
+              <button onClick={() => setView('terms')} className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Terms of Service</button>
+              <button onClick={() => setView('disclaimer')} className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Platform Disclaimer</button>
+              <button onClick={() => setView('liability')} className="text-sm text-white/40 cursor-pointer hover:text-white/70 transition-colors">Liability Notice</button>
             </div>
           </div>
         </div>
