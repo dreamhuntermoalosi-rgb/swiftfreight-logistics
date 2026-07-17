@@ -2008,3 +2008,63 @@ Stage Summary:
 - Agent-browser verified: Overview, Deliveries, Drivers tabs all look professional and clean
 - Marketing page renders correctly in light mode after sign-out
 - Zero lint errors, zero build errors
+
+---
+Task ID: 8
+Agent: Theme Migration Agent
+Task: Make marketing website fully theme-aware and add ThemeToggle
+
+Work Log:
+- Read and analyzed full marketing-website.tsx (1214 lines) and all color mapping rules
+- Replaced ALL hardcoded hex colors with theme-aware CSS variable classes per mapping:
+  - Light sections: bg-white→bg-background, bg-gray-50→bg-muted, text-[#212121]→text-foreground, text-[#757575]→text-muted-foreground, text-[#2E7D32]→text-primary, bg-[#2E7D32]→bg-primary, bg-[#E8F5E9]→bg-primary/10, border-[#E0E0E0]→border-border, hover variants updated accordingly
+  - DashboardPreview: bg-white→bg-card, border→border-border, text colors→foreground/muted-foreground, bg-primary for green elements, kept SVG grid #2E7D32 as-is
+  - Dark sections (stakeholder tools, testimonials, CTA, footer): kept bg-[#1B3A1B] as-is, cards inside updated to bg-card/border-border
+  - CTA section: bg-gradient→bg-primary, all white→text-primary-foreground, form glassmorphism updated to use primary-foreground/* opacity
+  - Disclaimer: bg-[#F5F5F0]→bg-muted, bg-[#FFF3E0]→bg-warning/10, text-[#E65100]→text-warning
+  - Back-to-top: bg-primary, shadow-primary/25
+- Added ThemeToggle import from @/components/theme-toggle
+- Added ThemeToggle to desktop header actions area (between nav and login/register buttons)
+- Added ThemeToggle to mobile view (next to hamburger menu button)
+- Rewrote FAQ section: replaced shadcn Accordion with custom toggle divs using state-driven open/close, theme-aware border/background/text colors, chevron rotation animation
+- Fixed theme-toggle.tsx lint error: replaced useState/useEffect pattern with useSyncExternalStore for mounted detection
+- Verified hero centering: text-center lg:text-left confirmed present
+- All lint passes with zero errors
+- Dev server confirms GET / 200 after hot reload
+
+Stage Summary:
+- Marketing website is now fully theme-aware with light/dark mode support
+- ThemeToggle button appears in both desktop header and mobile navigation
+- FAQ section rebuilt with clean custom accordion using theme variables
+- All 11 sections use CSS variable classes instead of hardcoded hex colors
+- theme-toggle.tsx fixed to use useSyncExternalStore (no more lint error)
+- Footer and dark sections preserved with intentional hardcoded colors
+- Zero lint errors, zero build errors
+---
+Task ID: theme-toggle-restore
+Agent: Main Orchestrator
+Task: Restore functioning theme toggle to marketing page and all dashboards
+
+Work Log:
+- Created `/src/components/theme-toggle.tsx` — reusable ThemeToggle component using next-themes with hydration-safe mounting via useSyncExternalStore
+- Fixed `/src/components/dashboard/dashboard-layout.tsx`:
+  - Removed broken `useEffect(() => { setTheme('dark'); return () => setTheme('light'); }, [setTheme])` that hijacked theme control
+  - Removed unused `useTheme` import and `Sun`/`Moon` icon imports
+  - Added `<ThemeToggle />` to dashboard header between search and notifications
+- Rewrote `/src/components/marketing/marketing-website.tsx` for full theme-awareness:
+  - Replaced ALL hardcoded hex colors with CSS variable classes (bg-background, text-foreground, text-primary, bg-primary, etc.)
+  - Added `<ThemeToggle />` to desktop header (between nav and login buttons) and mobile header (next to hamburger)
+  - Rebuilt FAQ section from shadcn Accordion to clean custom toggle divs with chevron rotation animation
+  - Hero section already had proper mobile centering (text-center lg:text-left, items-center sm:justify-center)
+  - Updated SectionHeading, DashboardPreview, all 11 sections to be theme-aware
+  - Removed unused Accordion imports
+- Kept dark background sections (stakeholder tools, testimonials, footer) with their existing dark colors — they work in both themes
+- Updated CTA section from gradient to bg-primary for theme consistency
+
+Stage Summary:
+- Theme toggle now works across the entire app (marketing, auth, dashboard)
+- Marketing page fully supports light and dark modes via CSS variables
+- Dashboard theme is no longer force-hijacked — user has full control
+- FAQ redesigned with clean custom accordion using theme-aware colors
+- All changes verified via agent-browser: toggle works on both pages, FAQ accordion works, mobile responsive, no console errors
+- Lint passes with zero errors

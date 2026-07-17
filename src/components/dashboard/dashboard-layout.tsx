@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTheme } from 'next-themes';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   LayoutDashboard,
@@ -19,8 +18,6 @@ import {
   Menu,
   Search,
   Bell,
-  Sun,
-  Moon,
   ClipboardList,
   Receipt,
   ChevronRight,
@@ -33,6 +30,7 @@ import {
   Shield,
   GitBranch,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useNavStore, useAuthStore, useNotificationStore, useKycStore } from '@/lib/store';
 import { KycVerifiedBadge } from '@/components/dashboard/kyc-verification';
 import { deliveries, customers, drivers, statusLabels, statusColors } from '@/lib/mock-data';
@@ -567,7 +565,6 @@ function DashboardHeader() {
     trackingNumber,
     selectDelivery,
   } = useNavStore();
-  const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const { setSidebarOpen } = useNavStore();
 
@@ -882,6 +879,9 @@ function DashboardHeader() {
           </div>
         </form>
 
+        {/* Theme toggle */}
+        <ThemeToggle />
+
         {/* Notifications */}
         <NotificationDropdown />
 
@@ -911,13 +911,6 @@ export function DashboardLayout() {
   const { dashboardTab, sidebarOpen, setSidebarOpen, setDashboardTab } = useNavStore();
   const { currentUser } = useAuthStore();
   const { notifications } = useNotificationStore();
-  const { setTheme } = useTheme();
-
-  // Force dark mode for dashboard
-  useEffect(() => {
-    setTheme('dark');
-    return () => setTheme('light');
-  }, [setTheme]);
 
   // Initialize notification store with mock data on first render
   useEffect(() => {

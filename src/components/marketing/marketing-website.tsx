@@ -11,12 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import {
   Sheet,
@@ -55,6 +49,7 @@ import {
   Smartphone,
   Shield,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV LINKS
@@ -113,10 +108,10 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <h2 className="text-2xl font-bold tracking-tight text-[#212121] sm:text-3xl lg:text-4xl">
+      <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
         {title}
       </h2>
-      <p className="mt-3 text-base leading-relaxed text-[#757575] sm:text-lg">
+      <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
         {description}
       </p>
     </div>
@@ -130,19 +125,19 @@ function DashboardPreview() {
   return (
     <div className="relative w-full max-w-[420px] mx-auto lg:mx-0">
       {/* Main dashboard card */}
-      <div className="rounded-2xl border border-[#E0E0E0] bg-white p-4 shadow-xl shadow-black/[0.06]">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-xl shadow-black/[0.06]">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-[#2E7D32] flex items-center justify-center">
-              <Truck className="h-3.5 w-3.5 text-white" />
+            <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center">
+              <Truck className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
-            <span className="text-sm font-semibold text-[#212121]">Dashboard Overview</span>
+            <span className="text-sm font-semibold text-foreground">Dashboard Overview</span>
           </div>
           <div className="flex gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#2E7D32]/20" />
-            <div className="h-2.5 w-2.5 rounded-full bg-[#E8F5E9]" />
-            <div className="h-2.5 w-2.5 rounded-full bg-[#E8F5E9]" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary/20" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary/10" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary/10" />
           </div>
         </div>
 
@@ -154,15 +149,15 @@ function DashboardPreview() {
             { value: '892', label: 'Done' },
             { value: '98.6%', label: 'On-Time' },
           ].map((m) => (
-            <div key={m.label} className="rounded-lg bg-[#E8F5E9] px-2 py-2.5 text-center">
-              <div className="text-sm font-bold text-[#2E7D32]">{m.value}</div>
-              <div className="text-[10px] text-[#757575] mt-0.5">{m.label}</div>
+            <div key={m.label} className="rounded-lg bg-primary/10 px-2 py-2.5 text-center">
+              <div className="text-sm font-bold text-primary">{m.value}</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{m.label}</div>
             </div>
           ))}
         </div>
 
         {/* Map placeholder */}
-        <div className="rounded-lg bg-[#E8F5E9] h-32 mb-4 relative overflow-hidden">
+        <div className="rounded-lg bg-primary/10 h-32 mb-4 relative overflow-hidden">
           {/* Grid lines for map feel */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.15]" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -175,42 +170,42 @@ function DashboardPreview() {
           {/* Location pins */}
           <div className="absolute top-[25%] left-[30%]">
             <div className="relative">
-              <div className="h-4 w-4 rounded-full bg-[#2E7D32] border-2 border-white shadow-md" />
-              <div className="absolute -inset-1.5 rounded-full bg-[#2E7D32]/20 animate-ping" />
+              <div className="h-4 w-4 rounded-full bg-primary border-2 border-background shadow-md" />
+              <div className="absolute -inset-1.5 rounded-full bg-primary/20 animate-ping" />
             </div>
           </div>
           <div className="absolute top-[55%] left-[55%]">
-            <div className="h-3.5 w-3.5 rounded-full bg-[#2E7D32] border-2 border-white shadow-md" />
+            <div className="h-3.5 w-3.5 rounded-full bg-primary border-2 border-background shadow-md" />
           </div>
           <div className="absolute top-[35%] left-[70%]">
-            <div className="h-3.5 w-3.5 rounded-full bg-[#4CAF50] border-2 border-white shadow-md" />
+            <div className="h-3.5 w-3.5 rounded-full bg-primary border-2 border-background shadow-md" />
           </div>
           <div className="absolute top-[70%] left-[25%]">
-            <div className="h-3 w-3 rounded-full bg-[#4CAF50] border-2 border-white shadow-md" />
+            <div className="h-3 w-3 rounded-full bg-primary border-2 border-background shadow-md" />
           </div>
           <div className="absolute top-[20%] left-[50%]">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#81C784] border-2 border-white shadow" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary/70 border-2 border-background shadow" />
           </div>
           {/* Map label */}
-          <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
-            <span className="text-[10px] font-medium text-[#212121]">Live Tracking</span>
+          <div className="absolute bottom-2 left-2 bg-background/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
+            <span className="text-[10px] font-medium text-foreground">Live Tracking</span>
           </div>
         </div>
 
         {/* Recent deliveries list */}
         <div className="space-y-2">
-          <div className="text-xs font-semibold text-[#212121] mb-2">Recent Deliveries</div>
+          <div className="text-xs font-semibold text-foreground mb-2">Recent Deliveries</div>
           {[
             { id: '#695201', from: 'Maseru', to: 'Butha-Buthe', status: 'Out for Delivery', color: 'bg-[#FF9800] text-white' },
-            { id: '#695198', from: 'Mafeteng', to: 'Maseru', status: 'Delivered', color: 'bg-[#2E7D32] text-white' },
+            { id: '#695198', from: 'Mafeteng', to: 'Maseru', status: 'Delivered', color: 'bg-primary text-primary-foreground' },
             { id: '#695187', from: 'Leribe', to: 'Qacha\'s Nek', status: 'In Transit', color: 'bg-[#1976D2] text-white' },
           ].map((d) => (
-            <div key={d.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+            <div key={d.id} className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
               <div className="flex items-center gap-2.5">
-                <Package className="h-3.5 w-3.5 text-[#757575]" />
+                <Package className="h-3.5 w-3.5 text-muted-foreground" />
                 <div>
-                  <div className="text-[11px] font-semibold text-[#212121]">Delivery {d.id}</div>
-                  <div className="text-[10px] text-[#9E9E9E]">{d.from} → {d.to}</div>
+                  <div className="text-[11px] font-semibold text-foreground">Delivery {d.id}</div>
+                  <div className="text-[10px] text-muted-foreground">{d.from} → {d.to}</div>
                 </div>
               </div>
               <span className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${d.color}`}>
@@ -223,31 +218,31 @@ function DashboardPreview() {
 
       {/* Floating phone mockup */}
       <div className="absolute -bottom-6 -right-6 w-[140px] z-10 hidden sm:block">
-        <div className="rounded-2xl border border-[#E0E0E0] bg-white shadow-xl shadow-black/[0.1] overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card shadow-xl shadow-black/[0.1] overflow-hidden">
           {/* Phone status bar */}
-          <div className="bg-[#2E7D32] px-3 py-2 flex items-center justify-between">
-            <span className="text-[8px] text-white/80 font-medium">9:41</span>
+          <div className="bg-primary px-3 py-2 flex items-center justify-between">
+            <span className="text-[8px] text-primary-foreground/80 font-medium">9:41</span>
             <div className="flex gap-1">
-              <div className="h-1.5 w-2.5 rounded-sm bg-white/60" />
-              <div className="h-1.5 w-1.5 rounded-full bg-white/60" />
+              <div className="h-1.5 w-2.5 rounded-sm bg-primary-foreground/60" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground/60" />
             </div>
           </div>
           {/* Phone content */}
           <div className="p-2.5">
-            <div className="text-[9px] font-bold text-[#212121] mb-2">SwiftFreight</div>
+            <div className="text-[9px] font-bold text-foreground mb-2">SwiftFreight</div>
             <div className="space-y-1.5">
               {[
                 { icon: Package, label: 'My Deliveries', count: '12' },
                 { icon: MapPin, label: 'Track Parcel', count: null },
                 { icon: FileText, label: 'My Quotes', count: '3' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-md bg-gray-50 px-2 py-1.5">
+                <div key={item.label} className="flex items-center justify-between rounded-md bg-muted px-2 py-1.5">
                   <div className="flex items-center gap-1.5">
-                    <item.icon className="h-3 w-3 text-[#2E7D32]" />
-                    <span className="text-[8px] font-medium text-[#212121]">{item.label}</span>
+                    <item.icon className="h-3 w-3 text-primary" />
+                    <span className="text-[8px] font-medium text-foreground">{item.label}</span>
                   </div>
                   {item.count && (
-                    <span className="rounded-full bg-[#2E7D32] px-1.5 py-0.5 text-[7px] font-bold text-white">{item.count}</span>
+                    <span className="rounded-full bg-primary px-1.5 py-0.5 text-[7px] font-bold text-primary-foreground">{item.count}</span>
                   )}
                 </div>
               ))}
@@ -297,21 +292,21 @@ export function MarketingWebsite() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-background">
 
       {/* ═══════════════════ 1. NAVIGATION ═══════════════════ */}
-      <header className="sticky top-0 z-50 w-full border-b border-[#E0E0E0] bg-white">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6">
           {/* Logo */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-2 focus:outline-none"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2E7D32]">
-              <Truck className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Truck className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-[#212121]">
-              Swift<span className="text-[#2E7D32]">Freight</span>
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              Swift<span className="text-primary">Freight</span>
             </span>
           </button>
 
@@ -321,7 +316,7 @@ export function MarketingWebsite() {
               <button
                 key={link.href}
                 onClick={() => scrollTo(link.href)}
-                className="rounded-md px-3.5 py-2 text-sm font-medium text-[#212121] transition-colors hover:text-[#2E7D32] focus:outline-none"
+                className="rounded-md px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus:outline-none"
               >
                 {link.label}
               </button>
@@ -329,16 +324,17 @@ export function MarketingWebsite() {
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
             <Button
               variant="outline"
-              className="h-9 border-[#2E7D32] bg-white px-5 text-sm font-medium text-[#2E7D32] hover:bg-[#E8F5E9] hover:border-[#2E7D32] hover:text-[#2E7D32] transition-colors"
+              className="h-9 border-primary bg-background px-5 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary hover:text-primary transition-colors"
               onClick={() => setView('login')}
             >
               Log In
             </Button>
             <Button
-              className="h-9 bg-[#2E7D32] px-5 text-sm font-semibold text-white hover:bg-[#1B5E20] transition-colors"
+              className="h-9 bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               onClick={() => setView('register')}
             >
               Book a Demo
@@ -346,10 +342,11 @@ export function MarketingWebsite() {
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-1">
+            <ThemeToggle />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-[#212121]">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-foreground">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Open menu</span>
                 </Button>
@@ -361,21 +358,21 @@ export function MarketingWebsite() {
                     <button
                       key={link.href}
                       onClick={() => handleNavClick(link.href)}
-                      className="rounded-md px-3 py-2.5 text-left text-sm font-medium text-[#212121] transition-colors hover:bg-[#E8F5E9]"
+                      className="rounded-md px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-primary/10"
                     >
                       {link.label}
                     </button>
                   ))}
-                  <div className="my-4 h-px bg-[#E0E0E0]" />
+                  <div className="my-4 h-px bg-border" />
                   <Button
                     variant="outline"
-                    className="border-[#2E7D32] text-[#2E7D32] hover:bg-[#E8F5E9]"
+                    className="border-primary text-primary hover:bg-primary/10"
                     onClick={() => { setMobileOpen(false); setView('login'); }}
                   >
                     Log In
                   </Button>
                   <Button
-                    className="mt-2 bg-[#2E7D32] text-white hover:bg-[#1B5E20]"
+                    className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => { setMobileOpen(false); setView('register'); }}
                   >
                     Book a Demo
@@ -390,23 +387,23 @@ export function MarketingWebsite() {
       <main className="flex-1">
 
         {/* ═══════════════════ 2. HERO ═══════════════════ */}
-        <section className="bg-white py-12 sm:py-16 lg:py-24">
+        <section className="bg-background py-12 sm:py-16 lg:py-24">
           <div className="mx-auto max-w-[1200px] px-6">
             <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
               {/* Left — Copy */}
               <div className="text-center lg:text-left">
-                <h1 className="mx-auto text-3xl font-bold tracking-tight text-[#212121] sm:text-4xl lg:text-5xl lg:mx-0 leading-[1.15]">
+                <h1 className="mx-auto text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl lg:mx-0 leading-[1.15]">
                   Run Logistics.
                   <br />
-                  <span className="text-[#2E7D32]">Smarter. Faster. Stronger.</span>
+                  <span className="text-primary">Smarter. Faster. Stronger.</span>
                 </h1>
-                <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-[#757575] sm:text-lg lg:mx-0">
+                <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0">
                   SwiftFreight is the all-in-one logistics platform for courier companies, fleet operators and businesses in Lesotho and beyond. Manage deliveries, fleets, drivers, sourcing, tracking and customers from one powerful system.
                 </p>
                 <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
                   <Button
                     size="lg"
-                    className="h-11 bg-[#2E7D32] px-7 text-sm font-bold text-white hover:bg-[#1B5E20] transition-colors"
+                    className="h-11 bg-primary px-7 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
                     onClick={() => setView('register')}
                   >
                     Book a Demo
@@ -415,7 +412,7 @@ export function MarketingWebsite() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-11 border-[#2E7D32] bg-white px-7 text-sm font-semibold text-[#2E7D32] hover:bg-[#E8F5E9] hover:border-[#2E7D32] hover:text-[#2E7D32] transition-colors"
+                    className="h-11 border-primary bg-background px-7 text-sm font-semibold text-primary hover:bg-primary/10 hover:border-primary hover:text-primary transition-colors"
                     onClick={() => scrollTo('#features')}
                   >
                     Explore Platform
@@ -434,7 +431,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 3. PLATFORM OVERVIEW ═══════════════════ */}
         <FadeIn>
-          <section id="features" className="bg-white py-16 sm:py-20">
+          <section id="features" className="bg-background py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <SectionHeading
                 title="One Platform. Every Logistics Need."
@@ -470,15 +467,15 @@ export function MarketingWebsite() {
                 ].map((feature) => (
                   <div
                     key={feature.title}
-                    className="rounded-xl bg-[#E8F5E9] p-6 transition-all duration-200 hover:shadow-md hover:shadow-[#2E7D32]/10"
+                    className="rounded-xl bg-primary/10 p-6 transition-all duration-200 hover:shadow-md hover:shadow-primary/10"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#2E7D32] shadow-sm">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background text-primary shadow-sm">
                       <feature.icon className="h-5 w-5" />
                     </div>
-                    <h3 className="mt-4 text-sm font-semibold text-[#212121]">
+                    <h3 className="mt-4 text-sm font-semibold text-foreground">
                       {feature.title}
                     </h3>
-                    <p className="mt-1.5 text-xs leading-relaxed text-[#757575]">
+                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                       {feature.desc}
                     </p>
                   </div>
@@ -490,7 +487,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 4. HOW IT WORKS ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section id="how-it-works" className="bg-white py-16 sm:py-20">
+          <section id="how-it-works" className="bg-background py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <SectionHeading
                 title="From request to delivery in four simple steps"
@@ -527,18 +524,18 @@ export function MarketingWebsite() {
                     {/* Connector line */}
                     {index < 3 && (
                       <div className="absolute top-8 left-[calc(50%+28px)] hidden h-px w-[calc(100%-56px)] lg:block" aria-hidden="true">
-                        <div className="h-full w-full bg-[#E0E0E0]" />
-                        <div className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-[#E0E0E0]" />
+                        <div className="h-full w-full bg-border" />
+                        <div className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-border" />
                       </div>
                     )}
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8F5E9] text-[#2E7D32] ring-1 ring-[#2E7D32]/10">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/10">
                       <item.icon className="h-6 w-6" />
-                      <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#2E7D32] text-[9px] font-bold text-white">
+                      <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
                         {item.step}
                       </div>
                     </div>
-                    <h3 className="mt-4 text-sm font-semibold text-[#212121]">{item.title}</h3>
-                    <p className="mt-2 text-xs leading-relaxed text-[#757575]">{item.desc}</p>
+                    <h3 className="mt-4 text-sm font-semibold text-foreground">{item.title}</h3>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -588,18 +585,18 @@ export function MarketingWebsite() {
                 ].map((item) => (
                   <Card
                     key={item.title}
-                    className="border-[#E0E0E0] bg-white transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                    className="border-border bg-card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
                     <CardHeader className="pb-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#E8F5E9] text-[#2E7D32]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                         <item.icon className="h-5 w-5" />
                       </div>
-                      <CardTitle className="mt-3 text-sm font-semibold text-[#212121]">
+                      <CardTitle className="mt-3 text-sm font-semibold text-foreground">
                         {item.title}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-xs leading-relaxed text-[#757575]">{item.desc}</p>
+                      <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -610,7 +607,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 6. GROWTH STATS ═══════════════════ */}
         <FadeIn>
-          <section className="bg-white py-16 sm:py-20">
+          <section className="bg-background py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <SectionHeading
                 title="Built to help your business grow"
@@ -624,16 +621,16 @@ export function MarketingWebsite() {
                   { icon: TrendingUp, metric: '10x', label: 'Business Growth', desc: 'Scale from one vehicle to a full fleet without changing systems or adding complexity.' },
                 ].map((item) => (
                   <div key={item.label} className="text-center">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8F5E9] text-[#2E7D32]">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                       <item.icon className="h-7 w-7" />
                     </div>
-                    <div className="mt-4 text-3xl font-bold text-[#2E7D32] sm:text-4xl">
+                    <div className="mt-4 text-3xl font-bold text-primary sm:text-4xl">
                       {item.metric}
                     </div>
-                    <div className="mt-1 text-sm font-semibold text-[#212121]">
+                    <div className="mt-1 text-sm font-semibold text-foreground">
                       {item.label}
                     </div>
-                    <p className="mt-2 text-xs leading-relaxed text-[#757575] max-w-[220px] mx-auto">
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground max-w-[220px] mx-auto">
                       {item.desc}
                     </p>
                   </div>
@@ -681,26 +678,26 @@ export function MarketingWebsite() {
                 ].map((t) => (
                   <div
                     key={t.name}
-                    className="rounded-xl border border-[#E0E0E0] bg-white p-6 transition-all duration-200 hover:shadow-md"
+                    className="rounded-xl border border-border bg-card p-6 transition-all duration-200 hover:shadow-md"
                   >
                     <div className="flex gap-1 mb-3">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-4 w-4 ${i < t.stars ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`}
+                          className={`h-4 w-4 ${i < t.stars ? 'fill-amber-400 text-amber-400' : 'fill-muted text-muted'}`}
                         />
                       ))}
                     </div>
-                    <p className="text-sm leading-relaxed text-[#757575] mb-5">
+                    <p className="text-sm leading-relaxed text-muted-foreground mb-5">
                       &ldquo;{t.quote}&rdquo;
                     </p>
-                    <div className="flex items-center gap-3 pt-4 border-t border-[#E0E0E0]">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8F5E9] text-[#2E7D32] font-semibold text-sm">
+                    <div className="flex items-center gap-3 pt-4 border-t border-border">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
                         {t.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#212121]">{t.name}</p>
-                        <p className="text-xs text-[#9E9E9E]">{t.role}, {t.company}</p>
+                        <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.role}, {t.company}</p>
                       </div>
                     </div>
                   </div>
@@ -712,7 +709,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 8. PRICING ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section id="pricing" className="bg-white py-16 sm:py-20">
+          <section id="pricing" className="bg-background py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <SectionHeading
                 title="Choose the plan that works for you"
@@ -772,46 +769,46 @@ export function MarketingWebsite() {
                     key={plan.name}
                     className={`relative flex flex-col transition-all duration-200 hover:-translate-y-0.5 ${
                       plan.highlighted
-                        ? 'border-2 border-[#2E7D32] bg-white shadow-lg shadow-[#2E7D32]/10 scale-[1.02] lg:scale-105'
-                        : 'border-[#E0E0E0] bg-white hover:shadow-md'
+                        ? 'border-2 border-primary bg-card shadow-lg shadow-primary/10 scale-[1.02] lg:scale-105'
+                        : 'border-border bg-card hover:shadow-md'
                     }`}
                   >
                     {plan.highlighted && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="rounded-full bg-[#2E7D32] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                        <Badge className="rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
                           <Star className="mr-1 h-3 w-3" />
                           Most Popular
                         </Badge>
                       </div>
                     )}
                     <CardHeader className="pb-2 pt-8 sm:pt-10">
-                      <CardTitle className="text-base font-semibold text-[#212121]">
+                      <CardTitle className="text-base font-semibold text-foreground">
                         {plan.name}
                       </CardTitle>
-                      <CardDescription className="mt-1 text-xs text-[#757575]">
+                      <CardDescription className="mt-1 text-xs text-muted-foreground">
                         {plan.description}
                       </CardDescription>
                       <div className="mt-4 flex items-baseline gap-1">
-                        <span className={`text-3xl font-bold ${plan.highlighted ? 'text-[#2E7D32]' : 'text-[#212121]'}`}>
+                        <span className={`text-3xl font-bold ${plan.highlighted ? 'text-primary' : 'text-foreground'}`}>
                           {plan.price}
                         </span>
-                        <span className="text-sm text-[#9E9E9E]">{plan.period}</span>
+                        <span className="text-sm text-muted-foreground">{plan.period}</span>
                       </div>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col pt-2">
                       <ul className="flex-1 space-y-3">
                         {plan.features.map((f) => (
                           <li key={f} className="flex items-start gap-2.5">
-                            <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.highlighted ? 'text-[#2E7D32]' : 'text-[#4CAF50]'}`} />
-                            <span className="text-sm text-[#757575]">{f}</span>
+                            <Check className={`mt-0.5 h-4 w-4 shrink-0 text-primary`} />
+                            <span className="text-sm text-muted-foreground">{f}</span>
                           </li>
                         ))}
                       </ul>
                       <Button
                         className={`mt-8 h-10 w-full text-sm font-semibold transition-colors ${
                           plan.highlighted
-                            ? 'bg-[#2E7D32] text-white hover:bg-[#1B5E20]'
-                            : 'bg-white text-[#212121] border border-[#E0E0E0] hover:border-[#2E7D32] hover:text-[#2E7D32]'
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            : 'bg-background text-foreground border border-border hover:border-primary hover:text-primary'
                         }`}
                         onClick={() => {
                           if (plan.name === 'Enterprise') {
@@ -834,20 +831,13 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 9. FAQ ═══════════════════ */}
         <FadeIn>
-          <section id="faq" className="bg-gray-50 py-16 sm:py-20">
+          <section id="faq" className="bg-muted py-16 sm:py-20">
             <div className="mx-auto max-w-3xl px-6">
               <SectionHeading
                 title="Everything you need to know"
                 description="Common questions about SwiftFreight and how it works for your business."
               />
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full"
-                value={faqOpenIndex}
-                onValueChange={(val) => setFaqOpenIndex(val)}
-              >
-              <div className="space-y-3">
+              <div className="mt-12 space-y-3">
                 {[
                   {
                     q: 'Is SwiftFreight suitable for small businesses?',
@@ -873,37 +863,54 @@ export function MarketingWebsite() {
                     q: 'Is my data secure on SwiftFreight?',
                     a: 'Absolutely. SwiftFreight uses bank-grade encryption, secure cloud hosting, and multi-tenant data isolation. Your company data is completely separated from other tenants and accessible only to your authorized users.',
                   },
-                ].map((item, index) => (
-                  <AccordionItem
-                    key={index}
-                    value={`faq-${index}`}
-                    className={'rounded-xl border bg-white px-5 transition-all duration-200 ' + (faqOpenIndex === 'faq-' + index ? 'border-[#2E7D32]/20 shadow-sm' : 'border-gray-200 hover:border-gray-300')}
-                  >
-                    <AccordionTrigger className="py-4 text-left text-[15px] font-medium text-gray-800 hover:no-underline hover:text-[#2E7D32] transition-colors">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 text-sm leading-relaxed text-gray-500">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                ].map((item, index) => {
+                  const isOpen = faqOpenIndex === `faq-${index}`;
+                  return (
+                    <div
+                      key={index}
+                      className={`rounded-xl border bg-card px-5 transition-all duration-200 ${
+                        isOpen
+                          ? 'border-primary/30 shadow-sm'
+                          : 'border-border hover:border-primary/20'
+                      }`}
+                    >
+                      <button
+                        className="flex w-full items-center justify-between py-4 text-left"
+                        onClick={() => setFaqOpenIndex(isOpen ? undefined : `faq-${index}`)}
+                      >
+                        <span className={`text-[15px] font-medium transition-colors ${isOpen ? 'text-primary' : 'text-foreground'}`}>
+                          {item.q}
+                        </span>
+                        <ChevronRight
+                          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+                            isOpen ? 'rotate-90' : ''
+                          }`}
+                        />
+                      </button>
+                      {isOpen && (
+                        <div className="pb-4 text-sm leading-relaxed text-muted-foreground">
+                          {item.a}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              </Accordion>
             </div>
           </section>
         </FadeIn>
 
         {/* ═══════════════════ 10. CTA WITH CONTACT FORM ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section id="cta" className="bg-gradient-to-br from-[#2E7D32] to-[#1B5E20] py-16 sm:py-20">
+          <section id="cta" className="bg-primary py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                 {/* Left — Copy */}
-                <div className="text-white">
+                <div className="text-primary-foreground">
                   <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
                     Ready to transform your logistics?
                   </h2>
-                  <p className="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">
+                  <p className="mt-4 text-base leading-relaxed text-primary-foreground/80 sm:text-lg">
                     Join growing businesses in Lesotho who are running smarter, faster and stronger with SwiftFreight.
                   </p>
                   <div className="mt-8 space-y-3">
@@ -913,14 +920,14 @@ export function MarketingWebsite() {
                       'Local Support, Always',
                     ].map((item) => (
                       <div key={item} className="flex items-center gap-3">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
-                          <Check className="h-4 w-4 text-white" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-foreground/15">
+                          <Check className="h-4 w-4 text-primary-foreground" />
                         </div>
-                        <span className="text-sm font-medium text-white/90">{item}</span>
+                        <span className="text-sm font-medium text-primary-foreground/90">{item}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-8 flex items-center gap-6 text-sm text-white/60">
+                  <div className="mt-8 flex items-center gap-6 text-sm text-primary-foreground/60">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
                       <span>info@swiftfreight.ls</span>
@@ -935,21 +942,21 @@ export function MarketingWebsite() {
                 {/* Right — Form */}
                 <div>
                   {contactSubmitted ? (
-                    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/10 p-8 text-center backdrop-blur-sm">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
-                        <CheckCircle2 className="h-7 w-7 text-white" />
+                    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-primary-foreground/10 bg-primary-foreground/10 p-8 text-center backdrop-blur-sm">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-foreground/20">
+                        <CheckCircle2 className="h-7 w-7 text-primary-foreground" />
                       </div>
-                      <h3 className="mt-4 text-lg font-semibold text-white">
+                      <h3 className="mt-4 text-lg font-semibold text-primary-foreground">
                         Demo Booked!
                       </h3>
-                      <p className="mt-2 text-sm text-white/70">
+                      <p className="mt-2 text-sm text-primary-foreground/70">
                         We&apos;ll be in touch within 24 hours.
                       </p>
                     </div>
                   ) : (
                     <form
                       onSubmit={handleContactSubmit}
-                      className="space-y-3.5 rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-sm sm:p-8"
+                      className="space-y-3.5 rounded-2xl border border-primary-foreground/10 bg-primary-foreground/10 p-6 backdrop-blur-sm sm:p-8"
                     >
                       <div>
                         <Input
@@ -958,7 +965,7 @@ export function MarketingWebsite() {
                           required
                           value={contactName}
                           onChange={(e) => setContactName(e.target.value)}
-                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+                          className="h-11 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:border-primary-foreground/40 focus-visible:ring-primary-foreground/30"
                         />
                       </div>
                       <div>
@@ -968,7 +975,7 @@ export function MarketingWebsite() {
                           required
                           value={contactEmail}
                           onChange={(e) => setContactEmail(e.target.value)}
-                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+                          className="h-11 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:border-primary-foreground/40 focus-visible:ring-primary-foreground/30"
                         />
                       </div>
                       <div>
@@ -977,7 +984,7 @@ export function MarketingWebsite() {
                           placeholder="Company Name"
                           value={contactCompany}
                           onChange={(e) => setContactCompany(e.target.value)}
-                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+                          className="h-11 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:border-primary-foreground/40 focus-visible:ring-primary-foreground/30"
                         />
                       </div>
                       <div>
@@ -986,12 +993,12 @@ export function MarketingWebsite() {
                           placeholder="Phone Number"
                           value={contactPhone}
                           onChange={(e) => setContactPhone(e.target.value)}
-                          className="h-11 border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/30"
+                          className="h-11 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:border-primary-foreground/40 focus-visible:ring-primary-foreground/30"
                         />
                       </div>
                       <Button
                         type="submit"
-                        className="h-11 w-full bg-white font-semibold text-[#2E7D32] shadow-lg hover:bg-white/90 transition-colors"
+                        className="h-11 w-full bg-primary-foreground font-semibold text-primary shadow-lg hover:bg-primary-foreground/90 transition-colors"
                       >
                         <Send className="mr-2 h-4 w-4" />
                         Book My Demo
@@ -1005,15 +1012,15 @@ export function MarketingWebsite() {
         </FadeIn>
 
         {/* ═══════════════════ LEGAL DISCLAIMER ═══════════════════ */}
-        <section className="bg-[#F5F5F0] border-y border-[#E0E0E0] py-8">
+        <section className="bg-muted border-y border-border py-8">
           <div className="mx-auto max-w-[1200px] px-6">
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF3E0] text-[#E65100] mt-0.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning mt-0.5">
                 <Shield className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-[#212121] mb-1">Platform Disclaimer &amp; Liability Notice</h3>
-                <p className="text-xs leading-relaxed text-[#757575] max-w-3xl">
+                <h3 className="text-sm font-semibold text-foreground mb-1">Platform Disclaimer &amp; Liability Notice</h3>
+                <p className="text-xs leading-relaxed text-muted-foreground max-w-3xl">
                   SwiftFreight provides the technology platform that connects logistics companies, drivers, and customers in Lesotho. 
                   SwiftFreight does NOT operate as a logistics company, courier service, or freight carrier. All logistics services — including parcel collection, 
                   transportation, and delivery — are provided by independent third-party logistics companies registered on the platform. 
@@ -1204,7 +1211,7 @@ export function MarketingWebsite() {
         animate={{ opacity: showBackToTop ? 1 : 0, y: showBackToTop ? 0 : 16 }}
         transition={{ duration: 0.2 }}
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#2E7D32] text-white shadow-lg shadow-[#2E7D32]/25 transition-shadow hover:shadow-xl focus:outline-none"
+        className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-shadow hover:shadow-xl focus:outline-none"
         aria-label="Back to top"
       >
         <ArrowUp className="h-5 w-5" />
