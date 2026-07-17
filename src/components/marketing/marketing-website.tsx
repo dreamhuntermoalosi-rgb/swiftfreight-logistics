@@ -545,7 +545,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 5. STAKEHOLDER TOOLS ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section className="bg-[#1B3A1B] py-16 sm:py-20">
+          <section className="bg-[#151c25] py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <div className="mx-auto max-w-2xl text-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
@@ -642,7 +642,7 @@ export function MarketingWebsite() {
 
         {/* ═══════════════════ 7. TESTIMONIALS ═══════════════════ */}
         <FadeIn delay={0.05}>
-          <section className="bg-[#1B3A1B] py-16 sm:py-20">
+          <section className="bg-[#151c25] py-16 sm:py-20">
             <div className="mx-auto max-w-[1200px] px-6">
               <div className="mx-auto max-w-2xl text-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
@@ -1036,7 +1036,7 @@ export function MarketingWebsite() {
       </main>
 
       {/* ═══════════════════ 11. FOOTER ═══════════════════ */}
-      <footer className="border-t border-[#2E4A2E] bg-[#1B3A1B]">
+      <footer className="border-t border-[#1a2530] bg-[#151c25]">
         <div className="mx-auto max-w-[1200px] px-6 py-12 sm:py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             {/* Brand */}
