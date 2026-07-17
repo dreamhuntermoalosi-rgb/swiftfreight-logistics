@@ -312,7 +312,7 @@ export function OnboardingPage() {
         <button
           onClick={() => setView('marketing')}
           className="flex items-center gap-2 text-sm font-medium hover:opacity-70"
-          style={{ color: '#2E7D32' }}
+          style={{ color: '#fd7714' }}
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Home
@@ -339,8 +339,8 @@ export function OnboardingPage() {
             transition={{ duration: 0.4 }}
           >
             <div className="flex items-center gap-2 mb-6">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#E8F5E9' }}>
-                <Truck className="h-5 w-5" style={{ color: '#2E7D32' }} />
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#fff3e8' }}>
+                <Truck className="h-5 w-5" style={{ color: '#fd7714' }} />
               </div>
               <span className="text-lg font-bold" style={{ color: '#212121' }}>SwiftFreight</span>
             </div>
@@ -367,7 +367,7 @@ export function OnboardingPage() {
                   <div
                     className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold shrink-0"
                     style={{
-                      background: step >= s.num ? '#2E7D32' : '#E0E0E0',
+                      background: step >= s.num ? '#fd7714' : '#E0E0E0',
                       color: step >= s.num ? '#FFFFFF' : '#757575',
                     }}
                   >
@@ -408,10 +408,10 @@ export function OnboardingPage() {
               {step === 1 && (
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <Sparkles className="h-6 w-6" style={{ color: '#2E7D32' }} />
+                    <Sparkles className="h-6 w-6" style={{ color: '#fd7714' }} />
                     <Badge
                       className="text-xs font-medium px-3 py-1"
-                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                      style={{ background: '#fff3e8', color: '#fd7714' }}
                     >
                       Step 1
                     </Badge>
@@ -434,8 +434,8 @@ export function OnboardingPage() {
                     ].map((item) => (
                       <Card key={item.label} className="border-0 shadow-sm" style={{ background: '#F5F5F5' }}>
                         <CardContent className="p-4 flex items-start gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#E8F5E9' }}>
-                            <span style={{ color: '#2E7D32' }}>{item.icon}</span>
+                          <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#fff3e8' }}>
+                            <span style={{ color: '#fd7714' }}>{item.icon}</span>
                           </div>
                           <div>
                             <p className="text-sm font-semibold" style={{ color: '#212121' }}>{item.label}</p>
@@ -451,10 +451,10 @@ export function OnboardingPage() {
               {step === 2 && (
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <Users className="h-6 w-6" style={{ color: '#2E7D32' }} />
+                    <Users className="h-6 w-6" style={{ color: '#fd7714' }} />
                     <Badge
                       className="text-xs font-medium px-3 py-1"
-                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                      style={{ background: '#fff3e8', color: '#fd7714' }}
                     >
                       Step 2
                     </Badge>
@@ -473,8 +473,8 @@ export function OnboardingPage() {
                     {config.capabilities.map((cap) => (
                       <Card key={cap.title} className="border-0 shadow-sm" style={{ background: '#F5F5F5' }}>
                         <CardContent className="p-4 flex items-start gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#E8F5E9' }}>
-                            <span style={{ color: '#2E7D32' }}>{cap.icon}</span>
+                          <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#fff3e8' }}>
+                            <span style={{ color: '#fd7714' }}>{cap.icon}</span>
                           </div>
                           <div>
                             <p className="text-sm font-semibold" style={{ color: '#212121' }}>{cap.title}</p>
@@ -490,10 +490,10 @@ export function OnboardingPage() {
               {step === 3 && (
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <ClipboardList className="h-6 w-6" style={{ color: '#2E7D32' }} />
+                    <ClipboardList className="h-6 w-6" style={{ color: '#fd7714' }} />
                     <Badge
                       className="text-xs font-medium px-3 py-1"
-                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                      style={{ background: '#fff3e8', color: '#fd7714' }}
                     >
                       Step 3
                     </Badge>
@@ -519,9 +519,9 @@ export function OnboardingPage() {
                                 onClick={() => handleAnswer(q.id, opt)}
                                 className="text-xs px-3 py-2 rounded-lg border font-medium transition-all"
                                 style={{
-                                  background: answers[q.id] === opt ? '#2E7D32' : '#FFFFFF',
+                                  background: answers[q.id] === opt ? '#fd7714' : '#FFFFFF',
                                   color: answers[q.id] === opt ? '#FFFFFF' : '#212121',
-                                  borderColor: answers[q.id] === opt ? '#2E7D32' : '#E0E0E0',
+                                  borderColor: answers[q.id] === opt ? '#fd7714' : '#E0E0E0',
                                 }}
                               >
                                 {opt}
@@ -546,10 +546,10 @@ export function OnboardingPage() {
               {step === 4 && (
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <LayoutDashboard className="h-6 w-6" style={{ color: '#2E7D32' }} />
+                    <LayoutDashboard className="h-6 w-6" style={{ color: '#fd7714' }} />
                     <Badge
                       className="text-xs font-medium px-3 py-1"
-                      style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                      style={{ background: '#fff3e8', color: '#fd7714' }}
                     >
                       Step 4
                     </Badge>
@@ -566,8 +566,8 @@ export function OnboardingPage() {
                       <Card key={feat.title} className="border-0 shadow-sm" style={{ background: '#F5F5F5' }}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#E8F5E9' }}>
-                              <span style={{ color: '#2E7D32' }}>{feat.icon}</span>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0" style={{ background: '#fff3e8' }}>
+                              <span style={{ color: '#fd7714' }}>{feat.icon}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold" style={{ color: '#212121' }}>{feat.title}</p>
@@ -578,7 +578,7 @@ export function OnboardingPage() {
                                 <button
                                   onClick={() => setView('knowledge-base')}
                                   className="text-xs font-medium mt-2 inline-flex items-center gap-1 hover:underline"
-                                  style={{ color: '#2E7D32' }}
+                                  style={{ color: '#fd7714' }}
                                 >
                                   Learn More <ArrowRight className="h-3 w-3" />
                                 </button>
@@ -600,9 +600,9 @@ export function OnboardingPage() {
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                       className="flex items-center justify-center w-20 h-20 rounded-full"
-                      style={{ background: '#E8F5E9' }}
+                      style={{ background: '#fff3e8' }}
                     >
-                      <CheckCircle2 className="h-10 w-10" style={{ color: '#2E7D32' }} />
+                      <CheckCircle2 className="h-10 w-10" style={{ color: '#fd7714' }} />
                     </motion.div>
                   </div>
                   <h2 className="text-2xl font-bold text-center mb-2" style={{ color: '#212121' }}>
@@ -620,7 +620,7 @@ export function OnboardingPage() {
                       <div className="space-y-3">
                         {completedItems.map((item) => (
                           <div key={item} className="flex items-center gap-3">
-                            <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: '#2E7D32' }} />
+                            <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: '#fd7714' }} />
                             <span className="text-sm" style={{ color: '#212121' }}>{item}</span>
                           </div>
                         ))}
@@ -643,7 +643,7 @@ export function OnboardingPage() {
                     <Button
                       onClick={handleGoToDashboard}
                       className="font-medium px-8 py-3"
-                      style={{ background: '#2E7D32', color: '#FFFFFF' }}
+                      style={{ background: '#fd7714', color: '#FFFFFF' }}
                     >
                       Go to Dashboard
                       <ArrowRight className="h-4 w-4 ml-2" />
@@ -678,7 +678,7 @@ export function OnboardingPage() {
               <Button
                 onClick={handleNext}
                 className="font-medium px-6"
-                style={{ background: '#2E7D32', color: '#FFFFFF' }}
+                style={{ background: '#fd7714', color: '#FFFFFF' }}
               >
                 Next
                 <ArrowRight className="h-4 w-4 ml-2" />

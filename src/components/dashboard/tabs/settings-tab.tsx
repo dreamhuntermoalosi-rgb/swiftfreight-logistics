@@ -29,7 +29,7 @@ function getInitials(name: string): string {
 
 const planColors: Record<string, string> = {
   starter: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  professional: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  professional: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   enterprise: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
@@ -125,13 +125,13 @@ export function SettingsTab() {
   }
 
   const settingsNav = [
-    { id: 'profile', label: 'Profile', icon: User, badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
+    { id: 'profile', label: 'Profile', icon: User, badge: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' },
     ...(isOwnerOrManager ? [{ id: 'company', label: 'Company', icon: Building2, badge: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' }] : []),
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
     { id: 'appearance', label: 'Appearance', icon: Palette, badge: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' },
     { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard, badge: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400' },
-    { id: 'security', label: 'Security', icon: Shield, badge: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' },
-    { id: 'kyc', label: 'KYC Verification', icon: ShieldCheck, badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
+    { id: 'security', label: 'Security', icon: Shield, badge: 'bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-300' },
+    { id: 'kyc', label: 'KYC Verification', icon: ShieldCheck, badge: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle, badge: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
   ];
 
@@ -182,7 +182,7 @@ export function SettingsTab() {
 
             {/* ── Profile Section ── */}
             {activeSection === 'profile' && (
-              <div className="rounded-lg border border-border/50 bg-card">
+              <div className="rounded-lg border border-border/50 bg-card p-4">
                 <div>
                   <h3 className="text-base">Profile Settings</h3>
                   <p className="text-sm text-muted-foreground">Update your personal information</p>
@@ -277,7 +277,7 @@ export function SettingsTab() {
 
             {/* ── Company Section ── */}
             {activeSection === 'company' && userCompany && (
-              <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
+              <div className="rounded-lg border border-border/50 bg-card p-4 overflow-hidden">
                 <div>
                   <h3 className="text-base">Company Settings</h3>
                   <p className="text-sm text-muted-foreground">Manage your company information</p>
@@ -317,7 +317,7 @@ export function SettingsTab() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-teal-500" />Business Email</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-orange-400" />Business Email</Label>
                       <Input
                         type="email"
                         value={companyForm.email}
@@ -325,7 +325,7 @@ export function SettingsTab() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Phone</Label>
+                      <Label className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-orange-500" />Phone</Label>
                       <Input
                         type="tel"
                         value={companyForm.phone}
@@ -366,7 +366,7 @@ export function SettingsTab() {
 
             {/* ── Notifications Section ── */}
             {activeSection === 'notifications' && (
-              <div className="rounded-lg border border-border/50 bg-card">
+              <div className="rounded-lg border border-border/50 bg-card p-4">
                 <div>
                   <h3 className="text-base flex items-center gap-2">
                     <Bell className="h-4 w-4" />
@@ -411,7 +411,7 @@ export function SettingsTab() {
 
             {/* ── Appearance Section ── */}
             {activeSection === 'appearance' && (
-              <div className="rounded-lg border border-border/50 bg-card">
+              <div className="rounded-lg border border-border/50 bg-card p-4">
                 <div>
                   <h3 className="text-base flex items-center gap-2">
                     <Palette className="h-4 w-4" />
@@ -462,7 +462,7 @@ export function SettingsTab() {
 
             {/* ── Keyboard Shortcuts Section ── */}
             {activeSection === 'shortcuts' && (
-              <div className="rounded-lg border border-border/50 bg-card">
+              <div className="rounded-lg border border-border/50 bg-card p-4">
                 <div>
                   <h3 className="text-base flex items-center gap-2">
                     <Keyboard className="h-4 w-4" />
@@ -499,7 +499,7 @@ export function SettingsTab() {
 
             {/* ── Security Section ── */}
             {activeSection === 'security' && (
-              <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
+              <div className="rounded-lg border border-border/50 bg-card p-4 overflow-hidden">
                 <div className="h-1" />
                 <div>
                   <h3 className="text-base flex items-center gap-2">
@@ -584,7 +584,7 @@ export function SettingsTab() {
 
             {/* ── Danger Zone Section ── */}
             {activeSection === 'danger' && (
-              <div className="rounded-lg border border-border/50 bg-card border-red-200 dark:border-red-900/50 relative overflow-hidden">
+              <div className="rounded-lg border border-border/50 bg-card p-4 border-red-200 dark:border-red-900/50 relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1" />
                 <div>
                   <h3 className="text-base text-red-600 flex items-center gap-2">

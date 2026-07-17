@@ -56,7 +56,7 @@ const STATUS_CONFIG: Record<FeatureStatus, { label: string; color: string; bg: s
   open: { label: 'Open', color: '#757575', bg: '#F5F5F5', icon: <Lightbulb className="h-3.5 w-3.5" /> },
   planned: { label: 'Planned', color: '#1565C0', bg: '#E3F2FD', icon: <Clock className="h-3.5 w-3.5" /> },
   'in-progress': { label: 'In Progress', color: '#E65100', bg: '#FFF3E0', icon: <Wrench className="h-3.5 w-3.5" /> },
-  launched: { label: 'Launched', color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
+  launched: { label: 'Launched', color: '#fd7714', bg: '#fff3e8', icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
 };
 
 const CATEGORY_OPTIONS = [
@@ -243,7 +243,7 @@ export function FeatureRequestsPage() {
         <button
           onClick={() => setView('marketing')}
           className="flex items-center gap-2 text-sm font-medium hover:opacity-70"
-          style={{ color: '#2E7D32' }}
+          style={{ color: '#fd7714' }}
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Home
@@ -256,7 +256,7 @@ export function FeatureRequestsPage() {
             <Button
               size="sm"
               className="font-medium"
-              style={{ background: '#2E7D32', color: '#FFFFFF' }}
+              style={{ background: '#fd7714', color: '#FFFFFF' }}
             >
               <Plus className="h-4 w-4 mr-1" />
               Submit Request
@@ -319,7 +319,7 @@ export function FeatureRequestsPage() {
                   onClick={handleSubmit}
                   disabled={!newTitle.trim() || !newDescription.trim()}
                   className="font-medium"
-                  style={{ background: '#2E7D32', color: '#FFFFFF' }}
+                  style={{ background: '#fd7714', color: '#FFFFFF' }}
                 >
                   Submit Request
                 </Button>
@@ -339,8 +339,8 @@ export function FeatureRequestsPage() {
             className="mb-6"
           >
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#E8F5E9' }}>
-                <Sparkles className="h-5 w-5" style={{ color: '#2E7D32' }} />
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#fff3e8' }}>
+                <Sparkles className="h-5 w-5" style={{ color: '#fd7714' }} />
               </div>
               <div>
                 <h2 className="text-2xl font-bold" style={{ color: '#212121' }}>
@@ -367,7 +367,7 @@ export function FeatureRequestsPage() {
                 onClick={() => setFilterStatus(filter.value)}
                 className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
                 style={{
-                  background: filterStatus === filter.value ? '#2E7D32' : '#F5F5F5',
+                  background: filterStatus === filter.value ? '#fd7714' : '#F5F5F5',
                   color: filterStatus === filter.value ? '#FFFFFF' : '#212121',
                 }}
               >
@@ -405,10 +405,10 @@ export function FeatureRequestsPage() {
                           <button
                             onClick={() => handleVote(request.id)}
                             className="flex flex-col items-center gap-1 shrink-0 p-2 rounded-lg transition-colors hover:opacity-80"
-                            style={{ background: '#E8F5E9' }}
+                            style={{ background: '#fff3e8' }}
                           >
-                            <ThumbsUp className="h-4 w-4" style={{ color: '#2E7D32' }} />
-                            <span className="text-xs font-bold" style={{ color: '#2E7D32' }}>
+                            <ThumbsUp className="h-4 w-4" style={{ color: '#fd7714' }} />
+                            <span className="text-xs font-bold" style={{ color: '#fd7714' }}>
                               {request.votes}
                             </span>
                           </button>

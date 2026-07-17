@@ -51,19 +51,19 @@ const recentActivities = [
 function getUtilizationColor(pct: number) {
   if (pct > 90) return 'text-red-500';
   if (pct >= 70) return 'text-amber-500';
-  return 'text-emerald-500';
+  return 'text-orange-500';
 }
 
 function getUtilizationBarColor(pct: number) {
   if (pct > 90) return '[&>div]:bg-red-500';
   if (pct >= 70) return '[&>div]:bg-amber-500';
-  return '[&>div]:bg-emerald-500';
+  return '[&>div]:bg-orange-500';
 }
 
 function getStatusBadge(status: string) {
   switch (status) {
     case 'active':
-      return <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Active</Badge>;
+      return <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Active</Badge>;
     case 'near_capacity':
       return <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Near Capacity</Badge>;
     case 'maintenance':
@@ -123,10 +123,10 @@ export function WarehouseTab() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Warehouses</p>
-              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalWarehouses}</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalWarehouses}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-              <Warehouse className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <Warehouse className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
         </div>
@@ -135,10 +135,10 @@ export function WarehouseTab() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Packages in Storage</p>
-              <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">{totalInStorage.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-orange-500 dark:text-orange-300">{totalInStorage.toLocaleString()}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/30">
-              <Package className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <Package className="h-5 w-5 text-orange-500 dark:text-orange-300" />
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@ export function WarehouseTab() {
         {warehouses.map((wh) => {
           const pct = Math.round((wh.used / wh.capacity) * 100);
           return (
-            <div className="rounded-lg border border-border/50 bg-card group transition-all duration-200" key={wh.id}>
+            <div className="rounded-lg border border-border/50 bg-card p-4 group transition-all duration-200" key={wh.id}>
               <div className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -273,15 +273,15 @@ export function WarehouseTab() {
                 />
                 <Bar
                   dataKey="Capacity"
-                  fill="var(--color-emerald-200)"
-                  stroke="var(--color-emerald-400)"
+                  fill="var(--color-orange-200)"
+                  stroke="var(--color-orange-400)"
                   strokeWidth={1}
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="Used"
-                  fill="var(--color-emerald-500)"
-                  stroke="var(--color-emerald-600)"
+                  fill="var(--color-orange-500)"
+                  stroke="var(--color-orange-600)"
                   strokeWidth={1}
                   radius={[4, 4, 0, 0]}
                 />
@@ -307,7 +307,7 @@ export function WarehouseTab() {
                       : activity.type === 'warning'
                         ? 'bg-amber-50 dark:bg-amber-950/20 border-l-[3px] border-l-amber-500'
                         : activity.type === 'info'
-                          ? 'border-l-[3px] border-l-emerald-500'
+                          ? 'border-l-[3px] border-l-orange-500'
                           : 'border-l-[3px] border-l-transparent'
                   }`}
                 >

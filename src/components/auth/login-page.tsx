@@ -18,11 +18,11 @@ import {
 import { motion } from 'framer-motion';
 
 const demoAccounts = [
-  { label: 'Company Owner', user: demoUsers[1] as User, color: 'text-[#2E7D32] border-l-[3px] border-l-[#2E7D32] hover:bg-[#E8F5E9]' },
-  { label: 'Operations Manager', user: demoUsers[2] as User, color: 'text-[#1B5E20] border-l-[3px] border-l-[#1B5E20] hover:bg-[#E8F5E9]' },
-  { label: 'Dispatcher', user: demoUsers[3] as User, color: 'text-[#388E3C] border-l-[3px] border-l-[#388E3C] hover:bg-[#E8F5E9]' },
-  { label: 'Driver', user: demoUsers[5] as User, color: 'text-[#43A047] border-l-[3px] border-l-[#43A047] hover:bg-[#E8F5E9]' },
-  { label: 'Customer', user: demoUsers[6] as User, color: 'text-[#66BB6A] border-l-[3px] border-l-[#66BB6A] hover:bg-[#E8F5E9]' },
+  { label: 'Company Owner', user: demoUsers[1] as User, color: 'text-[#fd7714] border-l-[3px] border-l-[#fd7714] hover:bg-[#fff3e8]' },
+  { label: 'Operations Manager', user: demoUsers[2] as User, color: 'text-[#e06a10] border-l-[3px] border-l-[#e06a10] hover:bg-[#fff3e8]' },
+  { label: 'Dispatcher', user: demoUsers[3] as User, color: 'text-[#fc8a44] border-l-[3px] border-l-[#fc8a44] hover:bg-[#fff3e8]' },
+  { label: 'Driver', user: demoUsers[5] as User, color: 'text-[#fd7714] border-l-[3px] border-l-[#fd7714] hover:bg-[#fff3e8]' },
+  { label: 'Customer', user: demoUsers[6] as User, color: 'text-[#fc8a44] border-l-[3px] border-l-[#fc8a44] hover:bg-[#fff3e8]' },
 ];
 
 export function LoginPage() {
@@ -68,7 +68,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Panel — Branding */}
-      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-[#2E7D32] text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-[#151c25] text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
         {/* Subtle pattern overlay (CSS only) */}
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
           backgroundImage: `linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white)`,
@@ -108,7 +108,7 @@ export function LoginPage() {
             </div>
             <h1 className="text-3xl lg:text-4xl font-bold leading-tight mb-4">
               Logistics management<br />
-              <span className="text-[#C8E6C9]">made simple</span>
+              <span className="text-[#ffe0c2]">made simple</span>
             </h1>
             <p className="text-white/70 text-lg max-w-md leading-relaxed">
               Streamline your delivery operations across all ten districts of Lesotho with real-time tracking and smart dispatch.
@@ -129,7 +129,7 @@ export function LoginPage() {
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
                 <div className="bg-white/10 rounded-lg p-1.5">
-                  <Icon className="h-4 w-4 text-[#C8E6C9]" />
+                  <Icon className="h-4 w-4 text-[#ffe0c2]" />
                 </div>
                 <span className="text-white/85 text-sm">{text}</span>
               </div>
@@ -168,10 +168,10 @@ export function LoginPage() {
           <Card className="relative bg-white border border-[#E0E0E0] shadow-sm">
             <CardHeader className="space-y-1 pb-4">
               <div className="flex items-center gap-2 md:hidden mb-2">
-                <div className="bg-[#2E7D32] p-1.5 rounded-lg">
+                <div className="bg-[#fd7714] p-1.5 rounded-lg">
                   <Truck className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-lg font-bold text-[#2E7D32]">SwiftFreight</span>
+                <span className="text-lg font-bold text-[#fd7714]">SwiftFreight</span>
               </div>
               <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
               <CardDescription>Sign in to your account to continue</CardDescription>
@@ -190,7 +190,7 @@ export function LoginPage() {
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                      className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                       autoComplete="email"
                     />
                   </div>
@@ -207,7 +207,7 @@ export function LoginPage() {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                      className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                       autoComplete="current-password"
                     />
                     <button
@@ -228,7 +228,7 @@ export function LoginPage() {
                       id="remember"
                       checked={rememberMe}
                       onCheckedChange={(checked) => setRememberMe(checked === true)}
-                      className="data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+                      className="data-[state=checked]:bg-[#fd7714] data-[state=checked]:border-[#fd7714]"
                     />
                     <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
                       Remember me
@@ -238,7 +238,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setView('forgot-password')}
-                    className="text-sm text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
+                    className="text-sm text-[#fd7714] hover:text-[#e06a10] font-medium transition-colors"
                   >
                     Forgot Password?
                   </button>
@@ -247,7 +247,7 @@ export function LoginPage() {
                 {/* Submit */}
                 <Button
                   type="submit"
-                  className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
+                  className="w-full bg-[#fd7714] hover:bg-[#e06a10] text-white font-medium"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -290,15 +290,15 @@ export function LoginPage() {
                 Don&apos;t have an account?{' '}
                 <button
                   onClick={() => setView('register')}
-                  className="text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
+                  className="text-[#fd7714] hover:text-[#e06a10] font-medium transition-colors"
                 >
                   Sign Up
                 </button>
               </p>
             </CardFooter>
             {/* Platform Disclaimer */}
-            <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-3 mb-2">
-              <p className="text-[11px] text-[#1B5E20] leading-relaxed">
+            <div className="bg-[#fff3e8] border border-[#ffe0c2] rounded-lg p-3 mb-2">
+              <p className="text-[11px] text-[#e06a10] leading-relaxed">
                 SwiftFreight is a technology platform connecting logistics companies, drivers, and customers in Lesotho. We do NOT operate as a courier or freight carrier. All logistics services are provided by independent third-party companies.
               </p>
             </div>

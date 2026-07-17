@@ -114,7 +114,7 @@ function getNotificationIconColor(type: NotificationType) {
       return 'text-sky-400';
     case 'quote_received':
     case 'payment':
-      return 'text-emerald-400';
+      return 'text-orange-400';
     case 'alert':
       return 'text-amber-400';
     case 'system':
@@ -430,9 +430,9 @@ function NotificationDropdown() {
                   <DropdownMenuItem
                     key={notification.id}
                     className={`flex cursor-pointer items-start gap-3 px-4 py-3.5 border-l-2 ${
-                      notification.type === 'delivery_update' ? 'border-l-emerald-400' :
+                      notification.type === 'delivery_update' ? 'border-l-orange-400' :
                       notification.type === 'new_message' ? 'border-l-primary' :
-                      notification.type === 'payment' || notification.type === 'quote_received' ? 'border-l-teal-400' :
+                      notification.type === 'payment' || notification.type === 'quote_received' ? 'border-l-orange-300' :
                       notification.type === 'alert' ? 'border-l-amber-400' :
                       'border-l-transparent'
                     } ${!notification.isRead ? 'bg-primary/[0.02]' : ''}`}
@@ -630,7 +630,7 @@ function DashboardHeader() {
         title: d.name,
         subtitle: d.phone,
         badge: `Driver · ${d.status.replace('_', ' ')}`,
-        badgeColor: d.status === 'available' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        badgeColor: d.status === 'available' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
       }));
 
     return { deliveries: deliveryResults, customers: customerResults, drivers: driverResults };

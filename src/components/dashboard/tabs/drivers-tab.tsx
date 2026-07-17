@@ -70,14 +70,14 @@ const driverStatusConfig: Record<Driver['status'], { label: string; className: s
 };
 
 const driverStatusDotColor: Record<Driver['status'], string> = {
-  available: 'bg-green-500',
+  available: 'bg-orange-500',
   on_trip: 'bg-amber-500',
   off_duty: 'bg-red-500',
   suspended: 'bg-red-500',
 };
 
 const driverStatusBorderColor: Record<Driver['status'], string> = {
-  available: 'border-l-[3px] border-l-green-500',
+  available: 'border-l-[3px] border-l-orange-500',
   on_trip: 'border-l-[3px] border-l-amber-500',
   off_duty: 'border-l-[3px] border-l-gray-300 dark:border-l-gray-600',
   suspended: 'border-l-[3px] border-l-red-500',
@@ -276,13 +276,13 @@ export function DriversTab() {
         </div>
         <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
-            <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
-              <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900/30">
+              <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Available</p>
               <p className="text-xl font-bold">{availableDrivers}</p>
-              <p className="text-xs text-emerald-600">Ready for dispatch</p>
+              <p className="text-xs text-orange-600">Ready for dispatch</p>
             </div>
           </div>
         </div>
@@ -531,7 +531,7 @@ export function DriversTab() {
                     <p className="text-xs text-muted-foreground">On-Time Rate</p>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted transition-all">
                       <div
-                        className={`h-full rounded-full transition-all hover:brightness-110 ${successRate >= 95 ? 'bg-green-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
+                        className={`h-full rounded-full transition-all hover:brightness-110 ${successRate >= 95 ? 'bg-orange-500' : successRate >= 90 ? 'bg-amber-500' : 'bg-red-500'}`}
                         style={{ width: `${successRate}%` }}
                       />
                     </div>

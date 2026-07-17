@@ -244,7 +244,7 @@ export function TrainingPage() {
         <button
           onClick={() => setView('marketing')}
           className="flex items-center gap-2 text-sm font-medium hover:opacity-70"
-          style={{ color: '#2E7D32' }}
+          style={{ color: '#fd7714' }}
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Home
@@ -265,8 +265,8 @@ export function TrainingPage() {
             className="mb-6"
           >
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#E8F5E9' }}>
-                <BookOpen className="h-5 w-5" style={{ color: '#2E7D32' }} />
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: '#fff3e8' }}>
+                <BookOpen className="h-5 w-5" style={{ color: '#fd7714' }} />
               </div>
               <div>
                 <h2 className="text-2xl font-bold" style={{ color: '#212121' }}>
@@ -280,8 +280,8 @@ export function TrainingPage() {
 
             {completedTrainings.size > 0 && (
               <div className="mt-3 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" style={{ color: '#2E7D32' }} />
-                <span className="text-xs font-medium" style={{ color: '#2E7D32' }}>
+                <CheckCircle2 className="h-4 w-4" style={{ color: '#fd7714' }} />
+                <span className="text-xs font-medium" style={{ color: '#fd7714' }}>
                   {completedTrainings.size} training{completedTrainings.size !== 1 ? 's' : ''} completed
                 </span>
               </div>
@@ -296,7 +296,7 @@ export function TrainingPage() {
                 onClick={() => setRoleFilter(role)}
                 className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
                 style={{
-                  background: roleFilter === role ? '#2E7D32' : '#F5F5F5',
+                  background: roleFilter === role ? '#fd7714' : '#F5F5F5',
                   color: roleFilter === role ? '#FFFFFF' : '#212121',
                 }}
               >
@@ -328,14 +328,14 @@ export function TrainingPage() {
                         <div className="flex items-start justify-between mb-4">
                           <div
                             className="flex items-center justify-center w-12 h-12 rounded-xl"
-                            style={{ background: '#E8F5E9' }}
+                            style={{ background: '#fff3e8' }}
                           >
-                            <span style={{ color: '#2E7D32' }}>{session.icon}</span>
+                            <span style={{ color: '#fd7714' }}>{session.icon}</span>
                           </div>
                           {isCompleted && (
                             <Badge
                               className="text-xs px-2 py-0.5 flex items-center gap-1"
-                              style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                              style={{ background: '#fff3e8', color: '#fd7714' }}
                             >
                               <CheckCircle2 className="h-3 w-3" />
                               Completed
@@ -370,9 +370,9 @@ export function TrainingPage() {
                             onClick={() => handleStartTraining(session)}
                             className="w-full font-medium text-xs"
                             style={{
-                              background: isCompleted ? '#F5F5F5' : '#2E7D32',
-                              color: isCompleted ? '#2E7D32' : '#FFFFFF',
-                              border: isCompleted ? '1px solid #2E7D32' : 'none',
+                              background: isCompleted ? '#F5F5F5' : '#fd7714',
+                              color: isCompleted ? '#fd7714' : '#FFFFFF',
+                              border: isCompleted ? '1px solid #fd7714' : 'none',
                             }}
                           >
                             {isCompleted ? (
@@ -444,7 +444,7 @@ export function TrainingPage() {
                   </span>
                   <Badge
                     className="text-xs px-2 py-0.5"
-                    style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                    style={{ background: '#fff3e8', color: '#fd7714' }}
                   >
                     {activeTraining?.targetRole}
                   </Badge>
@@ -478,7 +478,7 @@ export function TrainingPage() {
             <Button
               onClick={handleCompleteTraining}
               className="font-medium"
-              style={{ background: '#2E7D32', color: '#FFFFFF' }}
+              style={{ background: '#fd7714', color: '#FFFFFF' }}
             >
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Complete Training

@@ -832,7 +832,7 @@ export function SafetyTab() {
         <TabsContent value="report" className="mt-4 space-y-4">
           {/* Driver incident types */}
           {(isDriver || isAdmin) && visibleTypes.driver.length > 0 && (
-            <div className="rounded-lg border border-border/50 bg-card">
+            <div className="rounded-lg border border-border/50 bg-card p-4">
               <div className="pb-2">
                 <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212121' }}>
                   <Wrench className="h-4 w-4" style={{ color: '#2E7D32' }} />
@@ -883,7 +883,7 @@ export function SafetyTab() {
 
           {/* Customer incident types */}
           {(isCustomer || isAdmin) && visibleTypes.customer.length > 0 && (
-            <div className="rounded-lg border border-border/50 bg-card">
+            <div className="rounded-lg border border-border/50 bg-card p-4">
               <div className="pb-2">
                 <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212121' }}>
                   <PackageSearch className="h-4 w-4" style={{ color: '#2E7D32' }} />

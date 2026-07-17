@@ -18,13 +18,13 @@ import type { SourcingStatus, SourcingRequest } from '@/lib/types';
 import {
   ShoppingBag, Plus, Search, ChevronRight, DollarSign,
   MapPin, Calendar, Clock, User, Link as LinkIcon, Globe,
-  CheckCircle, XCircle, Eye, AlertTriangle, Package
+  CheckCircle, XCircle, Eye, AlertTriangle, Package, Upload
 } from 'lucide-react';
 // ── Helpers ──────────────────────────────────────────────────
 const sourcingStatusColors: Record<SourcingStatus, string> = {
   pending: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   quoted: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  accepted: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  accepted: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   purchased: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   delivered: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   cancelled: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -66,9 +66,9 @@ const statusFlow: SourcingStatus[] = ['pending', 'quoted', 'accepted', 'purchase
 const statusLeftBorder: Partial<Record<SourcingStatus, string>> = {
   pending: 'border-l-amber-400',
   quoted: 'border-l-blue-400',
-  accepted: 'border-l-emerald-400',
-  purchased: 'border-l-emerald-400',
-  delivered: 'border-l-emerald-400',
+  accepted: 'border-l-orange-400',
+  purchased: 'border-l-orange-400',
+  delivered: 'border-l-orange-400',
   cancelled: 'border-l-red-400',
 };
 
@@ -82,11 +82,21 @@ export function SourcingTab() {
   const [selectedRequest, setSelectedRequest] = useState<SourcingRequest | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [newForm, setNewForm] = useState({
-    productName: '', description: '', storeName: '', productLink: '', budget: '', deadline: '', location: '',
+    productName: '', description: '', storeName: '', productLink: '', budget: '', deadline: '', location: '', referenceFile: '',
   });
 
-  const filtered = useMemo(() => {
+  // Customer-scoped base list for filtering and counts
+  const customerScoped = useMemo(() => {
     let items = localRequests;
+    // Customer isolation: customers only see their own requests
+    if (currentUser?.role === 'customer') {
+      items = items.filter(r => r.customerId === currentUser.id);
+    }
+    return items;
+  }, [localRequests, currentUser]);
+
+  const filtered = useMemo(() => {
+    let items = customerScoped;
     if (tab !== 'all') {
       items = items.filter(r => r.status === tab);
     }
@@ -99,15 +109,15 @@ export function SourcingTab() {
       );
     }
     return items;
-  }, [localRequests, tab, search]);
+  }, [customerScoped, tab, search]);
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: localRequests.length };
-    for (const r of localRequests) {
+    const c: Record<string, number> = { all: customerScoped.length };
+    for (const r of customerScoped) {
       c[r.status] = (c[r.status] || 0) + 1;
     }
     return c;
-  }, [localRequests]);
+  }, [customerScoped]);
 
   function openDetail(req: SourcingRequest) {
     setSelectedRequest(req);
@@ -131,13 +141,14 @@ export function SourcingTab() {
       deadline: newForm.deadline || undefined,
       location: newForm.location || 'Maseru',
       status: 'pending',
+      referenceFile: newForm.referenceFile || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     setLocalRequests(prev => [newReq, ...prev]);
     toast.success('Sourcing Request Created', { description: `${newForm.productName} has been submitted` });
     setNewDialogOpen(false);
-    setNewForm({ productName: '', description: '', storeName: '', productLink: '', budget: '', deadline: '', location: '' });
+    setNewForm({ productName: '', description: '', storeName: '', productLink: '', budget: '', deadline: '', location: '', referenceFile: '' });
   }
 
   function handleAcceptQuote(reqId: string) {
@@ -243,6 +254,31 @@ export function SourcingTab() {
                     value={newForm.location}
                     onChange={e => setNewForm(f => ({ ...f, location: e.target.value }))}
                   />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Reference Image/File</Label>
+                  <div
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-6 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                    onClick={() => document.getElementById('reference-file-input')?.click()}
+                  >
+                    <Upload className="mb-2 h-8 w-8 text-muted-foreground/60" />
+                    <p className="text-sm text-muted-foreground">
+                      {newForm.referenceFile ? newForm.referenceFile : 'Click to upload an image or PDF'}
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">Supports images and PDFs</p>
+                    <input
+                      id="reference-file-input"
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setNewForm(f => ({ ...f, referenceFile: file.name }));
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -496,6 +532,16 @@ export function SourcingTab() {
                   </div>
                 )}
 
+                {/* Reference File */}
+                {selectedRequest.referenceFile && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Reference File</p>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <Upload className="h-3.5 w-3.5" />{selectedRequest.referenceFile}
+                    </p>
+                  </div>
+                )}
+
                 {/* Deadline */}
                 {selectedRequest.deadline && (
                   <div className="space-y-2">
@@ -558,7 +604,7 @@ export function SourcingTab() {
                       const isCurrent = status === selectedRequest.status;
                       return (
                         <div key={status} className="flex flex-col items-center gap-1">
-                          <div className={`h-2.5 w-2.5 rounded-full border-2 transition-colors ${isCurrent ? 'border-primary bg-primary' : isActive ? 'border-teal-500 bg-teal-500' : 'border-muted-foreground/30 bg-background'}`} />
+                          <div className={`h-2.5 w-2.5 rounded-full border-2 transition-colors ${isCurrent ? 'border-primary bg-primary' : isActive ? 'border-orange-400 bg-orange-400' : 'border-muted-foreground/30 bg-background'}`} />
                           <span className={`text-[10px] ${isCurrent ? 'font-semibold text-primary' : isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                             {sourcingStatusLabels[status]}
                           </span>

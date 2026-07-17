@@ -37,7 +37,7 @@ function exportCSV(data: Record<string, unknown>[], filename: string) {
 function getRowBorderClass(status: Quotation['status']): string {
   switch (status) {
     case 'pending': return 'border-l-[3px] border-l-amber-500';
-    case 'accepted': return 'border-l-[3px] border-l-emerald-500';
+    case 'accepted': return 'border-l-[3px] border-l-orange-500';
     case 'rejected': return 'border-l-[3px] border-l-red-500';
     case 'expired': return 'border-l-[3px] border-l-gray-400';
     default: return '';
@@ -46,7 +46,7 @@ function getRowBorderClass(status: Quotation['status']): string {
 
 const statusConfig: Record<Quotation['status'], { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: Clock },
-  accepted: { label: 'Accepted', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle },
+  accepted: { label: 'Accepted', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', icon: CheckCircle },
   rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
   expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400', icon: AlertTriangle },
 };
@@ -228,17 +228,17 @@ export function QuotationsTab() {
           </div>
         </div>
         <div>
-          <div className="rounded-lg border border-border/50 bg-card overflow-hidden border-emerald-200/50 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+          <div className="rounded-lg border border-border/50 bg-card overflow-hidden border-orange-200/50 bg-orange-50/50 dark:border-orange-900/30 dark:bg-orange-900/10">
             <div className="h-1" />
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Accepted</p>
-                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{summary.acceptedCount}</p>
+                  <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">{summary.acceptedCount}</p>
                   <p className="text-xs text-muted-foreground">Total: M{summary.acceptedValue.toLocaleString()}</p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                  <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+                  <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
             </div>
@@ -519,10 +519,10 @@ export function QuotationsTab() {
                   {(selectedQuote.status === 'accepted' || selectedQuote.status === 'rejected') && (
                     <div className="flex items-start gap-3">
                       <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                        selectedQuote.status === 'accepted' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30'
+                        selectedQuote.status === 'accepted' ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-red-100 dark:bg-red-900/30'
                       }`}>
                         {selectedQuote.status === 'accepted'
-                          ? <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          ? <CheckCircle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                           : <XCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
                         }
                       </div>

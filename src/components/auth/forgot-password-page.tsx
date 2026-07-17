@@ -37,7 +37,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Panel — Branding */}
-      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-[#2E7D32] text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-[#fd7714] text-white flex-col justify-between p-8 lg:p-12 overflow-hidden">
         {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
           backgroundImage: `linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(30deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white), linear-gradient(150deg, white 12%, transparent 12.5%, transparent 87%, white 87.5%, white)`,
@@ -77,7 +77,7 @@ export function ForgotPasswordPage() {
             </div>
             <h1 className="text-3xl lg:text-4xl font-bold leading-tight mb-4">
               Password recovery<br />
-              <span className="text-[#C8E6C9]">made simple</span>
+              <span className="text-[#ffe0c2]">made simple</span>
             </h1>
             <p className="text-white/70 text-lg max-w-md leading-relaxed">
               Enter your email and we&apos;ll send you a secure link to reset your password. Usually arrives within minutes.
@@ -97,7 +97,7 @@ export function ForgotPasswordPage() {
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
                 <div className="bg-white/10 rounded-lg p-1.5">
-                  <Icon className="h-4 w-4 text-[#C8E6C9]" />
+                  <Icon className="h-4 w-4 text-[#ffe0c2]" />
                 </div>
                 <span className="text-white/85 text-sm">{text}</span>
               </div>
@@ -135,11 +135,11 @@ export function ForgotPasswordPage() {
         >
           <Card className="relative bg-white border border-[#E0E0E0] shadow-sm">
             {/* Green line at top */}
-            <div className="h-1 rounded-t-xl bg-[#2E7D32]" />
+            <div className="h-1 rounded-t-xl bg-[#fd7714]" />
 
             <CardHeader className="text-center space-y-2 pb-2">
               <div className="flex justify-center mb-1">
-                <div className="bg-[#2E7D32] p-2 rounded-xl">
+                <div className="bg-[#fd7714] p-2 rounded-xl">
                   <Truck className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -168,8 +168,8 @@ export function ForgotPasswordPage() {
                     className="space-y-3"
                   >
                     <div className="flex justify-center">
-                      <div className="bg-[#E8F5E9] p-4 rounded-full">
-                        <CheckCircle2 className="h-10 w-10 text-[#2E7D32]" />
+                      <div className="bg-[#fff3e8] p-4 rounded-full">
+                        <CheckCircle2 className="h-10 w-10 text-[#fd7714]" />
                       </div>
                     </div>
                     <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
@@ -204,7 +204,7 @@ export function ForgotPasswordPage() {
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           autoComplete="email"
                           autoFocus
                         />
@@ -213,7 +213,7 @@ export function ForgotPasswordPage() {
 
                     <Button
                       type="submit"
-                      className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
+                      className="w-full bg-[#fd7714] hover:bg-[#e06a10] text-white font-medium"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -238,11 +238,11 @@ export function ForgotPasswordPage() {
                     className="space-y-4"
                   >
                     {/* Info box */}
-                    <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-4 flex gap-3">
-                      <MailCheck className="h-5 w-5 text-[#2E7D32] mt-0.5 shrink-0" />
-                      <div className="text-sm text-[#1B5E20]">
+                    <div className="bg-[#fff3e8] border border-[#ffe0c2] rounded-lg p-4 flex gap-3">
+                      <MailCheck className="h-5 w-5 text-[#fd7714] mt-0.5 shrink-0" />
+                      <div className="text-sm text-[#e06a10]">
                         <p className="font-medium mb-1">What happens next?</p>
-                        <ol className="list-decimal list-inside space-y-1 text-[#2E7D32]">
+                        <ol className="list-decimal list-inside space-y-1 text-[#fd7714]">
                           <li>Check your inbox (and spam folder)</li>
                           <li>Click the reset link in the email</li>
                           <li>Create a new password</li>
@@ -271,15 +271,15 @@ export function ForgotPasswordPage() {
                 Remember your password?{' '}
                 <button
                   onClick={() => setView('login')}
-                  className="text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
+                  className="text-[#fd7714] hover:text-[#e06a10] font-medium transition-colors"
                 >
                   Back to Sign In
                 </button>
               </p>
             </CardFooter>
             {/* Platform Disclaimer */}
-            <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-3 mb-2">
-              <p className="text-[11px] text-[#1B5E20] leading-relaxed">
+            <div className="bg-[#fff3e8] border border-[#ffe0c2] rounded-lg p-3 mb-2">
+              <p className="text-[11px] text-[#e06a10] leading-relaxed">
                 SwiftFreight is a technology platform. All logistics services are provided by independent third-party companies registered on the platform.
               </p>
             </div>

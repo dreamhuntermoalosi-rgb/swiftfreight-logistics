@@ -29,7 +29,7 @@ export function MapPlaceholder({
   };
   const typeColors = {
     pickup: 'bg-blue-500',
-    destination: 'bg-emerald-500',
+    destination: 'bg-orange-500',
     driver: 'bg-orange-500',
     warehouse: 'bg-purple-500',
     border: 'bg-amber-500',
@@ -47,7 +47,7 @@ export function MapPlaceholder({
       <svg className="absolute inset-0 h-full w-full opacity-[0.06]" viewBox="0 0 400 300" preserveAspectRatio="none">
         <path d="M0 150 Q100 100 200 150 T400 120" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 4" className="text-primary" />
         <path d="M50 0 Q150 80 250 50 T400 80" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="6 6" className="text-primary/50" />
-        <path d="M0 250 Q100 200 200 250 T400 220" fill="none" stroke="currentColor" strokeWidth="1" className="text-emerald-500/40" />
+        <path d="M0 250 Q100 200 200 250 T400 220" fill="none" stroke="currentColor" strokeWidth="1" className="text-orange-500/40" />
       </svg>
 
       {/* Center content */}

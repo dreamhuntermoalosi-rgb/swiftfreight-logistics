@@ -62,12 +62,12 @@ function getNotificationIcon(type: NotificationType) {
 function getNotificationIconBg(type: NotificationType) {
   switch (type) {
     case 'delivery_update':
-      return 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600';
+      return 'bg-orange-50 dark:bg-orange-950/50 text-orange-600';
     case 'new_message':
       return 'bg-primary/10 text-primary';
     case 'quote_received':
     case 'payment':
-      return 'bg-teal-50 dark:bg-teal-950/50 text-teal-600';
+      return 'bg-orange-50 dark:bg-orange-950/50 text-orange-500';
     case 'alert':
       return 'bg-amber-50 dark:bg-amber-950/50 text-amber-600';
     case 'system':
@@ -79,12 +79,12 @@ function getNotificationIconBg(type: NotificationType) {
 function getNotificationBorderClass(type: NotificationType): string {
   switch (type) {
     case 'delivery_update':
-      return 'border-l-[3px] border-l-emerald-500';
+      return 'border-l-[3px] border-l-orange-500';
     case 'new_message':
       return 'border-l-[3px] border-l-primary';
     case 'quote_received':
     case 'payment':
-      return 'border-l-[3px] border-l-teal-500';
+      return 'border-l-[3px] border-l-orange-400';
     case 'alert':
       return 'border-l-[3px] border-l-amber-500';
     case 'system':
@@ -146,7 +146,7 @@ export function NotificationsTab() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
           {unreadCount > 0 && (
-            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 shadow-sm">
+            <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm">
               {unreadCount} unread
             </Badge>
           )}

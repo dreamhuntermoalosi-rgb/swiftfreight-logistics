@@ -378,7 +378,7 @@ export function MessagesTab() {
             >
               <div className="relative mb-2">
                 <div className="absolute inset-0 rounded-full blur-2xl" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl dark:from-primary/20 dark:via-emerald-950/40 dark:to-teal-950/40 border border-primary/10">
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl dark:from-primary/20 dark:via-orange-950/40 dark:to-orange-950/40 border border-primary/10">
                   <MessageSquare className="h-10 w-10 text-primary/40" />
                 </div>
               </div>
@@ -388,13 +388,13 @@ export function MessagesTab() {
               </p>
               <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                     <Package className="h-3 w-3" />
                   </span>
                   View delivery updates in real-time
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-300">
                     <Truck className="h-3 w-3" />
                   </span>
                   Coordinate with drivers and warehouse teams
@@ -436,7 +436,7 @@ export function MessagesTab() {
                     <Separator />
                     <div className="space-y-2 text-xs">
                       <div className="flex items-start gap-2">
-                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-500" />
                         <div>
                           <p className="font-medium">Pickup</p>
                           <p className="text-muted-foreground">{linkedDelivery.pickup.city}, {linkedDelivery.pickup.country}</p>

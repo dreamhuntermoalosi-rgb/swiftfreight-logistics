@@ -149,10 +149,10 @@ export function RegisterPage() {
         >
           <Card className="relative bg-white border border-[#E0E0E0] shadow-sm">
             {/* Decorative green line at top */}
-            <div className="h-1 rounded-t-xl bg-[#2E7D32]" />
+            <div className="h-1 rounded-t-xl bg-[#fd7714]" />
             <CardHeader className="text-center space-y-2 pb-2">
               <div className="flex justify-center mb-1">
-                <div className="bg-[#2E7D32] p-2 rounded-xl">
+                <div className="bg-[#fd7714] p-2 rounded-xl">
                   <Truck className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -173,7 +173,7 @@ export function RegisterPage() {
                       Company
                     </TabsTrigger>
                     {/* Sliding indicator */}
-                    <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-4px)] rounded-md bg-[#2E7D32] transition-transform duration-300 ease-out ${activeTab === 'company' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`} />
+                    <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-4px)] rounded-md bg-[#fd7714] transition-transform duration-300 ease-out ${activeTab === 'company' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`} />
                   </TabsList>
                 </div>
 
@@ -189,7 +189,7 @@ export function RegisterPage() {
                           placeholder="Mmathapelo Mphatsoe"
                           value={custName}
                           onChange={(e) => setCustName(e.target.value)}
-                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                         />
                       </div>
                     </div>
@@ -205,7 +205,7 @@ export function RegisterPage() {
                             placeholder="you@email.co.ls"
                             value={custEmail}
                             onChange={(e) => setCustEmail(e.target.value)}
-                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                         </div>
                       </div>
@@ -221,7 +221,7 @@ export function RegisterPage() {
                             placeholder="+266 2xxx xxxx"
                             value={custPhone}
                             onChange={(e) => setCustPhone(e.target.value)}
-                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">Lesotho country code: +266</p>
@@ -239,7 +239,7 @@ export function RegisterPage() {
                             placeholder="Min. 6 characters"
                             value={custPassword}
                             onChange={(e) => setCustPassword(e.target.value)}
-                            className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                           <button
                             type="button"
@@ -260,7 +260,7 @@ export function RegisterPage() {
                             placeholder="Re-enter password"
                             value={custConfirmPassword}
                             onChange={(e) => setCustConfirmPassword(e.target.value)}
-                            className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                           <button
                             type="button"
@@ -301,7 +301,7 @@ export function RegisterPage() {
                           placeholder="e.g. 1234567890 or passport number"
                           value={custNationalId}
                           onChange={(e) => setCustNationalId(e.target.value)}
-                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                         />
                       </div>
                       <p className="text-[11px] text-amber-600 flex items-center gap-1">
@@ -311,8 +311,8 @@ export function RegisterPage() {
                     </div>
 
                     {/* Platform Disclaimer */}
-                    <div className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-lg p-3">
-                      <p className="text-[12px] text-[#1B5E20] leading-relaxed">
+                    <div className="bg-[#fff3e8] border border-[#ffe0c2] rounded-lg p-3">
+                      <p className="text-[12px] text-[#e06a10] leading-relaxed">
                         SwiftFreight is a technology platform. Courier companies are responsible for transporting goods. Customers are responsible for declaring package contents accurately.
                       </p>
                     </div>
@@ -320,8 +320,8 @@ export function RegisterPage() {
                     {/* Package Declaration */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm font-semibold text-[#2E7D32]">Package Declaration</Label>
-                        <Badge variant="outline" className="bg-[#2E7D32]/10 text-[#2E7D32] border-[#2E7D32]/30 text-[10px] px-1.5 py-0 flex items-center gap-1">
+                        <Label className="text-sm font-semibold text-[#fd7714]">Package Declaration</Label>
+                        <Badge variant="outline" className="bg-[#fd7714]/10 text-[#fd7714] border-[#fd7714]/30 text-[10px] px-1.5 py-0 flex items-center gap-1">
                           <LockIcon className="h-2.5 w-2.5" />
                           Required
                         </Badge>
@@ -332,7 +332,7 @@ export function RegisterPage() {
                             id="cust-parcel-declaration"
                             checked={custParcelDeclaration}
                             onCheckedChange={(checked) => setCustParcelDeclaration(checked === true)}
-                            className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+                            className="mt-0.5 data-[state=checked]:bg-[#fd7714] data-[state=checked]:border-[#fd7714]"
                           />
                           <Label htmlFor="cust-parcel-declaration" className="text-[12px] font-normal text-muted-foreground leading-relaxed cursor-pointer">
                             I declare that this parcel does not contain prohibited, illegal, dangerous, counterfeit, or undeclared goods. I understand that false declarations may result in account suspension and reporting to the relevant authorities.
@@ -346,19 +346,19 @@ export function RegisterPage() {
                         id="cust-terms"
                         checked={custTerms}
                         onCheckedChange={(checked) => setCustTerms(checked === true)}
-                        className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+                        className="mt-0.5 data-[state=checked]:bg-[#fd7714] data-[state=checked]:border-[#fd7714]"
                       />
                       <Label htmlFor="cust-terms" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
                         I agree to the{' '}
-                        <button type="button" className="text-[#2E7D32] hover:underline">Terms of Service</button>
+                        <button type="button" className="text-[#fd7714] hover:underline">Terms of Service</button>
                         {' '}and{' '}
-                        <button type="button" className="text-[#2E7D32] hover:underline">Privacy Policy</button>
+                        <button type="button" className="text-[#fd7714] hover:underline">Privacy Policy</button>
                       </Label>
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
+                      className="w-full bg-[#fd7714] hover:bg-[#e06a10] text-white font-medium"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -388,7 +388,7 @@ export function RegisterPage() {
                           placeholder="Mountain Express Logistics"
                           value={compName}
                           onChange={(e) => setCompName(e.target.value)}
-                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                          className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                         />
                       </div>
                     </div>
@@ -404,7 +404,7 @@ export function RegisterPage() {
                             placeholder="info@company.co.ls"
                             value={compEmail}
                             onChange={(e) => setCompEmail(e.target.value)}
-                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                         </div>
                       </div>
@@ -418,7 +418,7 @@ export function RegisterPage() {
                             placeholder="+266 2xxx xxxx"
                             value={compPhone}
                             onChange={(e) => setCompPhone(e.target.value)}
-                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                         </div>
                       </div>
@@ -448,7 +448,7 @@ export function RegisterPage() {
                             placeholder="Your full name"
                             value={compOwnerName}
                             onChange={(e) => setCompOwnerName(e.target.value)}
-                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                            className="pl-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                           />
                         </div>
                       </div>
@@ -466,19 +466,19 @@ export function RegisterPage() {
                             onClick={() => setCompPlan(plan.value)}
                             className={`relative rounded-lg border-2 p-3 text-left transition-all duration-200 hover:scale-[1.02] ${
                               compPlan === plan.value
-                                ? 'border-[#2E7D32] bg-[#E8F5E9]'
+                                ? 'border-[#fd7714] bg-[#fff3e8]'
                                 : 'border-[#E0E0E0] hover:border-[#BDBDBD] bg-white'
                             }`}
                           >
                             {compPlan === plan.value && (
-                              <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-[#2E7D32] flex items-center justify-center">
+                              <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-[#fd7714] flex items-center justify-center">
                                 <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                               </div>
                             )}
                             <p className="font-semibold text-sm">{plan.label}</p>
-                            <p className="text-[#2E7D32] font-bold text-lg leading-tight">{plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+                            <p className="text-[#fd7714] font-bold text-lg leading-tight">{plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
                             <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{plan.desc}</p>
                           </button>
                         ))}
@@ -495,7 +495,7 @@ export function RegisterPage() {
                           placeholder="Min. 6 characters"
                           value={compPassword}
                           onChange={(e) => setCompPassword(e.target.value)}
-                          className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#2E7D32]/30 focus-visible:border-[#2E7D32]/50"
+                          className="pl-9 pr-9 border-[#E0E0E0] focus-visible:ring-[#fd7714]/30 focus-visible:border-[#fd7714]/50"
                         />
                         <button
                           type="button"
@@ -512,20 +512,20 @@ export function RegisterPage() {
                         id="comp-terms"
                         checked={compTerms}
                         onCheckedChange={(checked) => setCompTerms(checked === true)}
-                        className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+                        className="mt-0.5 data-[state=checked]:bg-[#fd7714] data-[state=checked]:border-[#fd7714]"
                       />
                       <Label htmlFor="comp-terms" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
                         I agree to the{' '}
-                        <button type="button" className="text-[#2E7D32] hover:underline">Terms of Service</button>
+                        <button type="button" className="text-[#fd7714] hover:underline">Terms of Service</button>
                         ,{' '}
-                        <button type="button" className="text-[#2E7D32] hover:underline">Privacy Policy</button>
+                        <button type="button" className="text-[#fd7714] hover:underline">Privacy Policy</button>
                         , and the selected plan&apos;s billing terms
                       </Label>
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-medium"
+                      className="w-full bg-[#fd7714] hover:bg-[#e06a10] text-white font-medium"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -550,7 +550,7 @@ export function RegisterPage() {
                 Already have an account?{' '}
                 <button
                   onClick={() => setView('login')}
-                  className="text-[#2E7D32] hover:text-[#1B5E20] font-medium transition-colors"
+                  className="text-[#fd7714] hover:text-[#e06a10] font-medium transition-colors"
                 >
                   Sign In
                 </button>

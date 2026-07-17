@@ -198,6 +198,7 @@ export interface SourcingRequest {
   productName: string;
   description?: string;
   imageUrl?: string;
+  referenceFile?: string;
   storeName?: string;
   productLink?: string;
   budget?: number;

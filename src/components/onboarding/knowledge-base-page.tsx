@@ -384,7 +384,7 @@ export function KnowledgeBasePage() {
             }
           }}
           className="flex items-center gap-2 text-sm font-medium hover:opacity-70"
-          style={{ color: '#2E7D32' }}
+          style={{ color: '#fd7714' }}
         >
           <ChevronLeft className="h-4 w-4" />
           {activeArticle ? 'Back to Articles' : 'Back to Home'}
@@ -395,7 +395,7 @@ export function KnowledgeBasePage() {
         <Button
           size="sm"
           className="font-medium"
-          style={{ background: '#2E7D32', color: '#FFFFFF' }}
+          style={{ background: '#fd7714', color: '#FFFFFF' }}
         >
           <Plus className="h-4 w-4 mr-1" />
           New Article
@@ -433,8 +433,8 @@ export function KnowledgeBasePage() {
                 onClick={() => setSelectedCategory('all')}
                 className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                 style={{
-                  background: selectedCategory === 'all' ? '#E8F5E9' : 'transparent',
-                  color: selectedCategory === 'all' ? '#2E7D32' : '#212121',
+                  background: selectedCategory === 'all' ? '#fff3e8' : 'transparent',
+                  color: selectedCategory === 'all' ? '#fd7714' : '#212121',
                 }}
               >
                 <span className="flex items-center gap-2">
@@ -449,8 +449,8 @@ export function KnowledgeBasePage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                   style={{
-                    background: selectedCategory === cat.id ? '#E8F5E9' : 'transparent',
-                    color: selectedCategory === cat.id ? '#2E7D32' : '#212121',
+                    background: selectedCategory === cat.id ? '#fff3e8' : 'transparent',
+                    color: selectedCategory === cat.id ? '#fd7714' : '#212121',
                   }}
                 >
                   <span className="flex items-center gap-2">
@@ -479,7 +479,7 @@ export function KnowledgeBasePage() {
                 <button
                   onClick={() => setSelectedArticle(null)}
                   className="flex items-center gap-1 text-sm font-medium mb-6 hover:opacity-70"
-                  style={{ color: '#2E7D32' }}
+                  style={{ color: '#fd7714' }}
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Back to articles
@@ -487,7 +487,7 @@ export function KnowledgeBasePage() {
 
                 <Badge
                   className="text-xs font-medium px-3 py-1 mb-4"
-                  style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                  style={{ background: '#fff3e8', color: '#fd7714' }}
                 >
                   {CATEGORIES.find((c) => c.id === activeArticle.category)?.label}
                 </Badge>
@@ -559,9 +559,9 @@ export function KnowledgeBasePage() {
                         <CardContent className="p-4 sm:p-5 flex items-start gap-4">
                           <div
                             className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0"
-                            style={{ background: '#E8F5E9' }}
+                            style={{ background: '#fff3e8' }}
                           >
-                            <span style={{ color: '#2E7D32' }}>{article.icon}</span>
+                            <span style={{ color: '#fd7714' }}>{article.icon}</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="text-sm font-semibold mb-1" style={{ color: '#212121' }}>
@@ -573,7 +573,7 @@ export function KnowledgeBasePage() {
                             <div className="flex items-center gap-3">
                               <Badge
                                 className="text-xs px-2 py-0.5"
-                                style={{ background: '#E8F5E9', color: '#2E7D32' }}
+                                style={{ background: '#fff3e8', color: '#fd7714' }}
                               >
                                 {CATEGORIES.find((c) => c.id === article.category)?.label}
                               </Badge>

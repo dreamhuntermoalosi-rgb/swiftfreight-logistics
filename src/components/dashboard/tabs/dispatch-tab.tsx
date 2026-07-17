@@ -51,10 +51,10 @@ function formatTime(dateStr: string): string {
 
 const vehicleTypeColors: Record<string, string> = {
   motorcycle: 'border-l-blue-400',
-  van: 'border-l-emerald-400',
+  van: 'border-l-orange-400',
   truck: 'border-l-orange-400',
   trailer: 'border-l-purple-400',
-  pickup: 'border-l-teal-400',
+  pickup: 'border-l-orange-300',
 };
 
 const vehicleTypeIcons: Record<string, string> = {
@@ -201,8 +201,8 @@ export function DispatchTab() {
         </div>
         <div className="flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 dark:bg-green-900/20">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500" />
           </span>
           <span className="text-sm font-semibold text-green-700 dark:text-green-400">Live</span>
         </div>
@@ -213,7 +213,7 @@ export function DispatchTab() {
         {[
           { label: 'Pending Assignment', value: stats.pending, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Clock, tooltip: 'Deliveries awaiting driver and vehicle assignment', bars: [40, 55, 35, 60] },
           { label: 'In Transit', value: stats.inTransit, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', icon: Truck, tooltip: 'Active deliveries currently on the road between cities', bars: [70, 85, 75, 90] },
-          { label: 'Out for Delivery', value: stats.outForDelivery, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20', icon: MapPin, tooltip: 'Deliveries out for final-mile delivery to recipients', bars: [30, 50, 45, 65] },
+          { label: 'Out for Delivery', value: stats.outForDelivery, color: 'text-orange-500 dark:text-orange-300', bg: 'bg-orange-50 dark:bg-orange-900/20', icon: MapPin, tooltip: 'Deliveries out for final-mile delivery to recipients', bars: [30, 50, 45, 65] },
           { label: 'Completed Today', value: stats.completedToday, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', icon: Package, tooltip: 'Total deliveries successfully completed today', bars: [20, 45, 60, 80] },
         ].map(stat => (
           <div key={stat.label}>
@@ -290,7 +290,7 @@ export function DispatchTab() {
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Left Column - Delivery Queue */}
         <div className="lg:col-span-3">
-          <div className="rounded-lg border border-border/50 bg-card">
+          <div className="rounded-lg border border-border/50 bg-card p-4">
             <div className="pb-3">
               <h3 className="text-base">Delivery Queue</h3>
             </div>
@@ -325,7 +325,7 @@ export function DispatchTab() {
                         <div
                           key={d.id}
 
-                          className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400' : 'border-l-emerald-400/40'}`}
+                          className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm border-l-4 ${d.priority === 'urgent' ? 'border-l-red-400' : d.priority === 'express' ? 'border-l-amber-400' : 'border-l-orange-400/40'}`}
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -424,7 +424,7 @@ export function DispatchTab() {
         {/* Right Column - Resource Panels */}
         <div className="space-y-4 lg:col-span-2">
           {/* Driver Availability */}
-          <div className="rounded-lg border border-border/50 bg-card">
+          <div className="rounded-lg border border-border/50 bg-card p-4">
             <div className="pb-3">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-base">
@@ -449,12 +449,12 @@ export function DispatchTab() {
               <ScrollArea className="max-h-[240px]">
                 <div className="space-y-2">
                   {filteredDrivers.slice(0, 10).map(d => (
-                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 dark:from-emerald-900/10 dark:to-transparent transition-all duration-200 hover:shadow-sm">
+                    <div key={d.id} className="flex items-center gap-3 rounded-lg border p-2.5 dark:from-orange-900/10 dark:to-transparent transition-all duration-200 hover:shadow-sm">
                       <div className="relative">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
                           {d.name.split(' ').map(n => n[0]).join('')}
                         </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-orange-500" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{d.name}</p>
@@ -475,7 +475,7 @@ export function DispatchTab() {
           </div>
 
           {/* Vehicle Availability */}
-          <div className="rounded-lg border border-border/50 bg-card">
+          <div className="rounded-lg border border-border/50 bg-card p-4">
             <div className="pb-3">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-base">
@@ -554,7 +554,7 @@ export function DispatchTab() {
                     {availableDrivers.map(d => (
                       <SelectItem key={d.id} value={d.id}>
                         <span className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-green-500" />
+                          <span className="h-2 w-2 rounded-full bg-orange-500" />
                           {d.name} — ★ {d.rating} ({d.totalDeliveries} deliveries)
                         </span>
                       </SelectItem>

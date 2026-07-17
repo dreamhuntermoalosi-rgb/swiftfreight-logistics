@@ -489,12 +489,12 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                     {/* Status icon */}
                     <div className="absolute left-[-24px] top-1">
                       {isCompleted || isFinal ? (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500">
                           <CheckCircle className="h-4 w-4 text-white" />
                         </div>
                       ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-green-500 bg-background">
-                          <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-orange-500 bg-background">
+                          <div className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse" />
                         </div>
                       )}
                     </div>
@@ -517,7 +517,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           <Separator />
 
           {/* Package Details */}
-          <div className="rounded-lg border border-border/50 bg-card">
+          <div className="rounded-lg border border-border/50 bg-card p-4">
             <div className="pb-2">
               <h2 className="text-sm flex items-center gap-2">
                 <Package className="h-4 w-4" /> Package Details
@@ -539,7 +539,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           </div>
 
           {/* Package Declaration */}
-          <div className="rounded-lg border border-border/50 bg-card" style={{ backgroundColor: '#F8FFF8', borderColor: '#C8E6C9' }}>
+          <div className="rounded-lg border border-border/50 bg-card p-4" style={{ backgroundColor: '#F8FFF8', borderColor: '#C8E6C9' }}>
             <div className="pb-2">
               <h2 className="text-sm flex items-center justify-between">
                 <span className="flex items-center gap-2">
@@ -581,7 +581,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
 
           {/* Pickup & Destination */}
           <div className="grid grid-cols-1 gap-3">
-            <div className="rounded-lg border border-border/50 bg-card">
+            <div className="rounded-lg border border-border/50 bg-card p-4">
               <div className="pb-2">
                 <h2 className="text-sm flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-green-600" /> Pickup
@@ -594,7 +594,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                 <p className="text-muted-foreground">{delivery.pickup.city}, {delivery.pickup.country}</p>
               </div>
             </div>
-            <div className="rounded-lg border border-border/50 bg-card">
+            <div className="rounded-lg border border-border/50 bg-card p-4">
               <div className="pb-2">
                 <h2 className="text-sm flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-red-500" /> Destination
@@ -611,7 +611,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
 
           {/* Driver & Vehicle */}
           {delivery.driverName && (
-            <div className="rounded-lg border border-border/50 bg-card">
+            <div className="rounded-lg border border-border/50 bg-card p-4">
               <div className="pb-2">
                 <h2 className="text-sm flex items-center gap-2">
                   <Truck className="h-4 w-4" /> Driver & Vehicle
@@ -633,12 +633,10 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
 
           {/* Quotation */}
           {delivery.quotedAmount && (
-            <div className="rounded-lg border border-border/50 bg-card">
-              <div className="pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Quoted Amount</span>
-                  <span className="text-lg font-bold text-green-600">M{delivery.quotedAmount.toLocaleString()}</span>
-                </div>
+            <div className="rounded-lg border border-border/50 bg-card p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Quoted Amount</span>
+                <span className="text-lg font-bold text-green-600">M{delivery.quotedAmount.toLocaleString()}</span>
               </div>
             </div>
           )}
@@ -703,7 +701,7 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
           {(delivery.status === 'delivered' || delivery.status === 'returned') && (
             <div className="mt-4 rounded-lg border bg-muted/30 p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                <h4 className="flex items-center gap-2 text-sm font-semibold text-orange-600">
                   <CheckCircle2 className="h-4 w-4" />
                   Proof of Delivery
                 </h4>
@@ -714,8 +712,8 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
               </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                    <User className="h-5 w-5 text-emerald-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+                    <User className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Received by</p>
@@ -724,10 +722,10 @@ function DeliveryDetailPanel({ delivery, open, onClose }: { delivery: Delivery |
                 </div>
 
                 {/* Signature area */}
-                <div className="rounded-lg border border-dashed border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/10 p-4">
+                <div className="rounded-lg border border-dashed border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-900/10 p-4">
                   <p className="mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">Digital Signature</p>
                   <div className="flex items-center gap-2">
-                    <div className="h-6 flex-1 border-b-2 border-emerald-400 font-cursive text-lg text-emerald-700 italic">
+                    <div className="h-6 flex-1 border-b-2 border-orange-400 font-cursive text-lg text-orange-700 italic">
                       {delivery.destination.name}
                     </div>
                   </div>
@@ -1159,11 +1157,11 @@ export function DeliveriesTab() {
           <Package className="h-3.5 w-3.5" />
           Total: {filtered.length}
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
           <Truck className="h-3.5 w-3.5" />
           Active: {filtered.filter((d) => ['collected', 'at_warehouse', 'in_transit', 'at_border', 'out_for_delivery'].includes(d.status)).length}
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-400">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
           <CheckCircle2 className="h-3.5 w-3.5" />
           Completed: {filtered.filter((d) => d.status === 'delivered').length}
         </span>

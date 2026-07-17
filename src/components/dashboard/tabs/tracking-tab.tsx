@@ -314,13 +314,13 @@ export function TrackingTab() {
 
             {/* Timeline Detail */}
             {timeline.length > 0 && (
-              <div className="rounded-lg border border-border/50 bg-card">
+              <div className="rounded-lg border border-border/50 bg-card p-4">
                 <div className="pb-2">
                   <h3 className="text-base flex items-center gap-2">
                     <Clock className="h-4 w-4" /> Detailed Timeline
                   </h3>
                 </div>
-                <div className="pb-6">
+                <div>
                   <div className="relative pl-8">
                     {timeline.map((event, idx) => {
                       const isLast = idx === timeline.length - 1;
@@ -366,7 +366,7 @@ export function TrackingTab() {
 
             {/* Package Information */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border/50 bg-card">
+              <div className="rounded-lg border border-border/50 bg-card p-4">
                 <div className="pb-2">
                   <h2 className="text-sm flex items-center gap-2">
                     <Package className="h-4 w-4" /> Package Information
@@ -413,7 +413,7 @@ export function TrackingTab() {
 
               <div className="space-y-4">
                 {/* Driver Info */}
-                <div className="rounded-lg border border-border/50 bg-card">
+                <div className="rounded-lg border border-border/50 bg-card p-4">
                   <div className="pb-2">
                     <h2 className="text-sm flex items-center gap-2">
                       <Truck className="h-4 w-4" /> Driver Information
@@ -441,7 +441,7 @@ export function TrackingTab() {
                 </div>
 
                 {/* Delivery Summary */}
-                <div className="rounded-lg border border-border/50 bg-card">
+                <div className="rounded-lg border border-border/50 bg-card p-4">
                   <div className="pb-2">
                     <h2 className="text-sm flex items-center gap-2">
                       <Zap className="h-4 w-4" /> Delivery Summary

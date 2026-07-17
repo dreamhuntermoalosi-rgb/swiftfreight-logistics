@@ -167,9 +167,9 @@ const weeklyEarnings = [
 ];
 
 const activityTypeColors: Record<string, { bg: string; text: string; border: string }> = {
-  delivery: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-l-[3px] border-l-emerald-500' },
+  delivery: { bg: 'bg-orange-100 dark:bg-orange-900/40', text: 'text-orange-600 dark:text-orange-400', border: 'border-l-[3px] border-l-orange-500' },
   alert: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-600 dark:text-amber-400', border: 'border-l-[3px] border-l-amber-500' },
-  payment: { bg: 'bg-teal-100 dark:bg-teal-900/40', text: 'text-teal-600 dark:text-teal-400', border: 'border-l-[3px] border-l-teal-500' },
+  payment: { bg: 'bg-orange-100 dark:bg-orange-900/40', text: 'text-orange-500 dark:text-orange-300', border: 'border-l-[3px] border-l-orange-400' },
   system: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500' },
   driver: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-l-[3px] border-l-primary' },
 };
@@ -207,7 +207,7 @@ function timeAgo(dateStr: string): string {
 function notifIcon(type: string) {
   switch (type) {
     case 'delivery_update':
-      return <Truck className="h-4 w-4 text-emerald-600" />;
+      return <Truck className="h-4 w-4 text-orange-600" />;
     case 'new_message':
       return <MessageSquare className="h-4 w-4 text-blue-500" />;
     case 'quote_received':
@@ -248,7 +248,7 @@ function KpiCard({
   prefix = '',
   suffix = '',
   isNegative = false,
-  iconColor = 'text-emerald-600',
+  iconColor = 'text-orange-600',
   pulse = false,
 }: {
   title: string;
@@ -268,7 +268,7 @@ function KpiCard({
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">
             {title}
-            {pulse && <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />}
+            {pulse && <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse inline-block" />}
           </p>
           <p className="text-xl font-bold tracking-tight sm:text-2xl">
             {prefix}{value}{suffix}
@@ -280,7 +280,7 @@ function KpiCard({
       </div>
       {growth !== undefined && (
         <div className="mt-2 flex items-center gap-1 text-xs">
-          <span className={isPositive || !isNegative ? 'text-emerald-600' : 'text-red-500'}>
+          <span className={isPositive || !isNegative ? 'text-orange-600' : 'text-red-500'}>
             {isPositive ? '+' : ''}{growth}%
           </span>
           <span className="text-muted-foreground">vs last period</span>
@@ -382,7 +382,7 @@ function CustomerOverview() {
     <div className="space-y-6">
       {/* Greeting */}
       <div className="relative">
-        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-orange-500 to-orange-400 opacity-10 blur-3xl pointer-events-none" />
         <h1 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}!</h1>
         <p className="text-muted-foreground">{today}</p>
       </div>
@@ -405,14 +405,14 @@ function CustomerOverview() {
           title="Total Spent"
           value={formatCurrency(totalSpent)}
           icon={DollarSign}
-          iconColor="text-emerald-600"
+          iconColor="text-orange-600"
         />
         <KpiCard
           title="Avg Delivery Time"
           value="3.2"
           suffix=" days"
           icon={Clock}
-          iconColor="text-teal-600"
+          iconColor="text-orange-500"
         />
       </div>
 
@@ -424,8 +424,8 @@ function CustomerOverview() {
             className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer"
             onClick={() => setDashboardTab('deliveries')}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-              <Plus className="h-4 w-4 text-emerald-600" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Plus className="h-4 w-4 text-orange-600" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">New Shipment</p>
@@ -437,8 +437,8 @@ function CustomerOverview() {
             className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer"
             onClick={() => setDashboardTab('tracking')}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
-              <Search className="h-4 w-4 text-teal-600" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Search className="h-4 w-4 text-orange-500" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">Track a Parcel</p>
@@ -651,7 +651,7 @@ function DriverOverview() {
     <div className="space-y-6">
       {/* Greeting */}
       <div className="relative">
-        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-10 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-orange-500 to-orange-400 opacity-10 blur-3xl pointer-events-none" />
         <h1 className="text-2xl font-bold tracking-tight">Welcome, {firstName}!</h1>
         <p className="text-muted-foreground">{today}</p>
       </div>
@@ -662,7 +662,7 @@ function DriverOverview() {
           title="Today&apos;s Jobs"
           value={todayJobs.toString()}
           icon={ClipboardCheck}
-          iconColor="text-emerald-600"
+          iconColor="text-orange-600"
         />
         <KpiCard
           title="Completed This Week"
@@ -689,8 +689,8 @@ function DriverOverview() {
         <h2 className="mb-3 text-sm font-semibold">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-              <Truck className="h-4 w-4 text-emerald-600" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Truck className="h-4 w-4 text-orange-600" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">Update Status</p>
@@ -699,8 +699,8 @@ function DriverOverview() {
             <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0" />
           </button>
           <button className="flex items-center gap-3 rounded-xl bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted cursor-pointer">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/50">
-              <Phone className="h-4 w-4 text-teal-600" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Phone className="h-4 w-4 text-orange-500" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">Contact Dispatcher</p>
@@ -767,7 +767,7 @@ function DriverOverview() {
           title="This Week&apos;s Earnings"
           description="Daily breakdown for the current week"
           action={
-            <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
               M3,430 <span className="text-xs font-normal text-muted-foreground">total</span>
             </span>
           }
@@ -821,7 +821,7 @@ const pipelineData = [
   { status: 'Collected', count: 32, color: 'bg-amber-400', icon: Package },
   { status: 'In Transit', count: 67, color: 'bg-primary', icon: Truck },
   { status: 'At Border', count: 18, color: 'bg-violet-400', icon: Shield },
-  { status: 'Delivered', count: 310, color: 'bg-emerald-500', icon: CheckCircle2 },
+  { status: 'Delivered', count: 310, color: 'bg-orange-500', icon: CheckCircle2 },
 ];
 
 const pipelineTotal = pipelineData.reduce((sum, item) => sum + item.count, 0);
@@ -1067,7 +1067,7 @@ function CompanyOverview() {
                   {recentDeliveries.map((d) => (
                     <TableRow
                       key={d.id}
-                      className={`cursor-pointer border-l-2 ${d.status === 'delivered' ? 'border-l-green-500' : d.status === 'in_transit' ? 'border-l-emerald-500' : d.status === 'cancelled' ? 'border-l-red-500' : d.status === 'returned' ? 'border-l-rose-400' : d.status === 'at_border' ? 'border-l-orange-400' : 'border-l-blue-400'}`}
+                      className={`cursor-pointer border-l-2 ${d.status === 'delivered' ? 'border-l-orange-500' : d.status === 'in_transit' ? 'border-l-orange-500' : d.status === 'cancelled' ? 'border-l-red-500' : d.status === 'returned' ? 'border-l-rose-400' : d.status === 'at_border' ? 'border-l-orange-400' : 'border-l-blue-400'}`}
                       onClick={() => handleDeliveryClick(d)}
                     >
                       <TableCell className="max-w-[110px] truncate font-mono text-xs">
@@ -1106,7 +1106,7 @@ function CompanyOverview() {
                 <div key={route.route} className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-1.5 font-medium truncate max-w-[180px]">
-                      <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                      <MapPin className="h-3.5 w-3.5 text-orange-500 shrink-0" />
                       {route.route}
                     </span>
                     <span className="text-xs text-muted-foreground shrink-0 ml-2">
@@ -1116,7 +1116,7 @@ function CompanyOverview() {
                   <div className="flex items-center gap-3">
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-orange-400 transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -1149,7 +1149,7 @@ function CompanyOverview() {
                   </div>
                   <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
                     <div
-                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-teal-500 transition-all"
+                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-orange-400 transition-all"
                       style={{ width: `${pct}%` }}
                     />
                     <div
@@ -1162,7 +1162,7 @@ function CompanyOverview() {
                   </div>
                   <div className="flex gap-4 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="inline-block h-2 w-2 rounded-full bg-orange-500" />
                       Active: {fleet.inUse}
                     </span>
                     <span className="flex items-center gap-1">
@@ -1218,7 +1218,7 @@ function CompanyOverview() {
         <SectionHeader title="Activity Feed" description="Recent events and notifications" />
         <div className="max-h-48 sm:max-h-64 overflow-y-auto space-y-1">
           {notifications.slice(0, 6).map((notif, idx) => {
-            const notifBorder = notif.type === 'delivery_update' ? 'border-l-[3px] border-l-emerald-500' : notif.type === 'alert' ? 'border-l-[3px] border-l-amber-500' : 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500';
+            const notifBorder = notif.type === 'delivery_update' ? 'border-l-[3px] border-l-orange-500' : notif.type === 'alert' ? 'border-l-[3px] border-l-amber-500' : 'border-l-[3px] border-l-blue-400 dark:border-l-blue-500';
             return (
               <motion.div
                 key={notif.id}
@@ -1238,7 +1238,7 @@ function CompanyOverview() {
                   <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{notif.message}</p>
                 </div>
                 {!notif.isRead && (
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-500 animate-pulse" />
                 )}
               </motion.div>
             );
@@ -1283,8 +1283,8 @@ function CompanyOverview() {
           description="Real-time operations across all routes"
           action={
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse" />
+              <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 dark:text-orange-400 dark:border-orange-700">
                 Live
               </Badge>
             </div>
@@ -1318,9 +1318,9 @@ function CompanyOverview() {
 // ============ Sourcing Agent Overview ============
 const sourcingStatusConfig: Record<SourcingStatus, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  quoted: { label: 'Quoted', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  quoted: { label: 'Quoted', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
   accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  purchased: { label: 'Purchased', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' },
+  purchased: { label: 'Purchased', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
   delivered: { label: 'Delivered', color: 'bg-primary/10 text-primary' },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
 };
@@ -1365,15 +1365,15 @@ function SourcingAgentOverview() {
               <p className="text-xl font-bold tracking-tight sm:text-2xl">{activeRequests.length}</p>
             </div>
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
-              <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
+              <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1 text-xs">
-            <span className="text-emerald-600 dark:text-emerald-400">
+            <span className="text-orange-600 dark:text-orange-400">
               {activeRequests.filter((r) => r.status === 'pending').length} pending
             </span>
             <span className="text-muted-foreground">•</span>
-            <span className="text-emerald-600 dark:text-emerald-400">
+            <span className="text-orange-600 dark:text-orange-400">
               {activeRequests.filter((r) => r.status === 'quoted').length} quoted
             </span>
           </div>
@@ -1387,12 +1387,12 @@ function SourcingAgentOverview() {
               <p className="text-xl font-bold tracking-tight sm:text-2xl">{completedThisMonth.length}</p>
             </div>
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
-              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600 dark:text-teal-400" />
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 dark:text-orange-300" />
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1 text-xs">
-            <TrendingUp className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-            <span className="text-teal-600 dark:text-teal-400">This month</span>
+            <TrendingUp className="h-3.5 w-3.5 text-orange-500 dark:text-orange-300" />
+            <span className="text-orange-500 dark:text-orange-300">This month</span>
           </div>
         </div>
 
@@ -1422,8 +1422,8 @@ function SourcingAgentOverview() {
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1 text-xs">
-            <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-emerald-600">-12%</span>
+            <ArrowUpRight className="h-3.5 w-3.5 text-orange-600" />
+            <span className="text-orange-600">-12%</span>
             <span className="text-muted-foreground">vs last month</span>
           </div>
         </div>
@@ -1519,8 +1519,8 @@ function TrailerOwnerOverview() {
   ];
 
   const vehicleStatusColor: Record<string, string> = {
-    available: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    in_use: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+    available: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    in_use: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
     maintenance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     out_of_service: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   };
@@ -1530,7 +1530,7 @@ function TrailerOwnerOverview() {
       {/* Greeting */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Welcome, <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">{currentUser?.name?.split(' ')[0] || 'Owner'}</span>!
+          Welcome, <span className="bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent">{currentUser?.name?.split(' ')[0] || 'Owner'}</span>!
         </h1>
         <p className="text-muted-foreground">Here&apos;s your trailer fleet overview for today.</p>
       </div>
@@ -1545,10 +1545,10 @@ function TrailerOwnerOverview() {
               <p className="text-xl font-bold tracking-tight sm:text-2xl">{myTrailers.length}</p>
             </div>
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
-              <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
+              <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+          <div className="mt-2 text-xs text-orange-600 dark:text-orange-400">
             {activeHires.length} in use
           </div>
         </div>
@@ -1561,10 +1561,10 @@ function TrailerOwnerOverview() {
               <p className="text-xl font-bold tracking-tight sm:text-2xl">{activeHires.length}</p>
             </div>
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
-              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600 dark:text-teal-400" />
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 dark:text-orange-300" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-teal-600 dark:text-teal-400">
+          <div className="mt-2 text-xs text-orange-500 dark:text-orange-300">
             Currently deployed
           </div>
         </div>
@@ -1581,8 +1581,8 @@ function TrailerOwnerOverview() {
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1 text-xs">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-emerald-600">+12%</span>
+            <TrendingUp className="h-3.5 w-3.5 text-orange-600" />
+            <span className="text-orange-600">+12%</span>
             <span className="text-muted-foreground">vs last month</span>
           </div>
         </div>
@@ -1699,11 +1699,11 @@ function WarehousePartnerOverview() {
   );
 
   const warehouseActivities = [
-    { id: 1, type: 'received', message: 'Package #SF2025001842LS received from Johannesburg', time: '12 min ago', color: 'bg-emerald-500' },
-    { id: 2, type: 'dispatched', message: 'Shipment #SF2025001735LS dispatched to Mafeteng', time: '45 min ago', color: 'bg-teal-500' },
+    { id: 1, type: 'received', message: 'Package #SF2025001842LS received from Johannesburg', time: '12 min ago', color: 'bg-orange-500' },
+    { id: 2, type: 'dispatched', message: 'Shipment #SF2025001735LS dispatched to Mafeteng', time: '45 min ago', color: 'bg-orange-400' },
     { id: 3, type: 'alert', message: 'Storage zone B nearing 90% capacity', time: '1h ago', color: 'bg-amber-500' },
-    { id: 4, type: 'inspection', message: 'Quality inspection completed for 8 packages', time: '2h ago', color: 'bg-emerald-500' },
-    { id: 5, type: 'temperature', message: 'Cold storage temperature check: 2.4°C (normal)', time: '3h ago', color: 'bg-teal-500' },
+    { id: 4, type: 'inspection', message: 'Quality inspection completed for 8 packages', time: '2h ago', color: 'bg-orange-500' },
+    { id: 5, type: 'temperature', message: 'Cold storage temperature check: 2.4°C (normal)', time: '3h ago', color: 'bg-orange-400' },
     { id: 6, type: 'inventory', message: 'Weekly inventory count completed — 3,200 packages', time: '5h ago', color: 'bg-primary' },
   ];
 
@@ -1721,7 +1721,7 @@ function WarehousePartnerOverview() {
       {/* Greeting */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Welcome, <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">{currentUser?.name?.split(' ')[0] || 'Partner'}</span>!
+          Welcome, <span className="bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent">{currentUser?.name?.split(' ')[0] || 'Partner'}</span>!
         </h1>
         <p className="text-muted-foreground">Here&apos;s your warehouse operations overview.</p>
       </div>
@@ -1736,10 +1736,10 @@ function WarehousePartnerOverview() {
               <p className="text-xl font-bold tracking-tight sm:text-2xl">71%</p>
             </div>
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
-              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+          <div className="mt-2 text-xs text-orange-600 dark:text-orange-400">
             3,200 / 4,500 packages
           </div>
         </div>
@@ -1768,10 +1768,10 @@ function WarehousePartnerOverview() {
               <p className="text-xl font-bold tracking-tight sm:text-2xl">23</p>
             </div>
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-background/80">
-              <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600 dark:text-teal-400" />
+              <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 dark:text-orange-300" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-teal-600 dark:text-teal-400">
+          <div className="mt-2 text-xs text-orange-500 dark:text-orange-300">
             packages received
           </div>
         </div>

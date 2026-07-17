@@ -42,14 +42,14 @@ const vehicleTypeLabels: Record<Vehicle['type'], string> = {
 
 const vehicleTypeAccentColors: Record<Vehicle['type'], { border: string; dot: string }> = {
   motorcycle: { border: 'border-l-blue-400', dot: 'bg-blue-400' },
-  van: { border: 'border-l-teal-400', dot: 'bg-teal-400' },
-  truck: { border: 'border-l-emerald-400', dot: 'bg-emerald-400' },
+  van: { border: 'border-l-orange-300', dot: 'bg-orange-300' },
+  truck: { border: 'border-l-orange-400', dot: 'bg-orange-400' },
   trailer: { border: 'border-l-purple-400', dot: 'bg-purple-400' },
   pickup: { border: 'border-l-amber-400', dot: 'bg-amber-400' },
 };
 
 const vehicleStatusDots: Record<Vehicle['status'], string> = {
-  available: 'bg-green-500',
+  available: 'bg-orange-500',
   in_use: 'bg-blue-500',
   maintenance: 'bg-amber-500',
   out_of_service: 'bg-red-500',
@@ -72,12 +72,12 @@ const fuelLabels: Record<Vehicle['fuelType'], string> = {
 const fuelColorMap: Record<Vehicle['fuelType'], string> = {
   diesel: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800',
   petrol: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-  electric: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-  hybrid: 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 border-teal-200 dark:border-teal-800',
+  electric: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800',
+  hybrid: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800',
 };
 
 const statusGradientBg: Record<Vehicle['status'], string> = {
-  available: 'bg-emerald-500/10',
+  available: 'bg-orange-500/10',
   in_use: 'bg-primary/10',
   maintenance: 'bg-amber-500/10',
   out_of_service: 'bg-red-500/10',
@@ -420,7 +420,7 @@ export function FleetTab() {
                 </div>
                 <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
                   <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-green-500"
+                    className="absolute inset-y-0 left-0 rounded-full bg-orange-500"
                     style={{ width: `${pct}%` }}
                   />
                   <div
@@ -430,7 +430,7 @@ export function FleetTab() {
                 </div>
                 <div className="flex gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-green-500" />
+                    <span className="h-2 w-2 rounded-full bg-orange-500" />
                     In Use: {item.inUse}
                   </span>
                   <span className="flex items-center gap-1">
@@ -619,7 +619,7 @@ export function FleetTab() {
                       <div key={idx} className="rounded-lg border p-3 text-sm space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="font-medium">{item.type}</span>
-                          <span className="font-mono text-emerald-600 font-medium">M{item.cost.toLocaleString()}</span>
+                          <span className="font-mono text-orange-600 font-medium">M{item.cost.toLocaleString()}</span>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
@@ -645,7 +645,7 @@ export function FleetTab() {
                     <Package className="h-4 w-4" />
                     Active Deliveries
                     {activeDeliveries.length > 0 && (
-                      <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs">
+                      <Badge variant="secondary" className="bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs">
                         {activeDeliveries.length}
                       </Badge>
                     )}

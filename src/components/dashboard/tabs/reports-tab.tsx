@@ -209,9 +209,9 @@ type SortDir = 'asc' | 'desc';
 function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
   if (sortKey !== col) return <ArrowUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />;
   return sortDir === 'asc' ? (
-    <ChevronUp className="ml-1 inline h-3 w-3 text-emerald-600" />
+    <ChevronUp className="ml-1 inline h-3 w-3 text-orange-600" />
   ) : (
-    <ChevronDown className="ml-1 inline h-3 w-3 text-emerald-600" />
+    <ChevronDown className="ml-1 inline h-3 w-3 text-orange-600" />
   );
 }
 
@@ -320,13 +320,13 @@ export function ReportsTab() {
               <p className="text-sm text-muted-foreground">Revenue</p>
               <p className="text-2xl font-bold tracking-tight">{formatCurrency(analyticsData.totalRevenue)}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-              <DollarSign className="h-5 w-5 text-emerald-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <DollarSign className="h-5 w-5 text-orange-600" />
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-600">+{analyticsData.revenueGrowth}%</span>
+            <TrendingUp className="h-3.5 w-3.5 text-orange-600" />
+            <span className="text-sm font-medium text-orange-600">+{analyticsData.revenueGrowth}%</span>
             <span className="text-xs text-muted-foreground">growth</span>
           </div>
         </div>
@@ -338,13 +338,13 @@ export function ReportsTab() {
               <p className="text-sm text-muted-foreground">Deliveries</p>
               <p className="text-2xl font-bold tracking-tight">{analyticsData.totalDeliveries.toLocaleString()}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-              <Package className="h-5 w-5 text-emerald-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Package className="h-5 w-5 text-orange-600" />
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-600">+{analyticsData.deliveriesGrowth}%</span>
+            <TrendingUp className="h-3.5 w-3.5 text-orange-600" />
+            <span className="text-sm font-medium text-orange-600">+{analyticsData.deliveriesGrowth}%</span>
             <span className="text-xs text-muted-foreground">growth</span>
           </div>
         </div>
@@ -355,13 +355,13 @@ export function ReportsTab() {
               <p className="text-sm text-muted-foreground">Average Rating</p>
               <p className="text-2xl font-bold tracking-tight">{analyticsData.avgRating}/5.0</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-              <Star className="h-5 w-5 text-emerald-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Star className="h-5 w-5 text-orange-600" />
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-600">+{analyticsData.avgRatingGrowth}</span>
+            <TrendingUp className="h-3.5 w-3.5 text-orange-600" />
+            <span className="text-sm font-medium text-orange-600">+{analyticsData.avgRatingGrowth}</span>
             <span className="text-xs text-muted-foreground">improvement</span>
           </div>
         </div>
@@ -372,13 +372,13 @@ export function ReportsTab() {
               <p className="text-sm text-muted-foreground">Customer Satisfaction</p>
               <p className="text-2xl font-bold tracking-tight">72%</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50">
-              <Heart className="h-5 w-5 text-emerald-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+              <Heart className="h-5 w-5 text-orange-600" />
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-600">+4.2%</span>
+            <TrendingUp className="h-3.5 w-3.5 text-orange-600" />
+            <span className="text-sm font-medium text-orange-600">+4.2%</span>
             <span className="text-xs text-muted-foreground">vs last quarter</span>
           </div>
         </div>
@@ -386,11 +386,11 @@ export function ReportsTab() {
       {/* ── Charts Section ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue Trend */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-emerald-600" />
+              <BarChart3 className="h-4 w-4 text-orange-600" />
               <h3 className="text-base">Revenue Trend</h3>
             </div>
             <p className="text-sm text-muted-foreground">Monthly revenue over the past 12 months</p>
@@ -427,11 +427,11 @@ export function ReportsTab() {
         </div>
 
         {/* Delivery Volume */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-teal-500" />
+              <Package className="h-4 w-4 text-orange-400" />
               <h3 className="text-base">Delivery Volume</h3>
             </div>
             <p className="text-sm text-muted-foreground">Number of deliveries per month</p>
@@ -450,11 +450,11 @@ export function ReportsTab() {
         </div>
 
         {/* Delivery Success Rate */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-emerald-600" />
+              <Target className="h-4 w-4 text-orange-600" />
               <h3 className="text-base">Delivery Success Rate</h3>
             </div>
             <p className="text-sm text-muted-foreground">On-time delivery percentage trend</p>
@@ -489,11 +489,11 @@ export function ReportsTab() {
       </div>
 
       {/* ── Driver Performance Table ── */}
-      <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+      <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
         <div className="absolute top-0 left-0 right-0 h-1" />
         <div className="pb-2">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-emerald-600" />
+            <Users className="h-4 w-4 text-orange-600" />
             <h3 className="text-base">Driver Performance</h3>
           </div>
           <p className="text-sm text-muted-foreground">Top 10 drivers by performance metrics</p>
@@ -521,11 +521,11 @@ export function ReportsTab() {
                 {sortedDrivers.map((driver, idx) => {
                   const isTop = idx < 3 && sortKey === 'deliveries' && sortDir === 'desc';
                   return (
-                    <TableRow key={driver.name} className={isTop ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''}>
+                    <TableRow key={driver.name} className={isTop ? 'bg-orange-50/50 dark:bg-orange-950/20' : ''}>
                       <TableCell className="text-sm font-medium">
                         <div className="flex items-center gap-2">
                           {isTop && (
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700 dark:bg-orange-900/50 dark:text-orange-400">
                               {idx + 1}
                             </span>
                           )}
@@ -543,7 +543,7 @@ export function ReportsTab() {
                         <span
                           className={`font-mono font-medium ${
                             driver.onTime >= 95
-                              ? 'text-emerald-600'
+                              ? 'text-orange-600'
                               : driver.onTime >= 90
                               ? 'text-amber-600'
                               : 'text-red-500'
@@ -564,11 +564,11 @@ export function ReportsTab() {
       {/* ── Fleet Performance + Customer Insights ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Fleet Performance */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-emerald-600" />
+              <Truck className="h-4 w-4 text-orange-600" />
               <h3 className="text-base">Fleet Performance</h3>
             </div>
             <p className="text-sm text-muted-foreground">Vehicle utilization and maintenance</p>
@@ -630,11 +630,11 @@ export function ReportsTab() {
         </div>
 
         {/* Customer Insights */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-emerald-600" />
+              <Heart className="h-4 w-4 text-orange-600" />
               <h3 className="text-base">Customer Insights</h3>
             </div>
             <p className="text-sm text-muted-foreground">Top customers and satisfaction trends</p>
@@ -674,7 +674,7 @@ export function ReportsTab() {
                   <div key={customer.id} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 min-w-0">
                       {idx < 3 && (
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700 dark:bg-orange-900/50 dark:text-orange-400">
                           {idx + 1}
                         </span>
                       )}
@@ -683,7 +683,7 @@ export function ReportsTab() {
                         <p className="text-[11px] text-muted-foreground">{customer.totalShipments} shipments</p>
                       </div>
                     </div>
-                    <span className="shrink-0 font-mono font-medium text-emerald-600">
+                    <span className="shrink-0 font-mono font-medium text-orange-600">
                       {formatCurrency(customer.totalSpent)}
                     </span>
                   </div>
@@ -697,11 +697,11 @@ export function ReportsTab() {
       {/* ── Revenue by Route + Delivery Time Distribution ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Revenue by Route */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-emerald-600" />
+              <MapPin className="h-4 w-4 text-orange-600" />
               <h3 className="text-base">Revenue by Route</h3>
             </div>
             <p className="text-sm text-muted-foreground">Top 8 routes by delivered revenue</p>
@@ -738,7 +738,7 @@ export function ReportsTab() {
         </div>
 
         {/* Delivery Time Distribution */}
-        <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-1" />
           <div className="pb-2">
             <div className="flex items-center gap-2">
@@ -766,11 +766,11 @@ export function ReportsTab() {
       </div>
 
       {/* ── Delivery Volume by Day of Week ── */}
-      <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+      <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
         <div className="absolute top-0 left-0 right-0 h-1" />
         <div className="pb-2">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-emerald-600" />
+            <BarChart3 className="h-4 w-4 text-orange-600" />
             <h3 className="text-base">Delivery Volume by Day of Week</h3>
           </div>
           <p className="text-sm text-muted-foreground">Average delivery count per day of the week</p>
@@ -805,11 +805,11 @@ export function ReportsTab() {
       </div>
 
       {/* ── Company Performance Comparison ── */}
-      <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+      <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
         <div className="absolute top-0 left-0 right-0 h-1" />
         <div className="pb-2">
           <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-emerald-600" />
+            <Building2 className="h-4 w-4 text-orange-600" />
             <h3 className="text-base">Company Performance Comparison</h3>
           </div>
           <p className="text-sm text-muted-foreground">How the 3 companies compare across key metrics</p>
@@ -818,12 +818,12 @@ export function ReportsTab() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
-                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">Company</TableHead>
-                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Deliveries</TableHead>
-                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Revenue</TableHead>
-                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">On-Time</TableHead>
-                  <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-center">Rating</TableHead>
+                <TableRow className="bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-50 dark:hover:bg-orange-950/30">
+                  <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300">Company</TableHead>
+                  <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-right">Deliveries</TableHead>
+                  <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-right">Revenue</TableHead>
+                  <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-right">On-Time</TableHead>
+                  <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-center">Rating</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -831,9 +831,9 @@ export function ReportsTab() {
                   <TableRow key={company.name}>
                     <TableCell className="font-medium text-sm">{company.name}</TableCell>
                     <TableCell className="text-sm text-right font-mono">{company.deliveries}</TableCell>
-                    <TableCell className="text-sm text-right font-mono text-emerald-600 font-medium">{company.revenue}</TableCell>
+                    <TableCell className="text-sm text-right font-mono text-orange-600 font-medium">{company.revenue}</TableCell>
                     <TableCell className="text-sm text-right font-mono">
-                      <span className={Number(company.onTime.replace('%', '')) >= 92 ? 'text-emerald-600 font-medium' : 'text-amber-600'}>
+                      <span className={Number(company.onTime.replace('%', '')) >= 92 ? 'text-orange-600 font-medium' : 'text-amber-600'}>
                         {company.onTime}
                       </span>
                     </TableCell>
@@ -854,13 +854,13 @@ export function ReportsTab() {
       {/* ── Cross-Border Delivery Analytics ── */}
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-emerald-600" />
+          <MapPin className="h-5 w-5 text-orange-600" />
           <h3 className="text-lg font-semibold">Cross-Border Delivery Analytics</h3>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Border Post Performance Table */}
-          <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
             <div className="absolute top-0 left-0 right-0 h-1" />
             <div className="pb-2">
               <h3 className="text-base">Border Post Performance</h3>
@@ -870,12 +870,12 @@ export function ReportsTab() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
-                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">Border Post</TableHead>
-                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Total Crossings</TableHead>
-                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Avg Wait (hrs)</TableHead>
-                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-right">Clearance Rate %</TableHead>
-                      <TableHead className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 text-center">Active Delays</TableHead>
+                    <TableRow className="bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-50 dark:hover:bg-orange-950/30">
+                      <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300">Border Post</TableHead>
+                      <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-right">Total Crossings</TableHead>
+                      <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-right">Avg Wait (hrs)</TableHead>
+                      <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-right">Clearance Rate %</TableHead>
+                      <TableHead className="text-xs font-semibold text-orange-800 dark:text-orange-300 text-center">Active Delays</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -887,7 +887,7 @@ export function ReportsTab() {
                         <TableCell className="text-sm text-right font-mono">
                           <span className={
                             post.clearanceRate >= 90
-                              ? 'text-emerald-600 font-medium'
+                              ? 'text-orange-600 font-medium'
                               : post.clearanceRate >= 80
                                 ? 'text-amber-600 font-medium'
                                 : 'text-red-600 font-medium'
@@ -917,11 +917,11 @@ export function ReportsTab() {
           </div>
 
           {/* Cross-Border Trend Chart */}
-          <div className="rounded-lg border border-border/50 bg-card relative overflow-hidden shadow-sm">
+          <div className="rounded-lg border border-border/50 bg-card p-4 relative overflow-hidden shadow-sm">
             <div className="absolute top-0 left-0 right-0 h-1" />
             <div className="pb-2">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <TrendingUp className="h-4 w-4 text-orange-600" />
                 <h3 className="text-base">Cross-Border vs Domestic Volume</h3>
               </div>
               <p className="text-sm text-muted-foreground">Monthly delivery volume comparison (2024)</p>

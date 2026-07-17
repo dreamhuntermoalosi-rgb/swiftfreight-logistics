@@ -872,7 +872,7 @@ export function ChainOfCustodyTab() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Visual Stepper */}
         <div className="lg:col-span-4">
-          <div className="rounded-lg border border-border/50 bg-card rounded-xl sticky top-4">
+          <div className="rounded-lg border border-border/50 bg-card rounded-xl p-4 sticky top-4">
             <div className="pb-2">
               <h2 className="text-xs font-semibold flex items-center gap-2" style={{ color: '#757575' }}>
                 <FileText className="h-3.5 w-3.5" />

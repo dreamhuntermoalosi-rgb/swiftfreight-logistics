@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 20;
 
-const cityBorderColors = ['border-l-emerald-400', 'border-l-teal-400', 'border-l-amber-400', 'border-l-rose-400', 'border-l-violet-400'];
+const cityBorderColors = ['border-l-orange-400', 'border-l-orange-300', 'border-l-amber-400', 'border-l-rose-400', 'border-l-violet-400'];
 function getCityBorderColor(city: string): string {
   let hash = 0;
   for (let i = 0; i < city.length; i++) hash = city.charCodeAt(i) + ((hash << 5) - hash);
@@ -214,7 +214,7 @@ export function CustomersTab() {
           <Users className="h-3.5 w-3.5" />
           Total Customers: {filtered.length}
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
           <CreditCard className="h-3.5 w-3.5" />
           Total Revenue: {formatCurrency(filtered.reduce((sum, c) => sum + c.totalSpent, 0))}
         </span>
@@ -243,8 +243,8 @@ export function CustomersTab() {
         </div>
         <div className="rounded-xl bg-muted/40 p-4 transition-all duration-200">
           <div className="flex items-center gap-4">
-            <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
-              <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900/30">
+              <CreditCard className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Revenue</p>
@@ -337,7 +337,7 @@ export function CustomersTab() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right font-medium">{customer.totalShipments}</TableCell>
-                      <TableCell className="hidden sm:table-cell text-right font-medium text-emerald-600 dark:text-emerald-400">
+                      <TableCell className="hidden sm:table-cell text-right font-medium text-orange-600 dark:text-orange-400">
                         {formatCurrency(customer.totalSpent)}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
@@ -464,7 +464,7 @@ export function CustomersTab() {
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
                   <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg">
-                    <CreditCard className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <CreditCard className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   </div>
                   <p className="text-lg font-bold">{formatCurrency(selectedCustomer.totalSpent)}</p>
                   <p className="text-xs text-muted-foreground">Total Spent</p>
